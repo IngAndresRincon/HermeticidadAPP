@@ -26,12 +26,12 @@ class CustomerElevateButton extends StatelessWidget {
       child: ElevatedButton(
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
-              elevation: 20, backgroundColor: colorButton),
+              elevation: 10, backgroundColor: colorButton),
           child: Text(
             texto,
             style: TextStyle(
                 color: colorTexto,
-                fontSize: 18,
+                fontSize: 20,
                 letterSpacing: 2,
                 fontWeight: FontWeight.bold),
           )),

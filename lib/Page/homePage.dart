@@ -91,22 +91,28 @@ class _HomePageState extends State<HomePage> {
                     width: getScreenSize(context).width * .9,
                     height: getScreenSize(context).height * .3,
                     color: Colors.transparent,
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         Expanded(
-                            flex: 4,
-                            child: Center(
-                                child: CircleAvatar(
-                              backgroundColor: Colors.white,
-                              radius: 50,
-                              child: Icon(
-                                Icons.person,
-                                color: Colors.black54,
-                                size: 60,
+                            flex: 2,
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: Container(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 20),
+                                child: const CircleAvatar(
+                                  backgroundColor: Colors.white,
+                                  radius: 60,
+                                  child: Icon(
+                                    Icons.person,
+                                    color: Color.fromARGB(255, 43, 76, 104),
+                                    size: 70,
+                                  ),
+                                ),
                               ),
-                            ))),
+                            )),
                         Expanded(
                             flex: 4,
                             child: Center(
@@ -115,17 +121,45 @@ class _HomePageState extends State<HomePage> {
                                       MainAxisAlignment.spaceEvenly,
                                   mainAxisSize: MainAxisSize.max,
                                   children: [
-                                    Text(
-                                      "Nombre",
-                                      style: TextStyle(color: Colors.white),
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        nombreUsuarioGlobal,
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            letterSpacing: 2),
+                                      ),
                                     ),
-                                    Text(
-                                      "Rol",
-                                      style: TextStyle(color: Colors.white),
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        rolUsuarioGlobal,
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            letterSpacing: 2),
+                                      ),
                                     ),
-                                    Text(
-                                      "Sistemas Insepet",
-                                      style: TextStyle(color: Colors.white),
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        fechaIngresoUsuario,
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            letterSpacing: 2),
+                                      ),
+                                    ),
+                                    const Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        "Sistemas Insepet",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            letterSpacing: 2),
+                                      ),
                                     ),
                                   ]),
                             )),

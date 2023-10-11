@@ -1,6 +1,9 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:hermeticidadapp/Models/models.dart';
 import '../Tools/complements.dart';
+import '../Tools/functions.dart';
 import '../Widgets/elevatebutton.dart';
 import '../Widgets/textField.dart';
 
@@ -14,9 +17,40 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool obscurePassword = true;
   IconData iconSuffix = Icons.key_off;
+
   @override
   void initState() {
     super.initState();
+  }
+
+  void funtionButtonLogin(BuildContext context, Map<String, dynamic> map) {
+    showDialogLoad(context);
+    postLogin(jsonEncode(map)).then((value) {
+      Navigator.pop(context);
+      if (value != "500") {
+        List<dynamic> dynamicData = jsonDecode(value);
+        List<UserModel> dataUser =
+            dynamicData.map((item) => UserModel.fromJson(item)).toList();
+        if (dataUser.isNotEmpty) {
+          if (dataUser[0].activo) {
+            nombreUsuarioGlobal = dataUser[0].nombre;
+            rolUsuarioGlobal = dataUser[0].rol;
+            tokenUsuarioGlobal = dataUser[0].guid;
+            idUsuarioGlobal = dataUser[0].id;
+            fechaIngresoUsuario = dataUser[0].fecha;
+            Navigator.pushReplacementNamed(context, 'home');
+          } else {
+            showMessageTOAST(context, "Usuario no activo", Colors.red.shade700);
+          }
+        } else {
+          showMessageTOAST(
+              context, "No se encuentra ningún usuario", Colors.red.shade700);
+        }
+      } else {
+        showMessageTOAST(
+            context, "No se pudo procesar la solicitud", Colors.red.shade700);
+      }
+    });
   }
 
   @override
@@ -75,9 +109,10 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     CustomerTextFieldLogin(
+                      width: .8,
                       bsuffixIcon: false,
                       icondata: Icons.person,
-                      label: "EMAIL",
+                      label: "CORREO",
                       obscure: false,
                       onTapSuffixIcon: () {},
                       suffixIcon: iconSuffix,
@@ -88,9 +123,10 @@ class _LoginPageState extends State<LoginPage> {
                       height: 20,
                     ),
                     CustomerTextFieldLogin(
+                      width: .8,
                       bsuffixIcon: true,
                       icondata: Icons.password_rounded,
-                      label: "PASSWORD",
+                      label: "CONTRASEÑA",
                       obscure: obscurePassword,
                       onTapSuffixIcon: () {
                         setState(() {
@@ -107,18 +143,55 @@ class _LoginPageState extends State<LoginPage> {
                       texteditingcontroller: controllerPassword,
                       textinputtype: TextInputType.text,
                     ),
+                    SizedBox(
+                      width: getScreenSize(context).width * .8,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                            onPressed: () {},
+                            child: const Text(
+                              "Olvidé mi contraseña",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  // decoration: TextDecoration.underline,
+                                  // decorationColor: Colors.green.shade400,
+                                  fontSize: 14,
+                                  letterSpacing: 1),
+                            )),
+                      ),
+                    ),
                     const SizedBox(
-                      height: 20,
+                      height: 10,
                     ),
                     CustomerElevateButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, 'home');
+                        onPressed: () async {
+                          if (controllerEmail.text.isEmpty ||
+                              controllerPassword.text.isEmpty) {
+                            showMessageTOAST(context, "Campos no validos",
+                                Colors.red.shade700);
+                            return;
+                          }
+
+                          Map<String, dynamic> mapDataUser = {
+                            'Usuario': controllerEmail.text,
+                            'Contrasena': controllerPassword.text
+                          };
+                          funtionButtonLogin(context, mapDataUser);
                         },
                         width: .8,
-                        height: .1,
+                        height: .09,
                         texto: "Ingresar",
                         colorTexto: Colors.white,
                         colorButton: Colors.green.shade300),
+                    TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          "Resgistrarme",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              letterSpacing: 2),
+                        )),
                   ],
                 ),
               ),
