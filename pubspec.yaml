@@ -37,7 +37,10 @@ dependencies:
   cupertino_icons: ^1.0.2
   http: ^1.1.0
   fluttertoast: ^8.2.2
-
+  web_socket_channel: ^2.2.0 
+  path_provider: ^2.0.2
+  syncfusion_flutter_charts: ^19.3.62 
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
