@@ -179,7 +179,7 @@ class _LoginPageState extends State<LoginPage> {
                           funtionButtonLogin(context, mapDataUser);
                         },
                         width: .8,
-                        height: .09,
+                        height: .08,
                         texto: "Ingresar",
                         colorTexto: Colors.white,
                         colorButton: Colors.green.shade300),

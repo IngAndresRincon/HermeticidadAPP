@@ -100,8 +100,8 @@ class _HomePageState extends State<HomePage> {
                             child: Align(
                               alignment: Alignment.topCenter,
                               child: Container(
-                                margin:
-                                    const EdgeInsets.symmetric(vertical: 20),
+                                margin: const EdgeInsets.symmetric(
+                                    vertical: 20, horizontal: 5),
                                 child: const CircleAvatar(
                                   backgroundColor: Colors.white,
                                   radius: 60,
