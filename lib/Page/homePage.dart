@@ -207,32 +207,37 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-                  Card(
-                    color: const Color.fromARGB(255, 3, 143, 143),
-                    elevation: 20,
-                    child: Container(
-                      width: getScreenSize(context).width * .3,
-                      color: Colors.transparent,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Image.asset(
-                              'assets/test.png',
-                              color: Colors.white,
-                              scale: 9,
-                            ),
-                            const Text("PRUEBA",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    letterSpacing: 2,
-                                    fontWeight: FontWeight.bold)),
-                          ],
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, 'test');
+                    },
+                    child: Card(
+                      color: const Color.fromARGB(255, 3, 143, 143),
+                      elevation: 20,
+                      child: Container(
+                        width: getScreenSize(context).width * .3,
+                        color: Colors.transparent,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Image.asset(
+                                'assets/test.png',
+                                color: Colors.white,
+                                scale: 9,
+                              ),
+                              const Text("PRUEBA",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      letterSpacing: 2,
+                                      fontWeight: FontWeight.bold)),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  )
                 ],
               ),
             )
