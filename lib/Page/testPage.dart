@@ -25,6 +25,7 @@ class _TestPageState extends State<TestPage> {
   String macESP32 = 'Sin Conexion...';
   bool isInTestState = false;
   bool isInSocket = false;
+  bool flagButton = false;
   String paso0 =
       "Para realizar la prueba tenga en cuanta los siguientes pasos\n";
   String paso1 = "1.Conecte el dispositivo de medicion correctamente\n";
@@ -36,8 +37,10 @@ class _TestPageState extends State<TestPage> {
   @override
   void dispose() {
     super.dispose();
-    channel.sink
-        .close(); // Cierra el canal WebSocket cuando el widget se elimina
+    if (flagButton) {
+      channel.sink
+          .close(); // Cierra el canal WebSocket cuando el widget se elimina
+    }
   }
 
   @override
@@ -75,6 +78,7 @@ class _TestPageState extends State<TestPage> {
 
   void reconectSocket() {
     setState(() {
+      flagButton = true;
       channel = IOWebSocketChannel.connect('ws://192.168.11.100/ws');
       channel.stream.listen((data) {
         onDataReceived(data);
@@ -102,7 +106,9 @@ class _TestPageState extends State<TestPage> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
-              channel.sink.close();
+              if (flagButton) {
+                channel.sink.close();
+              }
               Navigator.pop(context);
             },
             icon: const Icon(Icons.arrow_back_ios)),
