@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'Page/homePage.dart';
 import 'Page/loginPage.dart';
 import 'Page/splashPage.dart';
-
 void main() {
   runApp(const MyApp());
 }
