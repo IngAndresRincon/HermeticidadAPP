@@ -1,6 +1,6 @@
 import 'package:http/http.dart' as http;
 
-const String postUrl = "http://192.168.0.7:7070/api/POSTvalidarIngreso";
+const String postUrl = "http://186.154.241.203:84/api/POSTvalidarIngreso";
 
 Future<String> postLogin(String jsonDataUser) async {
   final client = http.Client();

@@ -27,3 +27,29 @@ class UserModel {
         activo: json['Activo']);
   }
 }
+
+class UserSocket {
+  final String presion;
+  final String nDatos;
+  final String mac;
+
+  UserSocket(this.presion, this.nDatos, this.mac);
+
+  UserSocket.fromJson(Map<String, dynamic> json)
+      : presion = json['mensaje'],
+        nDatos = json['nDatos'],
+        mac = json['mac'];
+
+  Map<String, dynamic> toJson() => {
+        'presion': presion,
+        'nDatos': nDatos,
+        'mac': mac,
+      };
+}
+
+class ChartData {
+  final String timeP;
+  final double value;
+
+  ChartData(this.timeP, this.value);
+}

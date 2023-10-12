@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:hermeticidadapp/Page/testPage.dart';
 
 import 'Page/homePage.dart';
 import 'Page/loginPage.dart';
 import 'Page/splashPage.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -20,6 +22,7 @@ class MyApp extends StatelessWidget {
         'splash': (context) => const SplashPage(),
         'login': (context) => const LoginPage(),
         'home': (context) => const HomePage(),
+        'test': (context) => const TestPage(),
       },
       initialRoute: 'splash',
       theme: ThemeData(
