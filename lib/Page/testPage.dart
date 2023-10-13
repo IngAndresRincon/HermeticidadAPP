@@ -3,7 +3,7 @@ import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../Widgets/elevatebutton.dart';
-// hola
+
 import 'package:web_socket_channel/io.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,8 +11,8 @@ import 'dart:convert';
 import 'dart:io';
 
 class TestPage extends StatefulWidget {
-  const TestPage({super.key});
-
+  final StorageFile storage = StorageFile();
+  TestPage({super.key});
   @override
   State<TestPage> createState() => _TestPageState();
 }
@@ -24,16 +24,17 @@ class _TestPageState extends State<TestPage> {
   String receivedText = 'Datos Recibidos...';
   String macESP32 = 'Sin Conexion...';
   bool isInTestState = false;
+  bool isInCalibState = false;
   bool isInSocket = false;
   bool flagButton = false;
-  String paso0 =
-      "Para realizar la prueba tenga en cuanta los siguientes pasos\n";
-  String paso1 = "1.Conecte el dispositivo de medicion correctamente\n";
-  String paso2 = "2.Desconecte su disposivivo de los datos moviles\n";
+  bool checkboxValue = false;
+  String paso0 = "Pasos para realizar la prueba:\n";
+  String paso1 = "1.Conecte el dispositivo de medicion correctamente.\n";
+  String paso2 = "2.Desconecte su celular de los datos moviles.\n";
   String paso3 =
-      "3.Conecte su dispositivo movil a la red wifi que genera el medidor llamada 'ESP_D4A891'\n";
+      "3.Conecte su dispositivo movil a la red wifi que genera el medidor llamada 'ESP_D4A891.'\n";
   String paso4 =
-      "4.Oprima el boton Sincronizar para enlazarse con el medidor y comenzar la prueba\n";
+      "4.Oprima el boton 'Sincronizar' para conectarse con el medidor y comenzar la prueba.\n";
   @override
   void dispose() {
     super.dispose();
@@ -45,7 +46,14 @@ class _TestPageState extends State<TestPage> {
 
   @override
   void initState() {
+    widget.storage.writeFileData(
+        "Primera linea en el archivo\nSegunda linea del archivo\nTercera linea del archivo");
     super.initState();
+  }
+
+  void showDataFile() async {
+    await widget.storage.readFileData();
+    setState(() {});
   }
 
   void onDataReceived(dynamic data) async {
@@ -54,13 +62,14 @@ class _TestPageState extends State<TestPage> {
       datosArchivo +=
           charts.timeP + "Medicion: " + charts.value.toString() + '\n';
     }
-    //widget.storage.writeFileData(datosArchivo);
+    widget.storage.writeFileData(datosArchivo);
     setState(() {
       Map<String, dynamic> userMap = jsonDecode(data);
       var user = UserSocket.fromJson(userMap);
       macESP32 = 'Conectado: ' + user.mac;
       macESP32 != 'Sin Conexion...' ? isInSocket = true : isInSocket = false;
       receivedText = 'Presion(PCI): ' + user.presion;
+
       // Parsea y agrega los datos recibidos a la lista de datos del gráfico
       try {
         final double parsedData;
@@ -77,12 +86,30 @@ class _TestPageState extends State<TestPage> {
   }
 
   void reconectSocket() {
+    //showDialogLoad(context);
     setState(() {
-      flagButton = true;
-      channel = IOWebSocketChannel.connect('ws://192.168.11.100/ws');
-      channel.stream.listen((data) {
-        onDataReceived(data);
-      });
+      try {
+        flagButton = true;
+        channel = IOWebSocketChannel.connect('ws://192.168.11.100/ws');
+        channel.stream.listen((data) {
+          onDataReceived(data);
+        });
+      } catch (e) {
+        print('Error al conectar con el socket: $e');
+      }
+    });
+  }
+
+  void initCalib() {
+    setState(() {
+      isInCalibState = !isInCalibState;
+      if (isInCalibState) {
+        chartData.clear();
+        showMessageTOAST(context, "Calibracion Iniciada", Colors.red.shade700);
+      } else {
+        showMessageTOAST(context, "Calibracion Terminada", Colors.red.shade700);
+      }
+      channel.sink.add('calib'); // Mensaje enviado al servidor
     });
   }
 
@@ -171,30 +198,133 @@ class _TestPageState extends State<TestPage> {
                     height: 20,
                   ),
                   CustomerElevateButton(
-                      onPressed: reconectSocket,
+                      onPressed:
+                          isInSocket || !checkboxValue ? () {} : reconectSocket,
                       texto: "Sincronizar",
                       colorTexto: Colors.white,
-                      colorButton: Colors.green.shade300,
+                      colorButton: isInSocket || !checkboxValue
+                          ? Colors.grey
+                          : Colors.green.shade300,
                       height: .05,
                       width: .7),
                   const SizedBox(
                     height: 20,
                   ),
-                  Text(
-                    paso0 + paso1 + paso2 + paso3,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        letterSpacing: 4,
-                        fontSize: 16,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w500),
-                  ),
+                  isInSocket ? _buildStartTest() : _buildSteps(),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSteps() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Text(
+          paso0,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+              letterSpacing: 4,
+              fontSize: 16,
+              color: Colors.black,
+              fontWeight: FontWeight.w500),
+        ),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.signal_cellular_off),
+            title: Text(paso2),
+          ),
+        ),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.wifi),
+            title: Text(paso3),
+          ),
+        ),
+        Card(
+          child: CheckboxListTile(
+            value: checkboxValue,
+            onChanged: (bool? value) {
+              setState(() {
+                checkboxValue = value!;
+              });
+            },
+            title: const Text('Confirmacion de pasos realizados'),
+            subtitle: const Text('He realizado todos los pasos anteriores.'),
+          ),
+        ),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.radio_button_checked),
+            title: Text(paso4),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStartTest() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Text(
+          receivedText,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+              letterSpacing: 4,
+              fontSize: 16,
+              color: Colors.black,
+              fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        SfCartesianChart(
+          primaryXAxis: CategoryAxis(),
+          series: <ChartSeries>[
+            LineSeries<ChartData, String>(
+              dataSource: chartData,
+              xValueMapper: (ChartData data, _) => data.timeP,
+              yValueMapper: (ChartData data, _) => data.value,
+            ),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            CustomerElevateButton(
+                onPressed: initCalib,
+                texto: !isInCalibState ? "Calibrar" : "Terminar",
+                colorTexto: Colors.white,
+                colorButton:
+                    !isInCalibState ? Colors.green.shade300 : Colors.redAccent,
+                height: .05,
+                width: .45),
+            CustomerElevateButton(
+                onPressed: initTest,
+                texto: !isInTestState ? "Iniciar" : "Terminar",
+                colorTexto: Colors.white,
+                colorButton:
+                    !isInTestState ? Colors.green.shade300 : Colors.redAccent,
+                height: .05,
+                width: .45),
+          ],
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        CustomerElevateButton(
+            onPressed: !isInTestState ? showDataFile : () {},
+            texto: "Resultados",
+            colorTexto: Colors.white,
+            colorButton: !isInTestState ? Colors.green.shade300 : Colors.grey,
+            height: .05,
+            width: .45),
+      ],
     );
   }
 }
