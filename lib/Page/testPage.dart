@@ -3,12 +3,14 @@ import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../Widgets/elevatebutton.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:web_socket_channel/io.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:async';
 
 class TestPage extends StatefulWidget {
   final StorageFile storage = StorageFile();
@@ -18,23 +20,28 @@ class TestPage extends StatefulWidget {
 }
 
 class _TestPageState extends State<TestPage> {
-  //final channel = IOWebSocketChannel.connect('ws://192.168.11.100/ws');
+  final serverUrl = 'ws://192.168.11.100/ws';
+  final testUrl = 'http://192.168.11.100/verificar_conexion';
   late WebSocketChannel channel;
   List<ChartData> chartData = [];
   String receivedText = 'Datos Recibidos...';
   String macESP32 = 'Sin Conexion...';
+  String conectMns = '';
   bool isInTestState = false;
   bool isInCalibState = false;
   bool isInSocket = false;
   bool flagButton = false;
   bool checkboxValue = false;
+  bool isDisposeCalled = false;
+  bool pong = false;
+  late Timer pingTimer;
   String paso0 = "Pasos para realizar la prueba:\n";
-  String paso1 = "1.Conecte el dispositivo de medicion correctamente.\n";
+  String paso1 = "1.Verifique la correcta conexion del medidor.";
   String paso2 = "2.Desconecte su celular de los datos moviles.\n";
   String paso3 =
       "3.Conecte su dispositivo movil a la red wifi que genera el medidor llamada 'ESP_D4A891.'\n";
   String paso4 =
-      "4.Oprima el boton 'Sincronizar' para conectarse con el medidor y comenzar la prueba.\n";
+      "4.Si se conectó a la red correcta el boton 'Sincronizar' se habilitará, oprimalo para conectarse con el medidor y comenzar la prueba.\n";
   @override
   void dispose() {
     super.dispose();
@@ -42,10 +49,17 @@ class _TestPageState extends State<TestPage> {
       channel.sink
           .close(); // Cierra el canal WebSocket cuando el widget se elimina
     }
+    isDisposeCalled = true;
   }
 
   @override
   void initState() {
+    // Configura un temporizador para enviar pings periódicamente
+    pingTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (!isDisposeCalled) {
+        ping();
+      }
+    });
     widget.storage.writeFileData(
         "Primera linea en el archivo\nSegunda linea del archivo\nTercera linea del archivo");
     super.initState();
@@ -67,7 +81,7 @@ class _TestPageState extends State<TestPage> {
       Map<String, dynamic> userMap = jsonDecode(data);
       var user = UserSocket.fromJson(userMap);
       macESP32 = 'Conectado: ' + user.mac;
-      macESP32 != 'Sin Conexion...' ? isInSocket = true : isInSocket = false;
+      //macESP32 != 'Sin Conexion...' ? isInSocket = true : isInSocket = false;
       receivedText = 'Presion(PCI): ' + user.presion;
 
       // Parsea y agrega los datos recibidos a la lista de datos del gráfico
@@ -85,15 +99,63 @@ class _TestPageState extends State<TestPage> {
     });
   }
 
-  void reconectSocket() {
-    //showDialogLoad(context);
+  Future<bool> isWebSocketAvailable(String serverUrl) async {
+    try {
+      final response = await http.get(Uri.parse(serverUrl));
+      if (response.statusCode == 200) {
+        return true; // El servidor WebSocket está disponible.
+      } else {
+        return false; // El servidor WebSocket no está disponible.
+      }
+    } catch (e) {
+      return false; // Error al intentar conectar, el servidor no está disponible.
+    }
+  }
+
+  void ping() async {
+    if (await isWebSocketAvailable(testUrl)) {
+      pong = true;
+    } else {
+      pong = false;
+    }
     setState(() {
-      try {
-        flagButton = true;
-        channel = IOWebSocketChannel.connect('ws://192.168.11.100/ws');
+      if (pong) {
+        //conectMns = macESP32;
+        //showMessageTOAST(context, "Conexion Exitosa con medidor", Colors.green);
+        checkboxValue = true;
+      } else {
+        isInSocket = false;
+        checkboxValue = false;
+        macESP32 = "Sin Conexion...";
+        //showMessageTOAST(context, "Conexion fallida con el medidor", Colors.redAccent);
+      }
+    });
+  }
+
+  void reconectSocket() async {
+    try {
+      if (await isWebSocketAvailable(testUrl)) {
+        channel = IOWebSocketChannel.connect(serverUrl);
         channel.stream.listen((data) {
           onDataReceived(data);
         });
+        isInSocket = true;
+      } else {
+        isInSocket = false;
+      }
+    } catch (e) {
+      print('Error al conectar con el socket: $e');
+    }
+    setState(() {
+      flagButton = true;
+      try {
+        if (isInSocket) {
+          showMessageTOAST(
+              context, "Conexion Exitosa con medidor", Colors.green);
+        } else {
+          showMessageTOAST(context, "No se pudo conectar con el medidor",
+              Colors.red.shade700);
+        }
       } catch (e) {
         print('Error al conectar con el socket: $e');
       }
@@ -105,7 +167,7 @@ class _TestPageState extends State<TestPage> {
       isInCalibState = !isInCalibState;
       if (isInCalibState) {
         chartData.clear();
-        showMessageTOAST(context, "Calibracion Iniciada", Colors.red.shade700);
+        showMessageTOAST(context, "Calibracion Iniciada", Colors.green);
       } else {
         showMessageTOAST(context, "Calibracion Terminada", Colors.red.shade700);
       }
@@ -235,6 +297,12 @@ class _TestPageState extends State<TestPage> {
         ),
         Card(
           child: ListTile(
+            leading: const Icon(Icons.cable),
+            title: Text(paso1),
+          ),
+        ),
+        Card(
+          child: ListTile(
             leading: const Icon(Icons.signal_cellular_off),
             title: Text(paso2),
           ),
@@ -243,18 +311,6 @@ class _TestPageState extends State<TestPage> {
           child: ListTile(
             leading: const Icon(Icons.wifi),
             title: Text(paso3),
-          ),
-        ),
-        Card(
-          child: CheckboxListTile(
-            value: checkboxValue,
-            onChanged: (bool? value) {
-              setState(() {
-                checkboxValue = value!;
-              });
-            },
-            title: const Text('Confirmacion de pasos realizados'),
-            subtitle: const Text('He realizado todos los pasos anteriores.'),
           ),
         ),
         Card(
