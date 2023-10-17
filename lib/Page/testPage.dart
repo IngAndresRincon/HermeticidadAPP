@@ -39,7 +39,7 @@ class _TestPageState extends State<TestPage> {
   String paso1 = "1.Verifique la correcta conexion del medidor.";
   String paso2 = "2.Desconecte su celular de los datos moviles.\n";
   String paso3 =
-      "3.Conecte su dispositivo movil a la red wifi que genera el medidor llamada 'ESP_D4A891.'\n";
+      "3.Conecte su dispositivo movil a la red wifi que genera el medidor llamada 'Medidor_PSI' y contraseña 'insepetAd'.\n";
   String paso4 =
       "4.Si se conectó a la red correcta el boton 'Sincronizar' se habilitará, oprimalo para conectarse con el medidor y comenzar la prueba.\n";
   @override
