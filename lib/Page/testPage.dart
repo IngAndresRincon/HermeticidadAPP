@@ -66,31 +66,35 @@ class _TestPageState extends State<TestPage> {
   }
 
   void showDataFile() async {
-    await widget.storage.readFileData();
-    setState(() {});
+    //await widget.storage.readFileData();
+    setState(() {
+      Navigator.pushNamed(context, 'file');
+    });
   }
 
   void onDataReceived(dynamic data) async {
-    String datosArchivo = "";
-    for (ChartData charts in chartData) {
-      datosArchivo +=
-          charts.timeP + "Medicion: " + charts.value.toString() + '\n';
-    }
-    widget.storage.writeFileData(datosArchivo);
     setState(() {
       Map<String, dynamic> userMap = jsonDecode(data);
       var user = UserSocket.fromJson(userMap);
       macESP32 = 'Conectado: ' + user.mac;
       //macESP32 != 'Sin Conexion...' ? isInSocket = true : isInSocket = false;
-      receivedText = 'Presion(PCI): ' + user.presion;
-
+      receivedText = 'Presion(PSI): ' + user.presion;
       // Parsea y agrega los datos recibidos a la lista de datos del gráfico
       try {
         final double parsedData;
+        if (chartData.length > 30) {
+          chartData.removeAt(0);
+        }
         if (user.presion != "Proceso Detenido") {
           parsedData = double.parse(user.presion);
           final String timeP = user.nDatos;
           chartData.add(ChartData(timeP, parsedData));
+          String datosArchivo = '|' +
+              user.nDatos +
+              '|[${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}]|[' +
+              user.presion +
+              "PSI]|";
+          widget.storage.appendTextToFile(datosArchivo);
         }
       } catch (e) {
         // Manejar cualquier error de análisis aquí, por ejemplo, si los datos no son válidos
@@ -147,6 +151,7 @@ class _TestPageState extends State<TestPage> {
       print('Error al conectar con el socket: $e');
     }
     setState(() {
+      chartData.clear();
       flagButton = true;
       try {
         if (isInSocket) {
@@ -181,6 +186,8 @@ class _TestPageState extends State<TestPage> {
       if (isInTestState) {
         chartData.clear();
         showMessageTOAST(context, "Prueba Iniciada", Colors.red.shade700);
+        widget.storage.writeFileData(
+            'Registro de mediciones ${DateTime.now().toLocal()}\n');
       } else {
         showMessageTOAST(context, "Prueba Terminada", Colors.red.shade700);
       }

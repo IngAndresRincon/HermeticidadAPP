@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hermeticidadapp/Page/showFilePage.dart';
 import 'package:hermeticidadapp/Page/testPage.dart';
 
 import 'Page/homePage.dart';
@@ -23,6 +24,7 @@ class MyApp extends StatelessWidget {
         'login': (context) => const LoginPage(),
         'home': (context) => const HomePage(),
         'test': (context) => TestPage(),
+        'file': (context) => FilePage(),
       },
       initialRoute: 'splash',
       theme: ThemeData(

@@ -83,4 +83,10 @@ class StorageFile {
     final file = await _localFile;
     return file.writeAsString(data); // Escribir archivo
   }
+
+  Future<void> appendTextToFile(String textToAppend) async {
+    final file = await _localFile;
+    final fileSink = file.openWrite(mode: FileMode.append);
+    fileSink.writeln(textToAppend);
+  }
 }
