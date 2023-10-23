@@ -26,6 +26,7 @@ class _TestPageState extends State<TestPage> {
   List<ChartData> chartData = [];
   String receivedText = 'Datos Recibidos...';
   String macESP32 = 'Sin Conexion...';
+  String state = 'Detenido';
   String conectMns = '';
   bool isInTestState = false;
   bool isInCalibState = false;
@@ -76,9 +77,10 @@ class _TestPageState extends State<TestPage> {
     setState(() {
       Map<String, dynamic> userMap = jsonDecode(data);
       var user = UserSocket.fromJson(userMap);
-      macESP32 = 'Conectado: ' + user.mac;
+      macESP32 = 'Conectado: ${user.mac}';
       //macESP32 != 'Sin Conexion...' ? isInSocket = true : isInSocket = false;
-      receivedText = 'Presion(PSI): ' + user.presion;
+      receivedText = 'Presion(PSI): ${user.presion}';
+      state = user.state;
       // Parsea y agrega los datos recibidos a la lista de datos del gráfico
       try {
         final double parsedData;
@@ -89,11 +91,8 @@ class _TestPageState extends State<TestPage> {
           parsedData = double.parse(user.presion);
           final String timeP = user.nDatos;
           chartData.add(ChartData(timeP, parsedData));
-          String datosArchivo = '|' +
-              user.nDatos +
-              '|[${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}]|[' +
-              user.presion +
-              "PSI]|";
+          String datosArchivo =
+              '${user.nDatos}|[${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}]|[$parsedData PSI]';
           widget.storage.appendTextToFile(datosArchivo);
         }
       } catch (e) {
@@ -127,6 +126,14 @@ class _TestPageState extends State<TestPage> {
         //conectMns = macESP32;
         //showMessageTOAST(context, "Conexion Exitosa con medidor", Colors.green);
         checkboxValue = true;
+        if (state == "En prueba") {
+          isInTestState = true;
+        } else if (state == "En calibracion") {
+          isInCalibState = true;
+        } else if (state == "Detenido") {
+          isInTestState = false;
+          isInCalibState = false;
+        }
       } else {
         isInSocket = false;
         checkboxValue = false;
@@ -167,31 +174,35 @@ class _TestPageState extends State<TestPage> {
     });
   }
 
-  void initCalib() {
+  void initCalib(bool action) {
     setState(() {
-      isInCalibState = !isInCalibState;
-      if (isInCalibState) {
+      isInCalibState = action;
+      if (action) {
         chartData.clear();
+        channel.sink.add('calibini'); // Mensaje enviado al servidor
+        widget.storage.writeFileData(
+            'Registro de calibracion ${DateTime.now().toLocal()}\n');
         showMessageTOAST(context, "Calibracion Iniciada", Colors.green);
       } else {
+        channel.sink.add('calibfin'); // Mensaje enviado al servidor
         showMessageTOAST(context, "Calibracion Terminada", Colors.red.shade700);
       }
-      channel.sink.add('calib'); // Mensaje enviado al servidor
     });
   }
 
-  void initTest() {
+  void initTest(bool action) {
     setState(() {
-      isInTestState = !isInTestState;
-      if (isInTestState) {
+      isInTestState = action;
+      if (action) {
+        channel.sink.add('toggleini'); // Mensaje enviado al servidor
         chartData.clear();
-        showMessageTOAST(context, "Prueba Iniciada", Colors.red.shade700);
+        showMessageTOAST(context, "Prueba Iniciada", Colors.green);
         widget.storage.writeFileData(
             'Registro de mediciones ${DateTime.now().toLocal()}\n');
       } else {
+        channel.sink.add('togglefin'); // Mensaje enviado al servidor
         showMessageTOAST(context, "Prueba Terminada", Colors.red.shade700);
       }
-      channel.sink.add('toggle'); // Mensaje enviado al servidor
     });
   }
 
@@ -360,19 +371,59 @@ class _TestPageState extends State<TestPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             CustomerElevateButton(
-                onPressed: initCalib,
-                texto: !isInCalibState ? "Calibrar" : "Terminar",
+                onPressed: !isInCalibState && !isInTestState
+                    ? () {
+                        initCalib(true);
+                      }
+                    : () {},
+                texto: "Calibrar",
                 colorTexto: Colors.white,
-                colorButton:
-                    !isInCalibState ? Colors.green.shade300 : Colors.redAccent,
+                colorButton: !isInCalibState && !isInTestState
+                    ? Colors.green.shade300
+                    : Colors.grey,
                 height: .05,
                 width: .45),
             CustomerElevateButton(
-                onPressed: initTest,
-                texto: !isInTestState ? "Iniciar" : "Terminar",
+                onPressed: isInCalibState
+                    ? () {
+                        initCalib(false);
+                      }
+                    : () {},
+                texto: "Terminar",
                 colorTexto: Colors.white,
-                colorButton:
-                    !isInTestState ? Colors.green.shade300 : Colors.redAccent,
+                colorButton: isInCalibState ? Colors.red : Colors.grey,
+                height: .05,
+                width: .45),
+          ],
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            CustomerElevateButton(
+                onPressed: !isInTestState && !isInCalibState
+                    ? () {
+                        initTest(true);
+                      }
+                    : () {},
+                texto: "Iniciar",
+                colorTexto: Colors.white,
+                colorButton: !isInTestState && !isInCalibState
+                    ? Colors.green.shade300
+                    : Colors.grey,
+                height: .05,
+                width: .45),
+            CustomerElevateButton(
+                onPressed: isInTestState
+                    ? () {
+                        initTest(false);
+                      }
+                    : () {},
+                texto: "Terminar",
+                colorTexto: Colors.white,
+                colorButton: isInTestState ? Colors.redAccent : Colors.grey,
                 height: .05,
                 width: .45),
           ],
@@ -381,10 +432,12 @@ class _TestPageState extends State<TestPage> {
           height: 20,
         ),
         CustomerElevateButton(
-            onPressed: !isInTestState ? showDataFile : () {},
+            onPressed: !isInTestState && !isInCalibState ? showDataFile : () {},
             texto: "Resultados",
             colorTexto: Colors.white,
-            colorButton: !isInTestState ? Colors.green.shade300 : Colors.grey,
+            colorButton: !isInTestState && !isInCalibState
+                ? Colors.green.shade300
+                : Colors.grey,
             height: .05,
             width: .45),
       ],

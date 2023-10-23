@@ -36,18 +36,21 @@ class UserSocket {
   final String presion;
   final String nDatos;
   final String mac;
+  final String state;
 
-  UserSocket(this.presion, this.nDatos, this.mac);
+  UserSocket(this.presion, this.nDatos, this.mac, this.state);
 
   UserSocket.fromJson(Map<String, dynamic> json)
       : presion = json['mensaje'],
         nDatos = json['nDatos'],
-        mac = json['mac'];
+        mac = json['mac'],
+        state = json['estado'];
 
   Map<String, dynamic> toJson() => {
-        'presion': presion,
+        'mensaje': presion,
         'nDatos': nDatos,
         'mac': mac,
+        'estado': state,
       };
 }
 
