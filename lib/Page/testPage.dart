@@ -92,7 +92,7 @@ class _TestPageState extends State<TestPage> {
           final String timeP = user.nDatos;
           chartData.add(ChartData(timeP, parsedData));
           String datosArchivo =
-              '${user.nDatos}|[${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}]|[$parsedData PSI]';
+              '${user.nDatos}[${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}][$parsedData]';
           widget.storage.appendTextToFile(datosArchivo);
         }
       } catch (e) {
