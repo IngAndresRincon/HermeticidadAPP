@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:hermeticidadapp/Widgets/elevateButton.dart';
+import 'package:http/http.dart' as http;
 
 class FilePage extends StatefulWidget {
   FilePage({super.key});
@@ -12,10 +13,18 @@ class FilePage extends StatefulWidget {
 
 class _filePageState extends State<FilePage> {
   String fileContent = "";
+  bool isSincronizeFile = false;
+  final fileUrl = 'http://192.168.11.100:81/SD';
 
-  void showDataFile() async {
+  Future<void> showDataFile() async {
     fileContent = await widget.storage.readFileData();
     setState(() {});
+  }
+
+  Future<void> sincronizeFile() async {
+    widget.storage.writeFileData("Inicio de llenado\n");
+    final response = await http.get(Uri.parse(fileUrl));
+    widget.storage.writeFileData(response.body);
   }
 
   @override
@@ -47,43 +56,82 @@ class _filePageState extends State<FilePage> {
             )
           ],
         ),
-        body: CustomScrollView(
-          slivers: <Widget>[
-            SliverPadding(
-              padding: const EdgeInsets.all(8),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate(
-                  <Widget>[
-                    Container(
-                      height: getScreenSize(context).height * 0.12,
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Container(
+              height: getScreenSize(context).height * .1,
+              width: getScreenSize(context).width,
+            ),
+            Container(
+              height: getScreenSize(context).height * .1,
+              width: getScreenSize(context).width,
+              child: CustomerElevateButton(
+                  onPressed: () async {
+                    showDialogLoad(context);
+                    await sincronizeFile().then((value) {
+                      Navigator.pop(context);
+                    });
+                    showDialogLoad(context);
+                    await showDataFile().then((value) {
+                      Navigator.pop(context);
+                    });
+                    isSincronizeFile = true;
+                  },
+                  texto: "Mostrar Resultados",
+                  colorTexto: Colors.white,
+                  colorButton: Colors.green.shade300,
+                  height: .05,
+                  width: .45),
+            ),
+            Container(
+              height: getScreenSize(context).height * .6,
+              width: getScreenSize(context).width,
+              child: CustomScrollView(
+                slivers: <Widget>[
+                  SliverPadding(
+                    padding: const EdgeInsets.all(8),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate(
+                        <Widget>[
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                fileContent,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    letterSpacing: 4,
+                                    fontSize: 16,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w500),
+                              )
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    CustomerElevateButton(
-                        onPressed: showDataFile,
-                        texto: "Mostrar Resultados",
-                        colorTexto: Colors.white,
-                        colorButton: Colors.green.shade300,
-                        height: .05,
-                        width: .45),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          fileContent,
-                          style: const TextStyle(
-                              letterSpacing: 4,
-                              fontSize: 16,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w500),
-                        )
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
+            Container(
+              height: getScreenSize(context).height * .1,
+              width: getScreenSize(context).width,
+              child: CustomerElevateButton(
+                  onPressed: isSincronizeFile
+                      ? () {
+                          showMessageTOAST(
+                              context, "Archivo enviado", Colors.red);
+                        }
+                      : () {},
+                  texto: "Enviar Datos",
+                  colorTexto: Colors.white,
+                  colorButton:
+                      isSincronizeFile ? Colors.green.shade300 : Colors.grey,
+                  height: .05,
+                  width: .45),
+            )
           ],
         ));
   }

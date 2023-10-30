@@ -7,9 +7,9 @@ import 'package:http/http.dart' as http;
 
 import 'package:web_socket_channel/io.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:path_provider/path_provider.dart';
+//import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
-import 'dart:io';
+//import 'dart:io';
 import 'dart:async';
 
 class TestPage extends StatefulWidget {
@@ -22,6 +22,7 @@ class TestPage extends StatefulWidget {
 class _TestPageState extends State<TestPage> {
   final serverUrl = 'ws://192.168.11.100/ws';
   final testUrl = 'http://192.168.11.100/verificar_conexion';
+  final fileUrl = 'http://192.168.11.100:81/SD';
   late WebSocketChannel channel;
   List<ChartData> chartData = [];
   String receivedText = 'Datos Recibidos...';
@@ -35,6 +36,7 @@ class _TestPageState extends State<TestPage> {
   bool checkboxValue = false;
   bool isDisposeCalled = false;
   bool pong = false;
+  bool readyForFile = false;
   late Timer pingTimer;
   String paso0 = "Pasos para realizar la prueba:\n";
   String paso1 = "1.Verifique la correcta conexion del medidor.";
@@ -61,43 +63,56 @@ class _TestPageState extends State<TestPage> {
         ping();
       }
     });
-    widget.storage.writeFileData(
-        "Primera linea en el archivo\nSegunda linea del archivo\nTercera linea del archivo");
+    // widget.storage
+    //     .writeFileData('Conexion con el medidor ${DateTime.now().toLocal()}\n');
     super.initState();
   }
 
-  void showDataFile() async {
-    //await widget.storage.readFileData();
+  Future<void> sincronizeFile() async {
+    widget.storage.writeFileData("Inicio de llenado\n");
+    final response = await http.get(Uri.parse(fileUrl));
+    widget.storage.writeFileData(response.body);
+    //channel.sink.add('sincronizar'); // Mensaje enviado al servidor
+    readyForFile = true;
+  }
+
+  Future<void> showDataFile() async {
     setState(() {
       Navigator.pushNamed(context, 'file');
     });
   }
 
-  void onDataReceived(dynamic data) async {
+  Future<void> onDataReceived(dynamic data) async {
     setState(() {
-      Map<String, dynamic> userMap = jsonDecode(data);
-      var user = UserSocket.fromJson(userMap);
-      macESP32 = 'Conectado: ${user.mac}';
-      //macESP32 != 'Sin Conexion...' ? isInSocket = true : isInSocket = false;
-      receivedText = 'Presion(PSI): ${user.presion}';
-      state = user.state;
-      // Parsea y agrega los datos recibidos a la lista de datos del gráfico
-      try {
-        final double parsedData;
-        if (chartData.length > 30) {
-          chartData.removeAt(0);
+      if (!readyForFile) {
+        Map<String, dynamic> userMap = jsonDecode(data);
+        var user = UserSocket.fromJson(userMap);
+        macESP32 = 'Conectado: ${user.mac}';
+        //macESP32 != 'Sin Conexion...' ? isInSocket = true : isInSocket = false;
+        receivedText = 'Presion(PSI): ${user.presion}';
+        state = user.state;
+        // Parsea y agrega los datos recibidos a la lista de datos del gráfico
+        try {
+          final double parsedData;
+          if (chartData.length > 30) {
+            chartData.removeAt(0);
+          }
+          if (user.presion != "Proceso Detenido") {
+            parsedData = double.parse(user.presion);
+            final String timeP = user.nDatos;
+            chartData.add(ChartData(timeP, parsedData));
+            String datosArchivo =
+                '${user.nDatos}[${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}][$parsedData]';
+            widget.storage.appendTextToFile(datosArchivo);
+          }
+        } catch (e) {
+          // Manejar cualquier error de análisis aquí, por ejemplo, si los datos no son válidos
+          print('Error al analizar los datos: $e');
         }
-        if (user.presion != "Proceso Detenido") {
-          parsedData = double.parse(user.presion);
-          final String timeP = user.nDatos;
-          chartData.add(ChartData(timeP, parsedData));
-          String datosArchivo =
-              '${user.nDatos}[${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}][$parsedData]';
-          widget.storage.appendTextToFile(datosArchivo);
+      } else if (readyForFile) {
+        if (data is! String) {
+          widget.storage.binaryWriteFileData(data);
         }
-      } catch (e) {
-        // Manejar cualquier error de análisis aquí, por ejemplo, si los datos no son válidos
-        print('Error al analizar los datos: $e');
       }
     });
   }
@@ -115,7 +130,7 @@ class _TestPageState extends State<TestPage> {
     }
   }
 
-  void ping() async {
+  Future<void> ping() async {
     if (await isWebSocketAvailable(testUrl)) {
       pong = true;
     } else {
@@ -143,7 +158,7 @@ class _TestPageState extends State<TestPage> {
     });
   }
 
-  void reconectSocket() async {
+  Future<void> reconectSocket() async {
     try {
       if (await isWebSocketAvailable(testUrl)) {
         channel = IOWebSocketChannel.connect(serverUrl);
@@ -180,12 +195,14 @@ class _TestPageState extends State<TestPage> {
       if (action) {
         chartData.clear();
         channel.sink.add('calibini'); // Mensaje enviado al servidor
-        widget.storage.writeFileData(
+        readyForFile = false;
+        widget.storage.appendTextToFile(
             'Registro de calibracion ${DateTime.now().toLocal()}\n');
         showMessageTOAST(context, "Calibracion Iniciada", Colors.green);
       } else {
         channel.sink.add('calibfin'); // Mensaje enviado al servidor
         showMessageTOAST(context, "Calibracion Terminada", Colors.red.shade700);
+        //sincronizeFile();
       }
     });
   }
@@ -195,13 +212,15 @@ class _TestPageState extends State<TestPage> {
       isInTestState = action;
       if (action) {
         channel.sink.add('toggleini'); // Mensaje enviado al servidor
+        readyForFile = false;
         chartData.clear();
         showMessageTOAST(context, "Prueba Iniciada", Colors.green);
-        widget.storage.writeFileData(
+        widget.storage.appendTextToFile(
             'Registro de mediciones ${DateTime.now().toLocal()}\n');
       } else {
         channel.sink.add('togglefin'); // Mensaje enviado al servidor
         showMessageTOAST(context, "Prueba Terminada", Colors.red.shade700);
+        //sincronizeFile();
       }
     });
   }
@@ -290,7 +309,7 @@ class _TestPageState extends State<TestPage> {
                   const SizedBox(
                     height: 20,
                   ),
-                  isInSocket ? _buildStartTest() : _buildSteps(),
+                  isInSocket ? _buildStartTest(context) : _buildSteps(),
                 ],
               ),
             ),
@@ -341,7 +360,7 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
-  Widget _buildStartTest() {
+  Widget _buildStartTest(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
@@ -368,7 +387,7 @@ class _TestPageState extends State<TestPage> {
           ],
         ),
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             CustomerElevateButton(
                 onPressed: !isInCalibState && !isInTestState
@@ -400,7 +419,7 @@ class _TestPageState extends State<TestPage> {
           height: 20,
         ),
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             CustomerElevateButton(
                 onPressed: !isInTestState && !isInCalibState
@@ -431,15 +450,21 @@ class _TestPageState extends State<TestPage> {
         const SizedBox(
           height: 20,
         ),
-        CustomerElevateButton(
-            onPressed: !isInTestState && !isInCalibState ? showDataFile : () {},
-            texto: "Resultados",
-            colorTexto: Colors.white,
-            colorButton: !isInTestState && !isInCalibState
-                ? Colors.green.shade300
-                : Colors.grey,
-            height: .05,
-            width: .45),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            CustomerElevateButton(
+                onPressed:
+                    !isInTestState && !isInCalibState ? showDataFile : () {},
+                texto: "Resultados",
+                colorTexto: Colors.white,
+                colorButton: !isInTestState && !isInCalibState
+                    ? Colors.green.shade300
+                    : Colors.grey,
+                height: .05,
+                width: .45),
+          ],
+        ),
       ],
     );
   }

@@ -1,5 +1,4 @@
 import 'package:path_provider/path_provider.dart';
-import 'dart:convert';
 import 'dart:io';
 
 class UserModel {
@@ -91,5 +90,16 @@ class StorageFile {
     final file = await _localFile;
     final fileSink = file.openWrite(mode: FileMode.append);
     fileSink.writeln(textToAppend);
+  }
+
+  Future<void> binaryWriteFileData(var data) async {
+    final file = await _localFile; 
+    file.writeAsBytes(data);
+  }
+
+  Future<void> binaryappendFileData(var data) async {
+    final file = await _localFile; 
+    final fileSink = file.openWrite(mode: FileMode.append);
+    fileSink.add(data);
   }
 }
