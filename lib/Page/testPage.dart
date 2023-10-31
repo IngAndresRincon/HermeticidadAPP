@@ -37,6 +37,7 @@ class _TestPageState extends State<TestPage> {
   bool isDisposeCalled = false;
   bool pong = false;
   bool readyForFile = false;
+  bool isTest = false;
   late Timer pingTimer;
   String paso0 = "Pasos para realizar la prueba:\n";
   String paso1 = "1.Verifique la correcta conexion del medidor.";
@@ -177,6 +178,7 @@ class _TestPageState extends State<TestPage> {
       flagButton = true;
       try {
         if (isInSocket) {
+          sendInfo();
           showMessageTOAST(
               context, "Conexion Exitosa con medidor", Colors.green);
         } else {
@@ -192,15 +194,21 @@ class _TestPageState extends State<TestPage> {
   void initCalib(bool action) {
     setState(() {
       isInCalibState = action;
+      SendSocket dataSend;
+      String dataJson;
       if (action) {
+        dataSend = SendSocket('calibini', 2, 1);
+        dataJson = jsonEncode(dataSend);
+        channel.sink.add(dataJson); // Mensaje enviado al servidor
         chartData.clear();
-        channel.sink.add('calibini'); // Mensaje enviado al servidor
         readyForFile = false;
         widget.storage.appendTextToFile(
             'Registro de calibracion ${DateTime.now().toLocal()}\n');
         showMessageTOAST(context, "Calibracion Iniciada", Colors.green);
       } else {
-        channel.sink.add('calibfin'); // Mensaje enviado al servidor
+        dataSend = SendSocket('calibfin', 2, 1);
+        dataJson = jsonEncode(dataSend);
+        channel.sink.add(dataJson); // Mensaje enviado al servidor
         showMessageTOAST(context, "Calibracion Terminada", Colors.red.shade700);
         //sincronizeFile();
       }
@@ -210,18 +218,32 @@ class _TestPageState extends State<TestPage> {
   void initTest(bool action) {
     setState(() {
       isInTestState = action;
+      SendSocket sendData;
+      String dataJson;
       if (action) {
-        channel.sink.add('toggleini'); // Mensaje enviado al servidor
+        sendData = SendSocket("toggleini", 2, 1);
+        dataJson = jsonEncode(sendData);
+        channel.sink.add(dataJson);
         readyForFile = false;
         chartData.clear();
         showMessageTOAST(context, "Prueba Iniciada", Colors.green);
         widget.storage.appendTextToFile(
             'Registro de mediciones ${DateTime.now().toLocal()}\n');
       } else {
-        channel.sink.add('togglefin'); // Mensaje enviado al servidor
+        sendData = SendSocket("togglefin", 2, 1);
+        dataJson = jsonEncode(sendData);
+        channel.sink.add(dataJson); // Mensaje enviado al servidor
         showMessageTOAST(context, "Prueba Terminada", Colors.red.shade700);
         //sincronizeFile();
       }
+    });
+  }
+
+  void sendInfo() {
+    setState(() {
+      SendSocket sendData = SendSocket('info', 2, 1);
+      String dataJson = jsonEncode(sendData);
+      channel.sink.add(dataJson);
     });
   }
 
@@ -393,6 +415,7 @@ class _TestPageState extends State<TestPage> {
                 onPressed: !isInCalibState && !isInTestState
                     ? () {
                         initCalib(true);
+                        isTest = false;
                       }
                     : () {},
                 texto: "Calibrar",
@@ -425,6 +448,7 @@ class _TestPageState extends State<TestPage> {
                 onPressed: !isInTestState && !isInCalibState
                     ? () {
                         initTest(true);
+                        isTest = true;
                       }
                     : () {},
                 texto: "Iniciar",

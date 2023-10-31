@@ -19,7 +19,7 @@ Future<bool?> showMessageTOAST(
   return Fluttertoast.showToast(
       msg: mensaje,
       toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.TOP,
+      gravity: ToastGravity.CENTER,
       backgroundColor: color,
       textColor: Colors.white,
       fontSize: 16);

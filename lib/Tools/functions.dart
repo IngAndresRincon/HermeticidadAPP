@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 
 const String postUrl = "http://186.154.241.203:84/api/POSTvalidarIngreso";
+const String fileUrl = "http://186.154.241.203:84/api/POSTsubirArchivo";
 
 Future<String> postLogin(String jsonDataUser) async {
   final client = http.Client();
@@ -28,4 +29,26 @@ Future<String> postLogin(String jsonDataUser) async {
   }
 
   return "";
+}
+
+Future<void> postFile(String fileString) async {
+  try {
+    final response = await http.post(
+      Uri.parse(fileUrl),
+      headers: <String, String>{
+        'Content-Type': 'text/plain', // Configura el tipo de contenido
+      },
+      body: fileString,
+    );
+
+    if (response.statusCode == 200) {
+      // La solicitud se realizó con éxito
+      print('Respuesta: ${response.body}');
+    } else {
+      // Hubo un error en la solicitud
+      print('Error en la solicitud. Código de estado: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error: $e');
+  }
 }

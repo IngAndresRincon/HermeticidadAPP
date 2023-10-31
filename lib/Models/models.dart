@@ -53,6 +53,25 @@ class UserSocket {
       };
 }
 
+class SendSocket {
+  final String action;
+  final int idEstacion;
+  final int idProg;
+
+  SendSocket(this.action, this.idEstacion, this.idProg);
+
+  SendSocket.fromJson(Map<String, dynamic> json)
+      : action = json['action'],
+        idEstacion = json['idEstacion'],
+        idProg = json['idProg'];
+
+  Map<String, dynamic> toJson() => {
+        'action': action,
+        'idEstacion': idEstacion,
+        'idProg': idProg,
+      };
+}
+
 class ChartData {
   final String timeP;
   final double value;
@@ -93,12 +112,12 @@ class StorageFile {
   }
 
   Future<void> binaryWriteFileData(var data) async {
-    final file = await _localFile; 
+    final file = await _localFile;
     file.writeAsBytes(data);
   }
 
   Future<void> binaryappendFileData(var data) async {
-    final file = await _localFile; 
+    final file = await _localFile;
     final fileSink = file.openWrite(mode: FileMode.append);
     fileSink.add(data);
   }

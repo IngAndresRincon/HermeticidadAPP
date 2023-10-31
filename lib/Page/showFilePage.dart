@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
+import 'package:hermeticidadapp/Tools/functions.dart';
 import 'package:hermeticidadapp/Widgets/elevateButton.dart';
 import 'package:http/http.dart' as http;
 
@@ -18,6 +19,10 @@ class _filePageState extends State<FilePage> {
 
   Future<void> showDataFile() async {
     fileContent = await widget.storage.readFileData();
+    // print(fileContent
+    //     .replaceAll("][", ",")
+    //     .replaceAll("]\n", ";")
+    //     .replaceAll("[", ""));
     setState(() {});
   }
 
@@ -121,8 +126,18 @@ class _filePageState extends State<FilePage> {
               child: CustomerElevateButton(
                   onPressed: isSincronizeFile
                       ? () {
-                          showMessageTOAST(
-                              context, "Archivo enviado", Colors.red);
+                          showDialogLoad(context);
+                          postFile(fileContent
+                                  .replaceAll("Registro de mediciones\n", "")
+                                  .replaceAll("--------Testeo--------\n", "")
+                                  .replaceAll("][", ",")
+                                  .replaceAll("]\n", ";")
+                                  .replaceAll("[", ""))
+                              .then((value) {
+                            Navigator.pop(context);
+                            showMessageTOAST(
+                                context, "Archivo enviado", Colors.red);
+                          });
                         }
                       : () {},
                   texto: "Enviar Datos",
