@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
 const String postUrl = "http://186.154.241.203:84/api/POSTvalidarIngreso";
 const String fileUrl = "http://186.154.241.203:84/api/POSTsubirArchivo";
+const String peticionesUrl =
+    "http://186.154.241.203:84/api/POSTobtenerProgramacionPrueba";
 
 Future<String> postLogin(String jsonDataUser) async {
   final client = http.Client();
@@ -51,4 +55,30 @@ Future<void> postFile(String fileString) async {
   } catch (e) {
     print('Error: $e');
   }
+}
+
+Future<List<dynamic>> getScheduleAPI(jsonRequest) async {
+  List<dynamic> listGetSchedule = [];
+
+  try {
+    final client = http.Client();
+    var response = await client
+        .post(Uri.parse(peticionesUrl),
+            headers: {"Content-Type": "application/json"}, body: jsonRequest)
+        .timeout(const Duration(seconds: 10));
+
+    if (response.statusCode == 200) {
+      // La solicitud se realizó con éxito
+      print('Respuesta: ${response.body}');
+      listGetSchedule = jsonDecode(response.body);
+      return listGetSchedule;
+    } else {
+      // Hubo un error en la solicitud
+      print('Error en la solicitud. Código de estado: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error: $e');
+  }
+
+  return listGetSchedule;
 }

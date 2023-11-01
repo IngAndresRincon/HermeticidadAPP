@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
+
+import '../Tools/functions.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -179,30 +183,40 @@ class _HomePageState extends State<HomePage> {
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Card(
-                    color: const Color.fromARGB(255, 3, 143, 143),
-                    elevation: 20,
-                    child: Container(
-                      width: getScreenSize(context).width * .5,
-                      color: Colors.transparent,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Image.asset(
-                              'assets/document.png',
-                              color: Colors.white,
-                              scale: 10,
-                            ),
-                            const Text(
-                              "PROGRAMACIONES",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  letterSpacing: 2,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ],
+                  GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return const ScreenOverlaySchedules();
+                        },
+                      );
+                    },
+                    child: Card(
+                      color: const Color.fromARGB(255, 3, 143, 143),
+                      elevation: 20,
+                      child: Container(
+                        width: getScreenSize(context).width * .5,
+                        color: Colors.transparent,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Image.asset(
+                                'assets/document.png',
+                                color: Colors.white,
+                                scale: 10,
+                              ),
+                              const Text(
+                                "PROGRAMACIONES",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    letterSpacing: 2,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -242,6 +256,105 @@ class _HomePageState extends State<HomePage> {
               ),
             )
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class ScreenOverlaySchedules extends StatefulWidget {
+  const ScreenOverlaySchedules({super.key});
+
+  @override
+  State<ScreenOverlaySchedules> createState() => _ScreenOverlaySchedulesState();
+}
+
+class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
+  late List<dynamic> dynamicList = [];
+  @override
+  void initState() {
+    super.initState();
+    getListSchedule();
+  }
+
+  Future<void> getListSchedule() async {
+    Map<String, dynamic> mapGetSchedule = {
+      'IdUsuario': idUsuarioGlobal,
+      'GuidSesion': tokenUsuarioGlobal
+    };
+
+    await getScheduleAPI(jsonEncode(mapGetSchedule))
+        .then((List<dynamic> value) {
+      print(value);
+      setState(() {
+        dynamicList = value;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
+        child: Card(
+          color: const Color.fromARGB(242, 247, 247, 247),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            width: getScreenSize(context).width * 0.9,
+            height: getScreenSize(context).height * 0.6,
+            child: Column(
+              children: [
+                SizedBox(
+                  height: getScreenSize(context).height * 0.05,
+                  child: Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.close))),
+                ),
+                SizedBox(
+                  height: getScreenSize(context).height * 0.08,
+                  child: const Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        "PROGRAMACIÓN",
+                        style: TextStyle(
+                            letterSpacing: 2,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18),
+                      )),
+                ),
+                SizedBox(
+                    height: getScreenSize(context).height * 0.4,
+                    child: dynamicList.isNotEmpty
+                        ? ListView.builder(
+                            itemCount: dynamicList.length,
+                            itemBuilder: (context, index) {
+                              return Card(
+                                child: ListTile(
+                                  leading: IconButton(
+                                      onPressed: () {},
+                                      icon: const Icon(
+                                        Icons.label,
+                                        color: Colors.indigoAccent,
+                                      )),
+                                  title:
+                                      Text('${dynamicList[index]['Estacion']}'),
+                                  subtitle: Text('${dynamicList[index]['OT']}'),
+                                  trailing: const Icon(Icons.info),
+                                ),
+                              );
+                            },
+                          )
+                        : const Center(
+                            child: CircularProgressIndicator(),
+                          )),
+              ],
+            ),
+          ),
         ),
       ),
     );
