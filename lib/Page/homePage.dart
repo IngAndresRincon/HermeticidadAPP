@@ -66,6 +66,15 @@ class _HomePageState extends State<HomePage> {
               title: Text('Settings'),
             ),
             ListTile(
+              onTap: () async {
+                String strTest =
+                    "2,1,00:00:00,0.00;2,1,00:00:01,17.56;2,1,00:00:02,17.56;2,1,00:00:03,17.56;2,1,00:00:04,17.56;2,1,00:00:05,17.56;2,1,00:00:06,17.56;2,1,00:00:07,17.56;";
+                await postFile(strTest);
+              },
+              leading: const Icon(Icons.tab),
+              title: const Text('Test'),
+            ),
+            ListTile(
               onTap: () {
                 Navigator.pushReplacementNamed(context, 'login');
               },
