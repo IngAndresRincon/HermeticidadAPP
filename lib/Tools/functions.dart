@@ -1,7 +1,10 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:http/http.dart' as http;
 
+const String pingUrl = "http://186.154.241.203:84";
 const String postUrl = "http://186.154.241.203:84/api/POSTvalidarIngreso";
 const String fileUrl = "http://186.154.241.203:84/api/POSTsubirArchivo";
 const String peticionesUrl =
@@ -35,26 +38,36 @@ Future<String> postLogin(String jsonDataUser) async {
   return "";
 }
 
-Future<void> postFile(String fileString) async {
+Future<bool> postFile(String fileString) async {
+  bool status = false;
+  final client = http.Client();
   try {
-    final response = await http.post(
+
+    final response = await client.post(
       Uri.parse(fileUrl),
       headers: <String, String>{
-        'Content-Type': 'text/plain', // Configura el tipo de contenido
+        "Content-Type": "text/plain", // Configura el tipo de contenido
       },
-      body: fileString,
+      body: fileString
     );
-
     if (response.statusCode == 200) {
       // La solicitud se realizó con éxito
+      status = true;
       print('Respuesta: ${response.body}');
     } else {
       // Hubo un error en la solicitud
+      status = false;
       print('Error en la solicitud. Código de estado: ${response.statusCode}');
     }
   } catch (e) {
     print('Error: $e');
+    client.close();
+    status = false;
   }
+  finally{   
+    client.close();
+  }
+  return status;
 }
 
 Future<List<dynamic>> getScheduleAPI(jsonRequest) async {

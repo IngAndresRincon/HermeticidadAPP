@@ -127,16 +127,24 @@ class _filePageState extends State<FilePage> {
                   onPressed: isSincronizeFile
                       ? () {
                           showDialogLoad(context);
-                          postFile(fileContent
+                          String fileContFormat =fileContent
                                   .replaceAll("Registro de mediciones\n", "")
-                                  .replaceAll("--------Testeo--------\n", "")
+                                  .replaceAll("--------Testeo--------\n", "").replaceAll(" ", "")
                                   .replaceAll("][", ",")
                                   .replaceAll("]\n", ";")
-                                  .replaceAll("[", ""))
+                                  .replaceAll("[", "");
+                            postFile(fileContFormat)
                               .then((value) {
                             Navigator.pop(context);
-                            showMessageTOAST(
-                                context, "Archivo enviado", Colors.red);
+                            if(value){
+                              showMessageTOAST(
+                                context, "Archivo enviado", Colors.green);
+                            } else{
+                              showMessageTOAST(
+                                context, "Error, Conecte el dispositivo a la red movil e intente de nuevo", Colors.green);
+                            }
+
+
                           });
                         }
                       : () {},
