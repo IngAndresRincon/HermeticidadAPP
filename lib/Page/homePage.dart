@@ -271,6 +271,8 @@ class ScreenOverlaySchedules extends StatefulWidget {
 
 class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
   late List<dynamic> dynamicList = [];
+  late List<dynamic> colorList = [];
+  var texto = "Hola";
   @override
   void initState() {
     super.initState();
@@ -288,6 +290,9 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
       print(value);
       setState(() {
         dynamicList = value;
+        for (var i = 0; i < dynamicList.length; i++) {
+          colorList.add(Colors.white);
+        }
       });
     });
   }
@@ -334,9 +339,18 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
                             itemCount: dynamicList.length,
                             itemBuilder: (context, index) {
                               return Card(
+                                color: colorList[index],
                                 child: ListTile(
                                   leading: IconButton(
-                                      onPressed: () {},
+                                      onPressed: () {
+                                        setState(() {
+                                          idProgramacion = dynamicList[index]['OT'];
+                                            for (var i = 0; i < colorList.length; i++) {
+                                              colorList[i] = Colors.white;
+                                            }
+                                            colorList[index] = Colors.green;
+                                        }); 
+                                      },
                                       icon: const Icon(
                                         Icons.label,
                                         color: Colors.indigoAccent,
