@@ -13,7 +13,8 @@ String rolUsuarioGlobal = "";
 int idUsuarioGlobal = 0;
 String tokenUsuarioGlobal = "";
 String fechaIngresoUsuario = "";
-String idProgramacion = "Hola";
+int idEstacion = 0;
+int idProgramacion = 0;
 
 Future<bool?> showMessageTOAST(
     BuildContext context, String mensaje, Color color) {

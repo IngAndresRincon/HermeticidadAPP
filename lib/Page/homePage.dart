@@ -353,12 +353,17 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
                                   leading: IconButton(
                                       onPressed: () {
                                         setState(() {
-                                          idProgramacion = dynamicList[index]['OT'];
-                                            for (var i = 0; i < colorList.length; i++) {
-                                              colorList[i] = Colors.white;
-                                            }
-                                            colorList[index] = Colors.green;
-                                        }); 
+                                          idProgramacion =
+                                              dynamicList[index]['IdProgramacion'];
+                                          idEstacion =
+                                              dynamicList[index]['IdEstacion'];
+                                          for (var i = 0;
+                                              i < colorList.length;
+                                              i++) {
+                                            colorList[i] = Colors.white;
+                                          }
+                                          colorList[index] = Colors.green;
+                                        });
                                       },
                                       icon: const Icon(
                                         Icons.label,

@@ -4,6 +4,7 @@ import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:hermeticidadapp/Tools/functions.dart';
 import 'package:hermeticidadapp/Widgets/elevateButton.dart';
 import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
 
 class FilePage extends StatefulWidget {
   FilePage({super.key});
@@ -127,24 +128,26 @@ class _filePageState extends State<FilePage> {
                   onPressed: isSincronizeFile
                       ? () {
                           showDialogLoad(context);
-                          String fileContFormat =fileContent
-                                  .replaceAll("Registro de mediciones\n", "")
-                                  .replaceAll("--------Testeo--------\n", "").replaceAll(" ", "")
-                                  .replaceAll("][", ",")
-                                  .replaceAll("]\n", ";")
-                                  .replaceAll("[", "");
-                            postFile(fileContFormat)
-                              .then((value) {
+                          String fileContFormat = fileContent
+                              .replaceAll("Registro de mediciones\n", "")
+                              .replaceAll("------Calibracion-----\n", "")
+                              .replaceAll("--------Testeo--------\n", "")
+                              .replaceAll(" ", "")
+                              .replaceAll("][", ",")
+                              .replaceAll("]\n", ";")
+                              .replaceAll("[", "");
+                          developer.log(fileContFormat);
+                          postFile(fileContFormat).then((value) {
                             Navigator.pop(context);
-                            if(value){
+                            if (value) {
                               showMessageTOAST(
-                                context, "Archivo enviado", Colors.green);
-                            } else{
+                                  context, "Archivo enviado", Colors.green);
+                            } else {
                               showMessageTOAST(
-                                context, "Error, Conecte el dispositivo a la red movil e intente de nuevo", Colors.green);
+                                  context,
+                                  "Error, Conecte el dispositivo a la red movil e intente de nuevo",
+                                  Colors.green);
                             }
-
-
                           });
                         }
                       : () {},

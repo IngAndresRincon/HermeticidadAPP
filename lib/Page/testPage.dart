@@ -197,7 +197,7 @@ class _TestPageState extends State<TestPage> {
       SendSocket dataSend;
       String dataJson;
       if (action) {
-        dataSend = SendSocket('calibini', 2, 1);
+        dataSend = SendSocket('calibini', 0, 0);
         dataJson = jsonEncode(dataSend);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         chartData.clear();
@@ -206,7 +206,7 @@ class _TestPageState extends State<TestPage> {
             'Registro de calibracion ${DateTime.now().toLocal()}\n');
         showMessageTOAST(context, "Calibracion Iniciada", Colors.green);
       } else {
-        dataSend = SendSocket('calibfin', 2, 1);
+        dataSend = SendSocket('calibfin', 0, 0);
         dataJson = jsonEncode(dataSend);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         showMessageTOAST(context, "Calibracion Terminada", Colors.red.shade700);
@@ -221,7 +221,7 @@ class _TestPageState extends State<TestPage> {
       SendSocket sendData;
       String dataJson;
       if (action) {
-        sendData = SendSocket("toggleini", 2, 1);
+        sendData = SendSocket("toggleini", 0, 0);
         dataJson = jsonEncode(sendData);
         channel.sink.add(dataJson);
         readyForFile = false;
@@ -230,7 +230,7 @@ class _TestPageState extends State<TestPage> {
         widget.storage.appendTextToFile(
             'Registro de mediciones ${DateTime.now().toLocal()}\n');
       } else {
-        sendData = SendSocket("togglefin", 2, 1);
+        sendData = SendSocket("togglefin", 0, 0);
         dataJson = jsonEncode(sendData);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         showMessageTOAST(context, "Prueba Terminada", Colors.red.shade700);
@@ -241,7 +241,7 @@ class _TestPageState extends State<TestPage> {
 
   void sendInfo() {
     setState(() {
-      SendSocket sendData = SendSocket('info', 2, 1);
+      SendSocket sendData = SendSocket('info', idEstacion, idProgramacion);
       String dataJson = jsonEncode(sendData);
       channel.sink.add(dataJson);
     });
