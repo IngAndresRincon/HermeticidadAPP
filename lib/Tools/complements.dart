@@ -15,6 +15,7 @@ String tokenUsuarioGlobal = "";
 String fechaIngresoUsuario = "";
 int idEstacion = 0;
 int idProgramacion = 0;
+String fileContentData = "";
 
 Future<bool?> showMessageTOAST(
     BuildContext context, String mensaje, Color color) {

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:hermeticidadapp/Page/showFilePage.dart';
-import 'package:hermeticidadapp/Page/testPage.dart';
+import 'package:hermeticidadapp/Page/show_file_page.dart';
+import 'package:hermeticidadapp/Page/test_page.dart';
 
-import 'Page/homePage.dart';
-import 'Page/loginPage.dart';
-import 'Page/splashPage.dart';
+import 'Page/home_page.dart';
+import 'Page/login_page.dart';
+import 'Page/splash_page.dart';
 
 void main() {
   runApp(const MyApp());
