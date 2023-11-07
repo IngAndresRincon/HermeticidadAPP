@@ -56,19 +56,19 @@ class UserSocket {
 class SendSocket {
   final String action;
   final int idEstacion;
-  final int idProg;
+  final int idProgramacion;
 
-  SendSocket(this.action, this.idEstacion, this.idProg);
+  SendSocket(this.action, this.idEstacion, this.idProgramacion);
 
   SendSocket.fromJson(Map<String, dynamic> json)
       : action = json['action'],
         idEstacion = json['idEstacion'],
-        idProg = json['idProg'];
+        idProgramacion = json['idProg'];
 
   Map<String, dynamic> toJson() => {
         'action': action,
         'idEstacion': idEstacion,
-        'idProg': idProg,
+        'idProg': idProgramacion,
       };
 }
 

@@ -233,7 +233,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(context, 'test');
+                      //Navigator.pushNamed(context, 'test');
                     },
                     child: Card(
                       color: const Color.fromARGB(255, 3, 143, 143),
@@ -281,6 +281,8 @@ class ScreenOverlaySchedules extends StatefulWidget {
 
 class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
   late List<dynamic> dynamicList = [];
+  late List<dynamic> colorList = [];
+  var texto = "Hola";
   @override
   void initState() {
     super.initState();
@@ -295,9 +297,12 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
 
     await getScheduleAPI(jsonEncode(mapGetSchedule))
         .then((List<dynamic> value) {
-      print(value);
+      //print(value);
       setState(() {
         dynamicList = value;
+        for (var i = 0; i < dynamicList.length; i++) {
+          colorList.add(Colors.white);
+        }
       });
     });
   }
@@ -343,18 +348,35 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
                         ? ListView.builder(
                             itemCount: dynamicList.length,
                             itemBuilder: (context, index) {
-                              return Card(
-                                child: ListTile(
-                                  leading: IconButton(
-                                      onPressed: () {},
-                                      icon: const Icon(
-                                        Icons.label,
-                                        color: Colors.indigoAccent,
-                                      )),
-                                  title:
-                                      Text('${dynamicList[index]['Estacion']}'),
-                                  subtitle: Text('${dynamicList[index]['OT']}'),
-                                  trailing: const Icon(Icons.info),
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    idProgramacion =
+                                        dynamicList[index]['IdProgramacion'];
+                                    idEstacion =
+                                        dynamicList[index]['IdEstacion'];
+                                    for (var i = 0; i < colorList.length; i++) {
+                                      colorList[i] = Colors.white;
+                                    }
+                                    colorList[index] = Colors.green.shade300;
+                                  });
+                                  Navigator.pushNamed(context, 'test');
+                                },
+                                child: Card(
+                                  color: colorList[index],
+                                  child: ListTile(
+                                    leading: IconButton(
+                                        onPressed: () {},
+                                        icon: const Icon(
+                                          Icons.label,
+                                          color: Colors.indigoAccent,
+                                        )),
+                                    title: Text(
+                                        '${dynamicList[index]['Estacion']}'),
+                                    subtitle:
+                                        Text('${dynamicList[index]['OT']}'),
+                                    trailing: const Icon(Icons.info),
+                                  ),
                                 ),
                               );
                             },

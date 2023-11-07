@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import '../Widgets/elevatebutton.dart';
+import '../Widgets/elevate_button.dart';
 import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
+import 'package:hermeticidadapp/Tools/functions.dart';
 
 import 'package:web_socket_channel/io.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -48,6 +50,7 @@ class _TestPageState extends State<TestPage> {
       "4.Si se conectó a la red correcta el boton 'Sincronizar' se habilitará, oprimalo para conectarse con el medidor y comenzar la prueba.\n";
   @override
   void dispose() {
+    pingTimer.cancel();
     super.dispose();
     if (flagButton) {
       channel.sink
@@ -73,13 +76,18 @@ class _TestPageState extends State<TestPage> {
     widget.storage.writeFileData("Inicio de llenado\n");
     final response = await http.get(Uri.parse(fileUrl));
     widget.storage.writeFileData(response.body);
-    //channel.sink.add('sincronizar'); // Mensaje enviado al servidor
-    readyForFile = true;
   }
 
   Future<void> showDataFile() async {
-    setState(() {
-      Navigator.pushNamed(context, 'file');
+    fileContentData = await widget.storage.readFileData();
+    setState(() {});
+  }
+
+  Future<void> saveFileData() async {
+    showDialogLoad(context);
+    await sincronizeFile();
+    await showDataFile().then((value) {
+      Navigator.pop(context);
     });
   }
 
@@ -108,7 +116,8 @@ class _TestPageState extends State<TestPage> {
           }
         } catch (e) {
           // Manejar cualquier error de análisis aquí, por ejemplo, si los datos no son válidos
-          print('Error al analizar los datos: $e');
+          //print('Error al analizar los datos: $e');
+          developer.log('Error al analizar los datos: $e');
         }
       } else if (readyForFile) {
         if (data is! String) {
@@ -171,7 +180,8 @@ class _TestPageState extends State<TestPage> {
         isInSocket = false;
       }
     } catch (e) {
-      print('Error al conectar con el socket: $e');
+      //print('Error al conectar con el socket: $e');
+      developer.log('Error al conectar con el socket: $e');
     }
     setState(() {
       chartData.clear();
@@ -186,18 +196,20 @@ class _TestPageState extends State<TestPage> {
               Colors.red.shade700);
         }
       } catch (e) {
-        print('Error al conectar con el socket: $e');
+        //print('Error al conectar con el socket: $e');
+        developer.log('Error al conectar con el socket: $e');
       }
     });
   }
 
   void initCalib(bool action) {
+    saveFileData();
     setState(() {
       isInCalibState = action;
       SendSocket dataSend;
       String dataJson;
       if (action) {
-        dataSend = SendSocket('calibini', 2, 1);
+        dataSend = SendSocket('calibini', 0, 0);
         dataJson = jsonEncode(dataSend);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         chartData.clear();
@@ -206,7 +218,7 @@ class _TestPageState extends State<TestPage> {
             'Registro de calibracion ${DateTime.now().toLocal()}\n');
         showMessageTOAST(context, "Calibracion Iniciada", Colors.green);
       } else {
-        dataSend = SendSocket('calibfin', 2, 1);
+        dataSend = SendSocket('calibfin', 0, 0);
         dataJson = jsonEncode(dataSend);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         showMessageTOAST(context, "Calibracion Terminada", Colors.red.shade700);
@@ -216,12 +228,13 @@ class _TestPageState extends State<TestPage> {
   }
 
   void initTest(bool action) {
+    saveFileData();
     setState(() {
       isInTestState = action;
       SendSocket sendData;
       String dataJson;
       if (action) {
-        sendData = SendSocket("toggleini", 2, 1);
+        sendData = SendSocket("toggleini", 0, 0);
         dataJson = jsonEncode(sendData);
         channel.sink.add(dataJson);
         readyForFile = false;
@@ -230,7 +243,7 @@ class _TestPageState extends State<TestPage> {
         widget.storage.appendTextToFile(
             'Registro de mediciones ${DateTime.now().toLocal()}\n');
       } else {
-        sendData = SendSocket("togglefin", 2, 1);
+        sendData = SendSocket("togglefin", 0, 0);
         dataJson = jsonEncode(sendData);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         showMessageTOAST(context, "Prueba Terminada", Colors.red.shade700);
@@ -241,7 +254,7 @@ class _TestPageState extends State<TestPage> {
 
   void sendInfo() {
     setState(() {
-      SendSocket sendData = SendSocket('info', 2, 1);
+      SendSocket sendData = SendSocket('info', idEstacion, idProgramacion);
       String dataJson = jsonEncode(sendData);
       channel.sink.add(dataJson);
     });
@@ -478,8 +491,17 @@ class _TestPageState extends State<TestPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             CustomerElevateButton(
-                onPressed:
-                    !isInTestState && !isInCalibState ? showDataFile : () {},
+                onPressed: !isInTestState && !isInCalibState
+                    ? () {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return const ShowFileOverlay();
+                          },
+                        );
+                        //saveFileData();
+                      }
+                    : () {}, // showDataFile
                 texto: "Resultados",
                 colorTexto: Colors.white,
                 colorButton: !isInTestState && !isInCalibState
@@ -490,6 +512,123 @@ class _TestPageState extends State<TestPage> {
           ],
         ),
       ],
+    );
+  }
+}
+
+class ShowFileOverlay extends StatefulWidget {
+  const ShowFileOverlay({super.key});
+
+  @override
+  State<ShowFileOverlay> createState() => _ShowFileOverlayState();
+}
+
+class _ShowFileOverlayState extends State<ShowFileOverlay> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
+        child: Card(
+          color: const Color.fromARGB(242, 247, 247, 247),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            width: getScreenSize(context).width * 0.9,
+            height: getScreenSize(context).height * 0.6,
+            child: Column(
+              children: [
+                SizedBox(
+                  height: getScreenSize(context).height * 0.05,
+                  child: Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.close))),
+                ),
+                SizedBox(
+                  height: getScreenSize(context).height * 0.4,
+                  child: CustomScrollView(
+                    slivers: <Widget>[
+                      SliverPadding(
+                        padding: const EdgeInsets.all(8),
+                        sliver: SliverList(
+                          delegate: SliverChildListDelegate(
+                            <Widget>[
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    fileContentData,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                        letterSpacing: 4,
+                                        fontSize: 16,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w500),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: getScreenSize(context).height * 0.02,
+                ),
+                SizedBox(
+                    height: getScreenSize(context).height * 0.04,
+                    child: const Text(
+                      "*Conecte su dispositivo a la red movil",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          letterSpacing: 2,
+                          fontSize: 14,
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold),
+                    )),
+                SizedBox(
+                  height: getScreenSize(context).height * 0.05,
+                  child: CustomerElevateButton(
+                      onPressed: () {
+                        showDialogLoad(context);
+                        String fileContFormat = fileContentData
+                            .replaceAll("Registro de mediciones\n", "")
+                            .replaceAll("------Calibracion-----\n", "")
+                            .replaceAll("--------Testeo--------\n", "")
+                            .replaceAll(" ", "")
+                            .replaceAll("][", ",")
+                            .replaceAll("]\n", ";")
+                            .replaceAll("[", "");
+                        developer.log(fileContFormat);
+                        postFile(fileContFormat).then((value) {
+                          Navigator.pop(context);
+                          if (value) {
+                            showMessageTOAST(
+                                context, "Archivo enviado", Colors.green);
+                          } else {
+                            showMessageTOAST(
+                                context,
+                                "Error, Conectese a la red movil e intente de nuevo",
+                                Colors.green);
+                          }
+                        });
+                      },
+                      texto: "Enviar Datos",
+                      colorTexto: Colors.white,
+                      colorButton: Colors.green.shade300,
+                      height: .05,
+                      width: .5),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

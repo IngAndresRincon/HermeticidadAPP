@@ -2,27 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:hermeticidadapp/Tools/functions.dart';
-import 'package:hermeticidadapp/Widgets/elevateButton.dart';
+import 'package:hermeticidadapp/Widgets/elevate_button.dart';
 import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
 
 class FilePage extends StatefulWidget {
   FilePage({super.key});
   final StorageFile storage = StorageFile();
   @override
-  State<FilePage> createState() => _filePageState();
+  State<FilePage> createState() => _FilePageState();
 }
 
-class _filePageState extends State<FilePage> {
+class _FilePageState extends State<FilePage> {
   String fileContent = "";
   bool isSincronizeFile = false;
   final fileUrl = 'http://192.168.11.100:81/SD';
 
   Future<void> showDataFile() async {
     fileContent = await widget.storage.readFileData();
-    // print(fileContent
-    //     .replaceAll("][", ",")
-    //     .replaceAll("]\n", ";")
-    //     .replaceAll("[", ""));
     setState(() {});
   }
 
@@ -64,20 +61,17 @@ class _filePageState extends State<FilePage> {
         body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Container(
+            SizedBox(
               height: getScreenSize(context).height * .1,
               width: getScreenSize(context).width,
             ),
-            Container(
+            SizedBox(
               height: getScreenSize(context).height * .1,
               width: getScreenSize(context).width,
               child: CustomerElevateButton(
                   onPressed: () async {
                     showDialogLoad(context);
-                    await sincronizeFile().then((value) {
-                      Navigator.pop(context);
-                    });
-                    showDialogLoad(context);
+                    await sincronizeFile();
                     await showDataFile().then((value) {
                       Navigator.pop(context);
                     });
@@ -89,7 +83,7 @@ class _filePageState extends State<FilePage> {
                   height: .05,
                   width: .45),
             ),
-            Container(
+            SizedBox(
               height: getScreenSize(context).height * .6,
               width: getScreenSize(context).width,
               child: CustomScrollView(
@@ -120,31 +114,33 @@ class _filePageState extends State<FilePage> {
                 ],
               ),
             ),
-            Container(
+            SizedBox(
               height: getScreenSize(context).height * .1,
               width: getScreenSize(context).width,
               child: CustomerElevateButton(
                   onPressed: isSincronizeFile
                       ? () {
                           showDialogLoad(context);
-                          String fileContFormat =fileContent
-                                  .replaceAll("Registro de mediciones\n", "")
-                                  .replaceAll("--------Testeo--------\n", "").replaceAll(" ", "")
-                                  .replaceAll("][", ",")
-                                  .replaceAll("]\n", ";")
-                                  .replaceAll("[", "");
-                            postFile(fileContFormat)
-                              .then((value) {
+                          String fileContFormat = fileContent
+                              .replaceAll("Registro de mediciones\n", "")
+                              .replaceAll("------Calibracion-----\n", "")
+                              .replaceAll("--------Testeo--------\n", "")
+                              .replaceAll(" ", "")
+                              .replaceAll("][", ",")
+                              .replaceAll("]\n", ";")
+                              .replaceAll("[", "");
+                          developer.log(fileContFormat);
+                          postFile(fileContFormat).then((value) {
                             Navigator.pop(context);
-                            if(value){
+                            if (value) {
                               showMessageTOAST(
-                                context, "Archivo enviado", Colors.green);
-                            } else{
+                                  context, "Archivo enviado", Colors.green);
+                            } else {
                               showMessageTOAST(
-                                context, "Error, Conecte el dispositivo a la red movil e intente de nuevo", Colors.green);
+                                  context,
+                                  "Error, Conecte el dispositivo a la red movil e intente de nuevo",
+                                  Colors.green);
                             }
-
-
                           });
                         }
                       : () {},
