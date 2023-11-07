@@ -42,14 +42,11 @@ Future<bool> postFile(String fileString) async {
   bool status = false;
   final client = http.Client();
   try {
-
-    final response = await client.post(
-      Uri.parse(fileUrl),
-      headers: <String, String>{
-        "Content-Type": "text/plain", // Configura el tipo de contenido
-      },
-      body: fileString
-    );
+    final response = await client.post(Uri.parse(fileUrl),
+        headers: <String, String>{
+          "Content-Type": "text/plain", // Configura el tipo de contenido
+        },
+        body: fileString);
     if (response.statusCode == 200) {
       // La solicitud se realizó con éxito
       status = true;
@@ -63,8 +60,7 @@ Future<bool> postFile(String fileString) async {
     print('Error: $e');
     client.close();
     status = false;
-  }
-  finally{   
+  } finally {
     client.close();
   }
   return status;
