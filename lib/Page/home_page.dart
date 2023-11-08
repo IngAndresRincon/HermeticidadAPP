@@ -233,7 +233,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      //Navigator.pushNamed(context, 'test');
+                      Navigator.pushNamed(context, 'file');
                     },
                     child: Card(
                       color: const Color.fromARGB(255, 3, 143, 143),

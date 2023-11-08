@@ -41,6 +41,8 @@ class _TestPageState extends State<TestPage> {
   bool readyForFile = false;
   bool isTest = false;
   late Timer pingTimer;
+  double contador = 0.0;
+
   String paso0 = "Pasos para realizar la prueba:\n";
   String paso1 = "1.Verifique la correcta conexion del medidor.";
   String paso2 = "2.Desconecte su celular de los datos moviles.\n";
@@ -50,7 +52,10 @@ class _TestPageState extends State<TestPage> {
       "4.Si se conectó a la red correcta el boton 'Sincronizar' se habilitará, oprimalo para conectarse con el medidor y comenzar la prueba.\n";
   @override
   void dispose() {
-    pingTimer.cancel();
+    if (mounted) {
+      pingTimer.cancel();
+    }
+
     super.dispose();
     if (flagButton) {
       channel.sink
@@ -61,15 +66,19 @@ class _TestPageState extends State<TestPage> {
 
   @override
   void initState() {
+    super.initState();
     // Configura un temporizador para enviar pings periódicamente
+    // widget.storage
+    //     .writeFileData('Conexion con el medidor ${DateTime.now().toLocal()}\n');
+    ping2();
+  }
+
+  void ping2() {
     pingTimer = Timer.periodic(const Duration(seconds: 2), (_) {
       if (!isDisposeCalled) {
         ping();
       }
     });
-    // widget.storage
-    //     .writeFileData('Conexion con el medidor ${DateTime.now().toLocal()}\n');
-    super.initState();
   }
 
   Future<void> sincronizeFile() async {
@@ -110,12 +119,12 @@ class _TestPageState extends State<TestPage> {
             parsedData = double.parse(user.presion);
             final String timeP = user.nDatos;
             chartData.add(ChartData(timeP, parsedData));
+            chartDataSave.add(ChartData(timeP, parsedData));
             String datosArchivo =
                 '${user.nDatos}[${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}][$parsedData]';
             widget.storage.appendTextToFile(datosArchivo);
           }
         } catch (e) {
-          // Manejar cualquier error de análisis aquí, por ejemplo, si los datos no son válidos
           //print('Error al analizar los datos: $e');
           developer.log('Error al analizar los datos: $e');
         }
@@ -146,26 +155,28 @@ class _TestPageState extends State<TestPage> {
     } else {
       pong = false;
     }
-    setState(() {
-      if (pong) {
-        //conectMns = macESP32;
-        //showMessageTOAST(context, "Conexion Exitosa con medidor", Colors.green);
-        checkboxValue = true;
-        if (state == "En prueba") {
-          isInTestState = true;
-        } else if (state == "En calibracion") {
-          isInCalibState = true;
-        } else if (state == "Detenido") {
-          isInTestState = false;
-          isInCalibState = false;
+    if (mounted) {
+      setState(() {
+        if (pong) {
+          //conectMns = macESP32;
+          //showMessageTOAST(context, "Conexion Exitosa con medidor", Colors.green);
+          checkboxValue = true;
+          if (state == "En prueba") {
+            isInTestState = true;
+          } else if (state == "En calibracion") {
+            isInCalibState = true;
+          } else if (state == "Detenido") {
+            isInTestState = false;
+            isInCalibState = false;
+          }
+        } else {
+          isInSocket = false;
+          checkboxValue = false;
+          macESP32 = "Sin Conexion...";
+          //showMessageTOAST(context, "Conexion fallida con el medidor", Colors.redAccent);
         }
-      } else {
-        isInSocket = false;
-        checkboxValue = false;
-        macESP32 = "Sin Conexion...";
-        //showMessageTOAST(context, "Conexion fallida con el medidor", Colors.redAccent);
-      }
-    });
+      });
+    }
   }
 
   Future<void> reconectSocket() async {
@@ -267,6 +278,9 @@ class _TestPageState extends State<TestPage> {
       appBar: AppBar(
         leading: IconButton(
             onPressed: () {
+              if (mounted) {
+                pingTimer.cancel();
+              }
               if (flagButton) {
                 channel.sink.close();
               }

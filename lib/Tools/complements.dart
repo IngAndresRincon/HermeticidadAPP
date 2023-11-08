@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:hermeticidadapp/Models/models.dart';
 
 Size getScreenSize(BuildContext context) {
   return MediaQuery.of(context).size;
@@ -16,6 +17,7 @@ String fechaIngresoUsuario = "";
 int idEstacion = 0;
 int idProgramacion = 0;
 String fileContentData = "";
+List<ChartData> chartDataSave = [];
 
 Future<bool?> showMessageTOAST(
     BuildContext context, String mensaje, Color color) {

@@ -6,6 +6,8 @@ import 'package:hermeticidadapp/Widgets/elevate_button.dart';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
 
+import 'package:syncfusion_flutter_charts/charts.dart';
+
 class FilePage extends StatefulWidget {
   FilePage({super.key});
   final StorageFile storage = StorageFile();
@@ -66,91 +68,28 @@ class _FilePageState extends State<FilePage> {
               width: getScreenSize(context).width,
             ),
             SizedBox(
-              height: getScreenSize(context).height * .1,
-              width: getScreenSize(context).width,
-              child: CustomerElevateButton(
-                  onPressed: () async {
-                    showDialogLoad(context);
-                    await sincronizeFile();
-                    await showDataFile().then((value) {
-                      Navigator.pop(context);
-                    });
-                    isSincronizeFile = true;
-                  },
-                  texto: "Mostrar Resultados",
-                  colorTexto: Colors.white,
-                  colorButton: Colors.green.shade300,
-                  height: .05,
-                  width: .45),
-            ),
-            SizedBox(
-              height: getScreenSize(context).height * .6,
-              width: getScreenSize(context).width,
-              child: CustomScrollView(
-                slivers: <Widget>[
-                  SliverPadding(
-                    padding: const EdgeInsets.all(8),
-                    sliver: SliverList(
-                      delegate: SliverChildListDelegate(
-                        <Widget>[
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                fileContent,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                    letterSpacing: 4,
-                                    fontSize: 16,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500),
-                              )
-                            ],
+                height: getScreenSize(context).height * .5,
+                width: getScreenSize(context).width * 0.9,
+                child: ListView(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    SizedBox(
+                      width: getScreenSize(context).height *
+                          0.8, 
+                      child: SfCartesianChart(
+                        primaryXAxis: CategoryAxis(),
+                        series: <ChartSeries>[
+                          LineSeries<ChartData, String>(
+                            dataSource: chartDataSave,
+                            xValueMapper: (ChartData data, _) => data.timeP,
+                            yValueMapper: (ChartData data, _) => data.value,
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: getScreenSize(context).height * .1,
-              width: getScreenSize(context).width,
-              child: CustomerElevateButton(
-                  onPressed: isSincronizeFile
-                      ? () {
-                          showDialogLoad(context);
-                          String fileContFormat = fileContent
-                              .replaceAll("Registro de mediciones\n", "")
-                              .replaceAll("------Calibracion-----\n", "")
-                              .replaceAll("--------Testeo--------\n", "")
-                              .replaceAll(" ", "")
-                              .replaceAll("][", ",")
-                              .replaceAll("]\n", ";")
-                              .replaceAll("[", "");
-                          developer.log(fileContFormat);
-                          postFile(fileContFormat).then((value) {
-                            Navigator.pop(context);
-                            if (value) {
-                              showMessageTOAST(
-                                  context, "Archivo enviado", Colors.green);
-                            } else {
-                              showMessageTOAST(
-                                  context,
-                                  "Error, Conecte el dispositivo a la red movil e intente de nuevo",
-                                  Colors.green);
-                            }
-                          });
-                        }
-                      : () {},
-                  texto: "Enviar Datos",
-                  colorTexto: Colors.white,
-                  colorButton:
-                      isSincronizeFile ? Colors.green.shade300 : Colors.grey,
-                  height: .05,
-                  width: .45),
-            )
+                  ],
+                )),
           ],
         ));
   }
