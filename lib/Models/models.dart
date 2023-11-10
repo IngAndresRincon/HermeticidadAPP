@@ -79,6 +79,22 @@ class ChartData {
   ChartData(this.timeP, this.value);
 }
 
+class CacheData {
+  final String ipApi;
+  final String portApi;
+
+  CacheData(this.ipApi, this.portApi);
+
+  CacheData.fromJson(Map<String, dynamic> json)
+      : ipApi = json['ipApi'],
+        portApi = json['portApi'];
+
+  Map<String, dynamic> toJson() => {
+        'ipApi': ipApi,
+        'portApi': portApi,
+      };
+}
+
 class StorageFile {
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();

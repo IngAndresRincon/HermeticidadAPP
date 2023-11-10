@@ -61,16 +61,20 @@ class _HomePageState extends State<HomePage> {
               leading: Icon(Icons.account_circle),
               title: Text('Profile'),
             ),
-            const ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings'),
+            ListTile(
+              onTap: () {},
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
             ),
             ListTile(
               onTap: () async {
                 String strTest =
                     "2,1,00:00:00,0.00;2,1,00:00:01,17.56;2,1,00:00:02,17.56;2,1,00:00:03,17.56;2,1,00:00:04,17.56;2,1,00:00:05,17.56;2,1,00:00:06,17.56;2,1,00:00:07,17.56;" *
                         13000;
-                await postFile(strTest);
+                String peticionesUrl =
+                    'http://${controllerIp.text}:${controllerPort.text}/api/POSTobtenerProgramacionPrueba';
+
+                await postFile(peticionesUrl, strTest);
               },
               leading: const Icon(Icons.tab),
               title: const Text('Test'),
@@ -294,8 +298,9 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
       'IdUsuario': idUsuarioGlobal,
       'GuidSesion': tokenUsuarioGlobal
     };
-
-    await getScheduleAPI(jsonEncode(mapGetSchedule))
+    String peticionesUrl =
+        'http://${controllerIp.text}:${controllerPort.text}/api/POSTobtenerProgramacionPrueba';
+    await getScheduleAPI(peticionesUrl, jsonEncode(mapGetSchedule))
         .then((List<dynamic> value) {
       //print(value);
       setState(() {

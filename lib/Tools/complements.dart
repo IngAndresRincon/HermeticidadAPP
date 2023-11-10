@@ -8,6 +8,8 @@ Size getScreenSize(BuildContext context) {
 
 TextEditingController controllerEmail = TextEditingController();
 TextEditingController controllerPassword = TextEditingController();
+TextEditingController controllerIp = TextEditingController();
+TextEditingController controllerPort = TextEditingController();
 
 String nombreUsuarioGlobal = "";
 String rolUsuarioGlobal = "";

@@ -12,6 +12,8 @@ class CustomerTextFieldLogin extends StatelessWidget {
   final IconData suffixIcon;
   final VoidCallback onTapSuffixIcon;
   final double width;
+  final Color labelColor;
+  final Color textColor;
 
   const CustomerTextFieldLogin(
       {super.key,
@@ -23,7 +25,9 @@ class CustomerTextFieldLogin extends StatelessWidget {
       required this.bsuffixIcon,
       required this.onTapSuffixIcon,
       required this.suffixIcon,
-      required this.width});
+      required this.width,
+      required this.labelColor,
+      required this.textColor});
 
   @override
   Widget build(BuildContext context) {
@@ -33,17 +37,17 @@ class CustomerTextFieldLogin extends StatelessWidget {
         controller: texteditingcontroller,
         keyboardType: textinputtype,
         obscureText: obscure,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        style: TextStyle(color: textColor, fontSize: 14),
         decoration: InputDecoration(
             contentPadding: const EdgeInsets.all(20),
             prefixIcon: Container(
               margin: const EdgeInsets.all(5),
-              color: Colors.black45,
+              color: Colors.transparent,
               width: 20,
               height: 20,
               child: Icon(
                 icondata,
-                color: Colors.white,
+                color: textColor,
               ),
             ),
             suffixIcon: bsuffixIcon
@@ -54,7 +58,7 @@ class CustomerTextFieldLogin extends StatelessWidget {
                 : null,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
             labelText: label,
-            labelStyle: const TextStyle(color: Colors.white)),
+            labelStyle: TextStyle(color: labelColor)),
       ),
     );
   }

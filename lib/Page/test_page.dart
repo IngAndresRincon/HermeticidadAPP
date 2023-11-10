@@ -28,6 +28,7 @@ class _TestPageState extends State<TestPage> {
   late WebSocketChannel channel;
   List<ChartData> chartData = [];
   String receivedText = 'Datos Recibidos...';
+  String timeText = '';
   String macESP32 = 'Sin Conexion...';
   String state = 'Detenido';
   String conectMns = '';
@@ -108,6 +109,7 @@ class _TestPageState extends State<TestPage> {
         macESP32 = 'Conectado: ${user.mac}';
         //macESP32 != 'Sin Conexion...' ? isInSocket = true : isInSocket = false;
         receivedText = 'Presion(PSI): ${user.presion}';
+        timeText = user.nDatos;
         state = user.state;
         // Parsea y agrega los datos recibidos a la lista de datos del gráfico
         try {
@@ -313,11 +315,15 @@ class _TestPageState extends State<TestPage> {
                 fit: BoxFit.fill)),
         child: Column(
           children: [
-            Container(
-              height: getScreenSize(context).height * 0.1,
+            SizedBox(
+              height: getScreenSize(context).height * 0.13,
+              child: Align(
+                alignment: Alignment.bottomRight,
+                child: Text(idProgramacion.toString()),
+              ),
             ),
             SizedBox(
-              height: getScreenSize(context).height * 0.9,
+              height: getScreenSize(context).height * 0.87,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -423,7 +429,16 @@ class _TestPageState extends State<TestPage> {
               fontWeight: FontWeight.w500),
         ),
         const SizedBox(
-          height: 20,
+          height: 10,
+        ),
+        Text(
+          timeText,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+              letterSpacing: 4,
+              fontSize: 16,
+              color: Colors.black,
+              fontWeight: FontWeight.w500),
         ),
         SfCartesianChart(
           primaryXAxis: CategoryAxis(),
@@ -619,7 +634,9 @@ class _ShowFileOverlayState extends State<ShowFileOverlay> {
                             .replaceAll("]\n", ";")
                             .replaceAll("[", "");
                         developer.log(fileContFormat);
-                        postFile(fileContFormat).then((value) {
+                        String fileUrl =
+                            'http://${controllerIp.text}:${controllerPort.text}/api/POSTsubirArchivo';
+                        postFile(fileUrl, fileContFormat).then((value) {
                           Navigator.pop(context);
                           if (value) {
                             showMessageTOAST(

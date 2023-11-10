@@ -6,6 +6,9 @@ import '../Tools/complements.dart';
 import '../Tools/functions.dart';
 import '../Widgets/elevate_button.dart';
 import '../Widgets/text_field.dart';
+import 'dart:developer' as developer;
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -25,7 +28,9 @@ class _LoginPageState extends State<LoginPage> {
 
   void funtionButtonLogin(BuildContext context, Map<String, dynamic> map) {
     showDialogLoad(context);
-    postLogin(jsonEncode(map)).then((value) {
+    String postUrl =
+        'http://${controllerIp.text}:${controllerPort.text}/api/POSTvalidarIngreso';
+    postLogin(postUrl, jsonEncode(map)).then((value) {
       Navigator.pop(context);
       if (value != "500") {
         List<dynamic> dynamicData = jsonDecode(value);
@@ -65,8 +70,27 @@ class _LoginPageState extends State<LoginPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Container(
-                height: getScreenSize(context).height * 0.1,
+              SizedBox(
+                height: getScreenSize(context).height * 0.05,
+              ),
+              SizedBox(
+                height: getScreenSize(context).height * 0.05,
+                child: GestureDetector(
+                  onTap: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return const ScreenOverlaySetings();
+                        });
+                  },
+                  child: const Align(
+                    alignment: Alignment.centerRight,
+                    child: CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.greenAccent,
+                        child: Icon(Icons.settings)),
+                  ),
+                ),
               ),
               SizedBox(
                 height: getScreenSize(context).height * 0.3,
@@ -118,6 +142,8 @@ class _LoginPageState extends State<LoginPage> {
                       suffixIcon: iconSuffix,
                       texteditingcontroller: controllerEmail,
                       textinputtype: TextInputType.emailAddress,
+                      textColor: Colors.white,
+                      labelColor: Colors.white,
                     ),
                     const SizedBox(
                       height: 20,
@@ -142,6 +168,8 @@ class _LoginPageState extends State<LoginPage> {
                       suffixIcon: iconSuffix,
                       texteditingcontroller: controllerPassword,
                       textinputtype: TextInputType.text,
+                      textColor: Colors.white,
+                      labelColor: Colors.white,
                     ),
                     SizedBox(
                       width: getScreenSize(context).width * .8,
@@ -200,5 +228,146 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+}
+
+class ScreenOverlaySetings extends StatefulWidget {
+  const ScreenOverlaySetings({super.key});
+
+  @override
+  State<ScreenOverlaySetings> createState() => _ScreenOverlaySetingsState();
+}
+
+class _ScreenOverlaySetingsState extends State<ScreenOverlaySetings> {
+  @override
+  void initState() {
+    super.initState();
+    readCacheData();
+  }
+
+  Future<void> writeCacheData(String ipApi, String portApi) async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      CacheData cacheData = CacheData(ipApi, portApi);
+      String cacheJson = jsonEncode(cacheData);
+      developer.log('Cache escrita: $cacheJson');
+      await prefs.setString('cacheJson', cacheJson);
+    } catch (e) {
+      developer.log("Error al escribir cache");
+    }
+  }
+
+  Future<void> readCacheData() async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String cacheJson = prefs.getString('cacheJson') ?? "";
+      if (cacheJson.isNotEmpty) {
+        Map<String, dynamic> cacheMap = jsonDecode(cacheJson);
+        developer.log('Cache leida: $cacheMap');
+        CacheData cacheData = CacheData.fromJson(cacheMap);
+        controllerIp.text = cacheData.ipApi;
+        controllerPort.text = cacheData.portApi;
+      }
+    } catch (e) {
+      developer.log("Error al leer cache");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Center(
+          child: Card(
+              color: const Color.fromARGB(242, 247, 247, 247),
+              child: Container(
+                  padding: const EdgeInsets.all(10),
+                  width: getScreenSize(context).width * 0.9,
+                  height: getScreenSize(context).height * 0.5,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: getScreenSize(context).height * 0.05,
+                        child: Align(
+                          alignment: Alignment.topRight,
+                          child: IconButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              icon: const Icon(Icons.close)),
+                        ),
+                      ),
+                      SizedBox(
+                        height: getScreenSize(context).height * 0.05,
+                        child: const Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            "CONFIGURACIÓN",
+                            style: TextStyle(
+                                letterSpacing: 2,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: getScreenSize(context).height * 0.3,
+                        width: getScreenSize(context).width * 0.9,
+                        //color: Colors.black,
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              CustomerTextFieldLogin(
+                                width: .8,
+                                bsuffixIcon: false,
+                                icondata: Icons.chevron_right,
+                                label: "Ip",
+                                obscure: false,
+                                onTapSuffixIcon: () {},
+                                suffixIcon: Icons.person,
+                                texteditingcontroller: controllerIp,
+                                textinputtype: TextInputType.url,
+                                textColor: Colors.black,
+                                labelColor: Colors.black,
+                              ),
+                              SizedBox(
+                                height: getScreenSize(context).height * 0.03,
+                              ),
+                              CustomerTextFieldLogin(
+                                  label: "Port",
+                                  textinputtype: TextInputType.number,
+                                  obscure: false,
+                                  icondata: Icons.chevron_right,
+                                  texteditingcontroller: controllerPort,
+                                  bsuffixIcon: false,
+                                  onTapSuffixIcon: () {},
+                                  suffixIcon: Icons.person,
+                                  width: .8,
+                                  labelColor: Colors.black,
+                                  textColor: Colors.black),
+                            ]),
+                      ),
+                      SizedBox(
+                        height: getScreenSize(context).height * 0.05,
+                        width: getScreenSize(context).width * 0.9,
+                        child: CustomerElevateButton(
+                            texto: "GUARDAR",
+                            colorTexto: Colors.white,
+                            colorButton: Colors.green.shade400,
+                            onPressed: () {
+                              showDialogLoad(context);
+                              writeCacheData(
+                                      controllerIp.text, controllerPort.text)
+                                  .then((value) {
+                                Navigator.popAndPushNamed(context, 'login');
+                              });
+                            },
+                            height: .05,
+                            width: .5),
+                      ),
+                    ],
+                  ))),
+        ));
   }
 }

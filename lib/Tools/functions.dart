@@ -3,13 +3,12 @@ import 'dart:developer' as developer;
 
 import 'package:http/http.dart' as http;
 
-const String pingUrl = "http://186.154.241.203:84";
-const String postUrl = "http://186.154.241.203:84/api/POSTvalidarIngreso";
-const String fileUrl = "http://186.154.241.203:84/api/POSTsubirArchivo";
-const String peticionesUrl =
-    "http://186.154.241.203:84/api/POSTobtenerProgramacionPrueba";
+//late String pingUrl;
+//late String postUrl;
+//late String fileUrl;
+//late String peticionesUrl;
 
-Future<String> postLogin(String jsonDataUser) async {
+Future<String> postLogin(String postUrl, String jsonDataUser) async {
   final client = http.Client();
   try {
     var response = await client
@@ -37,7 +36,7 @@ Future<String> postLogin(String jsonDataUser) async {
   return "";
 }
 
-Future<bool> postFile(String fileString) async {
+Future<bool> postFile(String fileUrl, String fileString) async {
   bool status = false;
   final client = http.Client();
   try {
@@ -66,7 +65,7 @@ Future<bool> postFile(String fileString) async {
   return status;
 }
 
-Future<List<dynamic>> getScheduleAPI(jsonRequest) async {
+Future<List<dynamic>> getScheduleAPI(String peticionesUrl, jsonRequest) async {
   List<dynamic> listGetSchedule = [];
 
   try {
