@@ -1,6 +1,9 @@
+import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hermeticidadapp/Models/models.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Size getScreenSize(BuildContext context) {
   return MediaQuery.of(context).size;
@@ -19,7 +22,7 @@ String fechaIngresoUsuario = "";
 int idEstacion = 0;
 int idProgramacion = 0;
 String fileContentData = "";
-List<ChartData> chartDataSave = [];
+List<ChartData> chartData = [];
 
 Future<bool?> showMessageTOAST(
     BuildContext context, String mensaje, Color color) {
@@ -45,4 +48,32 @@ Future<void> showDialogLoad(BuildContext context) async {
       );
     },
   );
+}
+
+Future<void> readCacheData() async {
+  try {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String cacheJson = prefs.getString('cacheJson') ?? "";
+    if (cacheJson.isNotEmpty) {
+      Map<String, dynamic> cacheMap = jsonDecode(cacheJson);
+      developer.log('Cache leida: $cacheMap');
+      CacheData cacheData = CacheData.fromJson(cacheMap);
+      controllerIp.text = cacheData.ipApi;
+      controllerPort.text = cacheData.portApi;
+    }
+  } catch (e) {
+    developer.log("Error al leer cache");
+  }
+}
+
+Future<void> writeCacheData(String ipApi, String portApi) async {
+  try {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    CacheData cacheData = CacheData(ipApi, portApi);
+    String cacheJson = jsonEncode(cacheData);
+    developer.log('Cache escrita: $cacheJson');
+    await prefs.setString('cacheJson', cacheJson);
+  } catch (e) {
+    developer.log("Error al escribir cache");
+  }
 }

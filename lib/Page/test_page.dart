@@ -26,7 +26,6 @@ class _TestPageState extends State<TestPage> {
   final testUrl = 'http://192.168.11.100/verificar_conexion';
   final fileUrl = 'http://192.168.11.100:81/SD';
   late WebSocketChannel channel;
-  List<ChartData> chartData = [];
   String receivedText = 'Datos Recibidos...';
   String timeText = '';
   String macESP32 = 'Sin Conexion...';
@@ -114,14 +113,14 @@ class _TestPageState extends State<TestPage> {
         // Parsea y agrega los datos recibidos a la lista de datos del gráfico
         try {
           final double parsedData;
-          if (chartData.length > 30) {
-            chartData.removeAt(0);
-          }
+          // if (chartData.length > 30) {
+          //   chartData.removeAt(0);
+          // }
           if (user.presion != "Proceso Detenido") {
             parsedData = double.parse(user.presion);
             final String timeP = user.nDatos;
             chartData.add(ChartData(timeP, parsedData));
-            chartDataSave.add(ChartData(timeP, parsedData));
+            //chartDataSave.add(ChartData(timeP, parsedData));
             String datosArchivo =
                 '${user.nDatos}[${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}][$parsedData]';
             widget.storage.appendTextToFile(datosArchivo);
@@ -273,6 +272,81 @@ class _TestPageState extends State<TestPage> {
     });
   }
 
+  Widget _defaultText(
+      String text, double fontSize, Color color, FontWeight fontWeight) {
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+          letterSpacing: 4,
+          fontSize: fontSize,
+          color: color,
+          fontWeight: fontWeight),
+    );
+  }
+
+  Widget _cardStep(IconData icon, String step) {
+    return Card(
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(step),
+      ),
+    );
+  }
+
+  Widget _dataGraph(List<ChartData> data) {
+    return SfCartesianChart(
+      primaryXAxis: CategoryAxis(
+          autoScrollingMode: AutoScrollingMode.end, autoScrollingDelta: 30),
+      series: <ChartSeries>[
+        LineSeries<ChartData, String>(
+          dataSource: data,
+          xValueMapper: (ChartData data, _) => data.timeP,
+          yValueMapper: (ChartData data, _) => data.value,
+        ),
+      ],
+    );
+  }
+
+  Widget _actionButton(
+      bool enable, void Function() function, Color colorButton, String text) {
+    return CustomerElevateButton(
+        texto: text,
+        colorTexto: Colors.white,
+        colorButton: enable ? colorButton : Colors.grey,
+        onPressed: enable ? function : () {},
+        height: .05,
+        width: .45);
+  }
+
+  Widget _rowButtons(
+      String textButton1,
+      String textButton2,
+      void Function() functionButton1,
+      void Function() functionButton2,
+      bool enableFin) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        _actionButton(!isInCalibState && !isInTestState, functionButton1,
+            Colors.green.shade300, textButton1),
+        _actionButton(
+            enableFin, functionButton2, Colors.redAccent, textButton2),
+      ],
+    );
+  }
+
+  Widget _resultButton(String text, Color color) {
+    return _actionButton(!isInTestState && !isInCalibState, () {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return const ShowFileOverlay();
+        },
+      );
+    }, color, text);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -290,10 +364,7 @@ class _TestPageState extends State<TestPage> {
             },
             icon: const Icon(Icons.arrow_back_ios)),
         elevation: 10,
-        title: const Text(
-          "Test",
-          style: TextStyle(color: Colors.black54, fontSize: 18),
-        ),
+        title: _defaultText("Test", 18, Colors.black45, FontWeight.bold),
         actions: const [
           Padding(
             padding: EdgeInsets.all(8.0),
@@ -327,43 +398,14 @@ class _TestPageState extends State<TestPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    "PRUEBA DE HERMETICIDAD",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        letterSpacing: 4,
-                        fontSize: 25,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Text(
-                    macESP32,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        letterSpacing: 4,
-                        fontSize: 16,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  CustomerElevateButton(
-                      onPressed:
-                          isInSocket || !checkboxValue ? () {} : reconectSocket,
-                      texto: "Sincronizar",
-                      colorTexto: Colors.white,
-                      colorButton: isInSocket || !checkboxValue
-                          ? Colors.grey
-                          : Colors.green.shade300,
-                      height: .05,
-                      width: .7),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  _defaultText("PRUEBA DE HERMETICIDAD", 25, Colors.black,
+                      FontWeight.bold),
+                  const SizedBox(height: 20),
+                  _defaultText(macESP32, 16, Colors.black, FontWeight.w500),
+                  const SizedBox(height: 20),
+                  _actionButton(!(isInSocket || !checkboxValue), reconectSocket,
+                      Colors.green.shade300, "Sincronizar"),
+                  const SizedBox(height: 20),
                   isInSocket ? _buildStartTest(context) : _buildSteps(),
                 ],
               ),
@@ -378,39 +420,11 @@ class _TestPageState extends State<TestPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        Text(
-          paso0,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-              letterSpacing: 4,
-              fontSize: 16,
-              color: Colors.black,
-              fontWeight: FontWeight.w500),
-        ),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.cable),
-            title: Text(paso1),
-          ),
-        ),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.signal_cellular_off),
-            title: Text(paso2),
-          ),
-        ),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.wifi),
-            title: Text(paso3),
-          ),
-        ),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.radio_button_checked),
-            title: Text(paso4),
-          ),
-        ),
+        _defaultText(paso0, 16, Colors.black, FontWeight.w500),
+        _cardStep(Icons.cable, paso1),
+        _cardStep(Icons.signal_cellular_off, paso2),
+        _cardStep(Icons.wifi, paso3),
+        _cardStep(Icons.radio_button_checked, paso4),
       ],
     );
   }
@@ -419,127 +433,17 @@ class _TestPageState extends State<TestPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        Text(
-          receivedText,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-              letterSpacing: 4,
-              fontSize: 16,
-              color: Colors.black,
-              fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(
-          height: 10,
-        ),
-        Text(
-          timeText,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-              letterSpacing: 4,
-              fontSize: 16,
-              color: Colors.black,
-              fontWeight: FontWeight.w500),
-        ),
-        SfCartesianChart(
-          primaryXAxis: CategoryAxis(),
-          series: <ChartSeries>[
-            LineSeries<ChartData, String>(
-              dataSource: chartData,
-              xValueMapper: (ChartData data, _) => data.timeP,
-              yValueMapper: (ChartData data, _) => data.value,
-            ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            CustomerElevateButton(
-                onPressed: !isInCalibState && !isInTestState
-                    ? () {
-                        initCalib(true);
-                        isTest = false;
-                      }
-                    : () {},
-                texto: "Calibrar",
-                colorTexto: Colors.white,
-                colorButton: !isInCalibState && !isInTestState
-                    ? Colors.green.shade300
-                    : Colors.grey,
-                height: .05,
-                width: .45),
-            CustomerElevateButton(
-                onPressed: isInCalibState
-                    ? () {
-                        initCalib(false);
-                      }
-                    : () {},
-                texto: "Terminar",
-                colorTexto: Colors.white,
-                colorButton: isInCalibState ? Colors.red : Colors.grey,
-                height: .05,
-                width: .45),
-          ],
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            CustomerElevateButton(
-                onPressed: !isInTestState && !isInCalibState
-                    ? () {
-                        initTest(true);
-                        isTest = true;
-                      }
-                    : () {},
-                texto: "Iniciar",
-                colorTexto: Colors.white,
-                colorButton: !isInTestState && !isInCalibState
-                    ? Colors.green.shade300
-                    : Colors.grey,
-                height: .05,
-                width: .45),
-            CustomerElevateButton(
-                onPressed: isInTestState
-                    ? () {
-                        initTest(false);
-                      }
-                    : () {},
-                texto: "Terminar",
-                colorTexto: Colors.white,
-                colorButton: isInTestState ? Colors.redAccent : Colors.grey,
-                height: .05,
-                width: .45),
-          ],
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            CustomerElevateButton(
-                onPressed: !isInTestState && !isInCalibState
-                    ? () {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return const ShowFileOverlay();
-                          },
-                        );
-                        //saveFileData();
-                      }
-                    : () {}, // showDataFile
-                texto: "Resultados",
-                colorTexto: Colors.white,
-                colorButton: !isInTestState && !isInCalibState
-                    ? Colors.green.shade300
-                    : Colors.grey,
-                height: .05,
-                width: .45),
-          ],
-        ),
+        _defaultText(receivedText, 16, Colors.black, FontWeight.w500),
+        const SizedBox(height: 10),
+        _defaultText(timeText, 16, Colors.black, FontWeight.w500),
+        _dataGraph(chartData),
+        _rowButtons("Calibrar", "Terminar", () => initCalib(true),
+            () => initCalib(false), isInCalibState),
+        const SizedBox(height: 20),
+        _rowButtons("Iniciar", "Terminar", () => initTest(true),
+            () => initTest(false), isInTestState),
+        const SizedBox(height: 20),
+        _resultButton("Resultados", Colors.blueAccent)
       ],
     );
   }
@@ -553,6 +457,95 @@ class ShowFileOverlay extends StatefulWidget {
 }
 
 class _ShowFileOverlayState extends State<ShowFileOverlay> {
+  Widget _defaultText(String text, double fontSize, Color color,
+      double letterSpacing, FontWeight fontWeight) {
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+          letterSpacing: letterSpacing,
+          fontSize: fontSize,
+          color: color,
+          fontWeight: fontWeight),
+    );
+  }
+
+  Widget _popBar(double heightContent, IconData icon) {
+    return SizedBox(
+      height: getScreenSize(context).height * heightContent,
+      child: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(icon))),
+    );
+  }
+
+  Widget _scrollData(double heightContent, String fileData) {
+    return SizedBox(
+      height: getScreenSize(context).height * heightContent,
+      child: CustomScrollView(
+        slivers: <Widget>[
+          SliverPadding(
+            padding: const EdgeInsets.all(8),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate(
+                <Widget>[
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _defaultText(
+                          fileData, 16, Colors.black, 4, FontWeight.w500)
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sendButton(double heightContent, String text) {
+    return SizedBox(
+      height: getScreenSize(context).height * heightContent,
+      child: CustomerElevateButton(
+          onPressed: () {
+            showDialogLoad(context);
+            String fileContFormat = fileContentData
+                .replaceAll("Registro de mediciones\n", "")
+                .replaceAll("------Calibracion-----\n", "")
+                .replaceAll("--------Testeo--------\n", "")
+                .replaceAll(" ", "")
+                .replaceAll("][", ",")
+                .replaceAll("]\n", ";")
+                .replaceAll("[", "");
+            developer.log(fileContFormat);
+            String fileUrl =
+                'http://${controllerIp.text}:${controllerPort.text}/api/POSTsubirArchivo';
+            postFile(fileUrl, fileContFormat).then((value) {
+              Navigator.pop(context);
+              if (value) {
+                showMessageTOAST(context, "Archivo enviado", Colors.green);
+              } else {
+                showMessageTOAST(
+                    context,
+                    "Error, Conectese a la red movil e intente de nuevo",
+                    Colors.green);
+              }
+            });
+          },
+          texto: text,
+          colorTexto: Colors.white,
+          colorButton: Colors.green.shade300,
+          height: .05,
+          width: .5),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -566,95 +559,13 @@ class _ShowFileOverlayState extends State<ShowFileOverlay> {
             height: getScreenSize(context).height * 0.6,
             child: Column(
               children: [
-                SizedBox(
-                  height: getScreenSize(context).height * 0.05,
-                  child: Align(
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: const Icon(Icons.close))),
-                ),
-                SizedBox(
-                  height: getScreenSize(context).height * 0.4,
-                  child: CustomScrollView(
-                    slivers: <Widget>[
-                      SliverPadding(
-                        padding: const EdgeInsets.all(8),
-                        sliver: SliverList(
-                          delegate: SliverChildListDelegate(
-                            <Widget>[
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    fileContentData,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                        letterSpacing: 4,
-                                        fontSize: 16,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w500),
-                                  )
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: getScreenSize(context).height * 0.02,
-                ),
-                SizedBox(
-                    height: getScreenSize(context).height * 0.04,
-                    child: const Text(
-                      "*Conecte su dispositivo a la red movil",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          letterSpacing: 2,
-                          fontSize: 14,
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold),
-                    )),
-                SizedBox(
-                  height: getScreenSize(context).height * 0.05,
-                  child: CustomerElevateButton(
-                      onPressed: () {
-                        showDialogLoad(context);
-                        String fileContFormat = fileContentData
-                            .replaceAll("Registro de mediciones\n", "")
-                            .replaceAll("------Calibracion-----\n", "")
-                            .replaceAll("--------Testeo--------\n", "")
-                            .replaceAll(" ", "")
-                            .replaceAll("][", ",")
-                            .replaceAll("]\n", ";")
-                            .replaceAll("[", "");
-                        developer.log(fileContFormat);
-                        String fileUrl =
-                            'http://${controllerIp.text}:${controllerPort.text}/api/POSTsubirArchivo';
-                        postFile(fileUrl, fileContFormat).then((value) {
-                          Navigator.pop(context);
-                          if (value) {
-                            showMessageTOAST(
-                                context, "Archivo enviado", Colors.green);
-                          } else {
-                            showMessageTOAST(
-                                context,
-                                "Error, Conectese a la red movil e intente de nuevo",
-                                Colors.green);
-                          }
-                        });
-                      },
-                      texto: "Enviar Datos",
-                      colorTexto: Colors.white,
-                      colorButton: Colors.green.shade300,
-                      height: .05,
-                      width: .5),
-                ),
+                _popBar(0.05, Icons.close),
+                _scrollData(0.4, fileContentData),
+                SizedBox(height: getScreenSize(context).height * 0.02),
+                _defaultText("*Conecte su dispositivo a la red movil", 14,
+                    Colors.red, 2, FontWeight.bold),
+                SizedBox(height: getScreenSize(context).height * 0.02),
+                _sendButton(0.05, "Enviar Datos"),
               ],
             ),
           ),

@@ -24,6 +24,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
+    readCacheData();
   }
 
   void funtionButtonLogin(BuildContext context, Map<String, dynamic> map) {
@@ -243,34 +244,6 @@ class _ScreenOverlaySetingsState extends State<ScreenOverlaySetings> {
   void initState() {
     super.initState();
     readCacheData();
-  }
-
-  Future<void> writeCacheData(String ipApi, String portApi) async {
-    try {
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      CacheData cacheData = CacheData(ipApi, portApi);
-      String cacheJson = jsonEncode(cacheData);
-      developer.log('Cache escrita: $cacheJson');
-      await prefs.setString('cacheJson', cacheJson);
-    } catch (e) {
-      developer.log("Error al escribir cache");
-    }
-  }
-
-  Future<void> readCacheData() async {
-    try {
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      final String cacheJson = prefs.getString('cacheJson') ?? "";
-      if (cacheJson.isNotEmpty) {
-        Map<String, dynamic> cacheMap = jsonDecode(cacheJson);
-        developer.log('Cache leida: $cacheMap');
-        CacheData cacheData = CacheData.fromJson(cacheMap);
-        controllerIp.text = cacheData.ipApi;
-        controllerPort.text = cacheData.portApi;
-      }
-    } catch (e) {
-      developer.log("Error al leer cache");
-    }
   }
 
   @override

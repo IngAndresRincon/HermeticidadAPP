@@ -1,7 +1,10 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
 
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -15,6 +18,8 @@ class FilePage extends StatefulWidget {
 class _FilePageState extends State<FilePage> {
   String fileContent = "";
   bool isSincronizeFile = false;
+  double visibleMinimum = 0;
+  double visibleMaximum = 30;
   final fileUrl = 'http://192.168.11.100:81/SD';
 
   Future<void> showDataFile() async {
@@ -26,6 +31,40 @@ class _FilePageState extends State<FilePage> {
     widget.storage.writeFileData("Inicio de llenado\n");
     final response = await http.get(Uri.parse(fileUrl));
     widget.storage.writeFileData(response.body);
+  }
+
+  Widget _extendedGraph() {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onHorizontalDragUpdate: (details) {
+        // Manejar el evento de desplazamiento horizontal
+        if (details.delta.dx > 0 && visibleMinimum > 0) {
+          setState(() {
+            visibleMinimum -= .2;
+            visibleMaximum -= .2;
+          });
+        } else if (details.delta.dx < 0 &&
+            visibleMaximum < chartData.length - 1) {
+          setState(() {
+            visibleMinimum += .2;
+            visibleMaximum += .2;
+          });
+        }
+      },
+      child: SfCartesianChart(
+        primaryXAxis: CategoryAxis(
+          visibleMinimum: visibleMinimum,
+          visibleMaximum: visibleMaximum,
+        ),
+        series: <ChartSeries>[
+          LineSeries<ChartData, String>(
+            dataSource: chartData,
+            xValueMapper: (ChartData data, _) => data.timeP,
+            yValueMapper: (ChartData data, _) => data.value,
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -65,28 +104,9 @@ class _FilePageState extends State<FilePage> {
               width: getScreenSize(context).width,
             ),
             SizedBox(
-                height: getScreenSize(context).height * .5,
-                width: getScreenSize(context).width * 0.9,
-                child: ListView(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    SizedBox(
-                      width: getScreenSize(context).height *
-                          0.8, 
-                      child: SfCartesianChart(
-                        primaryXAxis: CategoryAxis(),
-                        series: <ChartSeries>[
-                          LineSeries<ChartData, String>(
-                            dataSource: chartDataSave,
-                            xValueMapper: (ChartData data, _) => data.timeP,
-                            yValueMapper: (ChartData data, _) => data.value,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                )),
+                height: getScreenSize(context).height * .8,
+                width: getScreenSize(context).width,
+                child: _extendedGraph()),
           ],
         ));
   }
