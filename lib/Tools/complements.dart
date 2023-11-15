@@ -77,3 +77,5 @@ Future<void> writeCacheData(String ipApi, String portApi) async {
     developer.log("Error al escribir cache");
   }
 }
+
+

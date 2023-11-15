@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:hermeticidadapp/Models/models.dart';
@@ -139,7 +137,7 @@ class _TestPageState extends State<TestPage> {
       var user = UserSocket.fromJson(userMap);
       macESP32 = 'Conectado: ${user.mac}';
       receivedText = 'Presion(PSI): ${user.presion}';
-      timeText = user.nDatos;
+      //timeText = user.nDatos;
       state = user.state;
       try {
         final double parsedData;
@@ -147,6 +145,7 @@ class _TestPageState extends State<TestPage> {
           parsedData = double.parse(user.presion);
           final String timeP = user.nDatos;
           DateTime dateTimeP = dateTimeConvert(timeP);
+          timeText = dateTimeP.toString();
           chartData.add(ChartData(dateTimeP, parsedData));
           String datosArchivo =
               '${user.nDatos}[${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}][$parsedData]';
@@ -317,17 +316,37 @@ class _TestPageState extends State<TestPage> {
 
   Widget _dataGraph(List<ChartData> data) {
     return SfCartesianChart(
+      legend: Legend(
+        iconBorderWidth: 2,
+        offset: const Offset(120, -80),
+        isVisible: true,
+        position: LegendPosition.bottom,
+        //alignment: ChartAlignment.center
+      ),
       primaryXAxis: DateTimeAxis(
-          title: AxisTitle(text: "Seconds(s)"),
+          axisLine: const AxisLine(width: 2, color: Colors.black45),
+          title: AxisTitle(text: "Segundos(s)"),
           autoScrollingMode: AutoScrollingMode.end,
           autoScrollingDelta: 30,
           edgeLabelPlacement: EdgeLabelPlacement.shift,
           intervalType: DateTimeIntervalType.seconds),
+      primaryYAxis: NumericAxis(
+        axisLine: const AxisLine(width: 2, color: Colors.black45),
+        maximum: 30,
+        minimum: 0,
+        labelFormat: '{value}PSI',
+        //numberFormat: NumberFormat.compact()
+      ),
       series: <ChartSeries>[
-        LineSeries<ChartData, DateTime>(
+        SplineSeries<ChartData, DateTime>(
+          legendItemText: "Presión[PSI]",
           dataSource: data,
           xValueMapper: (ChartData data, _) => data.timeP,
           yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.greenAccent.shade400,
+          width: 2,
+          opacity: 1,
+          splineType: SplineType.monotonic,
         ),
       ],
     );
@@ -389,7 +408,8 @@ class _TestPageState extends State<TestPage> {
             },
             icon: const Icon(Icons.arrow_back_ios)),
         elevation: 10,
-        title: _defaultText("Test", 18, Colors.black45, FontWeight.bold),
+        title: _defaultText('Test N° ${idProgramacion.toString()}', 18,
+            Colors.black45, FontWeight.bold),
         actions: const [
           Padding(
             padding: EdgeInsets.all(8.0),
@@ -411,13 +431,7 @@ class _TestPageState extends State<TestPage> {
                 fit: BoxFit.fill)),
         child: Column(
           children: [
-            SizedBox(
-              height: getScreenSize(context).height * 0.13,
-              child: Align(
-                alignment: Alignment.bottomRight,
-                child: Text(idProgramacion.toString()),
-              ),
-            ),
+            SizedBox(height: getScreenSize(context).height * 0.1),
             SizedBox(
               height: getScreenSize(context).height * 0.87,
               child: Column(

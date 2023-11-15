@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
+import 'package:hermeticidadapp/Tools/functions.dart';
+import 'package:hermeticidadapp/Widgets/elevate_button.dart';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
 import 'package:intl/intl.dart';
@@ -27,12 +29,13 @@ class _FilePageState extends State<FilePage> {
   void initState() {
     _tooltipBehavior = TooltipBehavior(enable: true);
     _zoomPanBehavior = ZoomPanBehavior(
-      enablePinching: true,
-      enableDoubleTapZooming: true,
-      enableSelectionZooming: true,
-      enablePanning: true,
-      //maximumZoomLevel: 0.3
-    );
+        enablePinching: true,
+        enableDoubleTapZooming: true,
+        enableSelectionZooming: true,
+        enablePanning: true,
+        zoomMode: ZoomMode.x
+        //maximumZoomLevel: 0.3
+        );
     super.initState();
   }
 
@@ -47,25 +50,95 @@ class _FilePageState extends State<FilePage> {
     widget.storage.writeFileData(response.body);
   }
 
+  void sendFileApi() {
+    showDialogLoad(context);
+    String fileContFormat = fileContentData
+        .replaceAll("Registro de mediciones\n", "")
+        .replaceAll("------Calibracion-----\n", "")
+        .replaceAll("--------Testeo--------\n", "")
+        .replaceAll(" ", "")
+        .replaceAll("][", ",")
+        .replaceAll("]\n", ";")
+        .replaceAll("[", "");
+    developer.log(fileContFormat);
+    String fileUrl =
+        'http://${controllerIp.text}:${controllerPort.text}/api/POSTsubirArchivo';
+    postFile(fileUrl, fileContFormat).then((value) {
+      Navigator.pop(context);
+      if (value) {
+        showMessageTOAST(context, "Archivo enviado", Colors.green);
+      } else {
+        showMessageTOAST(context,
+            "Error, Conectese a la red movil e intente de nuevo", Colors.green);
+      }
+    });
+  }
+
   Widget _extendedGraph() {
     return SfCartesianChart(
-      title: ChartTitle(text: 'Grafica de registro de mediciones'),
-      legend: Legend(isVisible: true),
+      title: ChartTitle(
+          text: 'REGISTRO PRUEBA DE HERMETICIDAD',
+          textStyle:
+              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      legend: Legend(
+        iconBorderWidth: 2,
+        offset: const Offset(110, -80),
+        isVisible: true,
+        position: LegendPosition.bottom,
+        //alignment: ChartAlignment.center
+      ),
       tooltipBehavior: _tooltipBehavior,
       zoomPanBehavior: _zoomPanBehavior,
+      // plotAreaBorderWidth: 2,
+      // plotAreaBorderColor: Colors.black,
       primaryXAxis: DateTimeAxis(
-          title: AxisTitle(text: "Seconds(s)"),
+          axisLine: const AxisLine(width: 2, color: Colors.black45),
+          title: AxisTitle(text: "Segundos(s)"),
           edgeLabelPlacement: EdgeLabelPlacement.shift,
           intervalType: DateTimeIntervalType.seconds),
       primaryYAxis: NumericAxis(
-          labelFormat: '{value}PSI', numberFormat: NumberFormat.compact()),
+        axisLine: const AxisLine(width: 2, color: Colors.black45),
+        maximum: 30,
+        minimum: 0,
+        labelFormat: '{value}PSI',
+        //numberFormat: NumberFormat.compact()
+      ),
       series: <ChartSeries>[
-        LineSeries<ChartData, DateTime>(
+        SplineSeries<ChartData, DateTime>(
+          legendItemText: "Presión[PSI]",
           dataSource: chartData,
           xValueMapper: (ChartData data, _) => data.timeP,
           yValueMapper: (ChartData data, _) => data.value,
+          color: Colors.greenAccent.shade400,
+          width: 2,
+          opacity: 1,
+          splineType: SplineType.monotonic,
+          //dashArray: const <double>[5, 5],
         ),
       ],
+    );
+  }
+
+  Widget _sendDataButton(String text) {
+    return CustomerElevateButton(
+        onPressed: sendFileApi,
+        texto: text,
+        colorTexto: Colors.white,
+        colorButton: Colors.green.shade300,
+        height: .05,
+        width: .5);
+  }
+
+  Widget _defaultText(String text, double fontSize, Color color,
+      double letterSpacing, FontWeight fontWeight) {
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+          letterSpacing: letterSpacing,
+          fontSize: fontSize,
+          color: color,
+          fontWeight: fontWeight),
     );
   }
 
@@ -80,10 +153,8 @@ class _FilePageState extends State<FilePage> {
               },
               icon: const Icon(Icons.arrow_back_ios)),
           elevation: 10,
-          title: const Text(
-            "file",
-            style: TextStyle(color: Colors.black54, fontSize: 18),
-          ),
+          title: _defaultText(
+              "Measurement", 18, Colors.black45, 2, FontWeight.bold),
           actions: const [
             Padding(
               padding: EdgeInsets.all(8.0),
@@ -106,9 +177,17 @@ class _FilePageState extends State<FilePage> {
               width: getScreenSize(context).width,
             ),
             SizedBox(
-                height: getScreenSize(context).height * .8,
+                height: getScreenSize(context).height * .7,
                 width: getScreenSize(context).width,
                 child: _extendedGraph()),
+            SizedBox(
+                height: getScreenSize(context).height * .02,
+                child: _defaultText("*Conecte su dispositivo a la red movil",
+                    14, Colors.red, 2, FontWeight.bold)),
+            SizedBox(
+                height: getScreenSize(context).height * .05,
+                //width: getScreenSize(context).width,
+                child: _sendDataButton("Enviar Datos"))
           ],
         ));
   }

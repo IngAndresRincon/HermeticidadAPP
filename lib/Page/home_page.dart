@@ -286,7 +286,6 @@ class ScreenOverlaySchedules extends StatefulWidget {
 class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
   late List<dynamic> dynamicList = [];
   late List<dynamic> colorList = [];
-  var texto = "Hola";
   @override
   void initState() {
     super.initState();
