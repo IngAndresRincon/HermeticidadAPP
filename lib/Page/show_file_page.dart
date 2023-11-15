@@ -1,10 +1,9 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
+import 'package:intl/intl.dart';
 
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -16,11 +15,26 @@ class FilePage extends StatefulWidget {
 }
 
 class _FilePageState extends State<FilePage> {
+  late TooltipBehavior _tooltipBehavior;
+  late ZoomPanBehavior _zoomPanBehavior;
   String fileContent = "";
   bool isSincronizeFile = false;
   double visibleMinimum = 0;
   double visibleMaximum = 30;
   final fileUrl = 'http://192.168.11.100:81/SD';
+
+  @override
+  void initState() {
+    _tooltipBehavior = TooltipBehavior(enable: true);
+    _zoomPanBehavior = ZoomPanBehavior(
+      enablePinching: true,
+      enableDoubleTapZooming: true,
+      enableSelectionZooming: true,
+      enablePanning: true,
+      //maximumZoomLevel: 0.3
+    );
+    super.initState();
+  }
 
   Future<void> showDataFile() async {
     fileContent = await widget.storage.readFileData();
@@ -34,36 +48,24 @@ class _FilePageState extends State<FilePage> {
   }
 
   Widget _extendedGraph() {
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onHorizontalDragUpdate: (details) {
-        // Manejar el evento de desplazamiento horizontal
-        if (details.delta.dx > 0 && visibleMinimum > 0) {
-          setState(() {
-            visibleMinimum -= .2;
-            visibleMaximum -= .2;
-          });
-        } else if (details.delta.dx < 0 &&
-            visibleMaximum < chartData.length - 1) {
-          setState(() {
-            visibleMinimum += .2;
-            visibleMaximum += .2;
-          });
-        }
-      },
-      child: SfCartesianChart(
-        primaryXAxis: CategoryAxis(
-          visibleMinimum: visibleMinimum,
-          visibleMaximum: visibleMaximum,
+    return SfCartesianChart(
+      title: ChartTitle(text: 'Grafica de registro de mediciones'),
+      legend: Legend(isVisible: true),
+      tooltipBehavior: _tooltipBehavior,
+      zoomPanBehavior: _zoomPanBehavior,
+      primaryXAxis: DateTimeAxis(
+          title: AxisTitle(text: "Seconds(s)"),
+          edgeLabelPlacement: EdgeLabelPlacement.shift,
+          intervalType: DateTimeIntervalType.seconds),
+      primaryYAxis: NumericAxis(
+          labelFormat: '{value}PSI', numberFormat: NumberFormat.compact()),
+      series: <ChartSeries>[
+        LineSeries<ChartData, DateTime>(
+          dataSource: chartData,
+          xValueMapper: (ChartData data, _) => data.timeP,
+          yValueMapper: (ChartData data, _) => data.value,
         ),
-        series: <ChartSeries>[
-          LineSeries<ChartData, String>(
-            dataSource: chartData,
-            xValueMapper: (ChartData data, _) => data.timeP,
-            yValueMapper: (ChartData data, _) => data.value,
-          ),
-        ],
-      ),
+      ],
     );
   }
 

@@ -1,6 +1,9 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:hermeticidadapp/Models/models.dart';
+import 'package:intl/intl.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../Widgets/elevate_button.dart';
 import 'package:http/http.dart' as http;
@@ -100,39 +103,57 @@ class _TestPageState extends State<TestPage> {
     });
   }
 
+  DateTime dateTimeConvert(String time) {
+    DateTime timeConvert;
+    final timeArray = time
+        .replaceAll("]", "")
+        .replaceAll("[", "")
+        .replaceAll(" ", "")
+        .split(":");
+    if (timeArray.length == 3) {
+      timeConvert = DateTime(
+          DateTime.now().year,
+          DateTime.now().month,
+          DateTime.now().day,
+          int.parse(timeArray[0]),
+          int.parse(timeArray[1]),
+          int.parse(timeArray[2]));
+    } else if (timeArray.length == 4) {
+      timeConvert = DateTime(
+          DateTime.now().year,
+          DateTime.now().month,
+          DateTime.now().day,
+          int.parse(timeArray[0]),
+          int.parse(timeArray[1]),
+          int.parse(timeArray[2]),
+          int.parse(timeArray[3]));
+    } else {
+      timeConvert = DateTime(2023);
+    }
+    return timeConvert;
+  }
+
   Future<void> onDataReceived(dynamic data) async {
     setState(() {
-      if (!readyForFile) {
-        Map<String, dynamic> userMap = jsonDecode(data);
-        var user = UserSocket.fromJson(userMap);
-        macESP32 = 'Conectado: ${user.mac}';
-        //macESP32 != 'Sin Conexion...' ? isInSocket = true : isInSocket = false;
-        receivedText = 'Presion(PSI): ${user.presion}';
-        timeText = user.nDatos;
-        state = user.state;
-        // Parsea y agrega los datos recibidos a la lista de datos del gráfico
-        try {
-          final double parsedData;
-          // if (chartData.length > 30) {
-          //   chartData.removeAt(0);
-          // }
-          if (user.presion != "Proceso Detenido") {
-            parsedData = double.parse(user.presion);
-            final String timeP = user.nDatos;
-            chartData.add(ChartData(timeP, parsedData));
-            //chartDataSave.add(ChartData(timeP, parsedData));
-            String datosArchivo =
-                '${user.nDatos}[${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}][$parsedData]';
-            widget.storage.appendTextToFile(datosArchivo);
-          }
-        } catch (e) {
-          //print('Error al analizar los datos: $e');
-          developer.log('Error al analizar los datos: $e');
+      Map<String, dynamic> userMap = jsonDecode(data);
+      var user = UserSocket.fromJson(userMap);
+      macESP32 = 'Conectado: ${user.mac}';
+      receivedText = 'Presion(PSI): ${user.presion}';
+      timeText = user.nDatos;
+      state = user.state;
+      try {
+        final double parsedData;
+        if (user.presion != "Proceso Detenido") {
+          parsedData = double.parse(user.presion);
+          final String timeP = user.nDatos;
+          DateTime dateTimeP = dateTimeConvert(timeP);
+          chartData.add(ChartData(dateTimeP, parsedData));
+          String datosArchivo =
+              '${user.nDatos}[${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}][$parsedData]';
+          widget.storage.appendTextToFile(datosArchivo);
         }
-      } else if (readyForFile) {
-        if (data is! String) {
-          widget.storage.binaryWriteFileData(data);
-        }
+      } catch (e) {
+        developer.log('Error al analizar los datos: $e');
       }
     });
   }
@@ -296,10 +317,14 @@ class _TestPageState extends State<TestPage> {
 
   Widget _dataGraph(List<ChartData> data) {
     return SfCartesianChart(
-      primaryXAxis: CategoryAxis(
-          autoScrollingMode: AutoScrollingMode.end, autoScrollingDelta: 30),
+      primaryXAxis: DateTimeAxis(
+          title: AxisTitle(text: "Seconds(s)"),
+          autoScrollingMode: AutoScrollingMode.end,
+          autoScrollingDelta: 30,
+          edgeLabelPlacement: EdgeLabelPlacement.shift,
+          intervalType: DateTimeIntervalType.seconds),
       series: <ChartSeries>[
-        LineSeries<ChartData, String>(
+        LineSeries<ChartData, DateTime>(
           dataSource: data,
           xValueMapper: (ChartData data, _) => data.timeP,
           yValueMapper: (ChartData data, _) => data.value,
@@ -457,6 +482,30 @@ class ShowFileOverlay extends StatefulWidget {
 }
 
 class _ShowFileOverlayState extends State<ShowFileOverlay> {
+  void sendFileApi() {
+    showDialogLoad(context);
+    String fileContFormat = fileContentData
+        .replaceAll("Registro de mediciones\n", "")
+        .replaceAll("------Calibracion-----\n", "")
+        .replaceAll("--------Testeo--------\n", "")
+        .replaceAll(" ", "")
+        .replaceAll("][", ",")
+        .replaceAll("]\n", ";")
+        .replaceAll("[", "");
+    developer.log(fileContFormat);
+    String fileUrl =
+        'http://${controllerIp.text}:${controllerPort.text}/api/POSTsubirArchivo';
+    postFile(fileUrl, fileContFormat).then((value) {
+      Navigator.pop(context);
+      if (value) {
+        showMessageTOAST(context, "Archivo enviado", Colors.green);
+      } else {
+        showMessageTOAST(context,
+            "Error, Conectese a la red movil e intente de nuevo", Colors.green);
+      }
+    });
+  }
+
   Widget _defaultText(String text, double fontSize, Color color,
       double letterSpacing, FontWeight fontWeight) {
     return Text(
@@ -513,31 +562,7 @@ class _ShowFileOverlayState extends State<ShowFileOverlay> {
     return SizedBox(
       height: getScreenSize(context).height * heightContent,
       child: CustomerElevateButton(
-          onPressed: () {
-            showDialogLoad(context);
-            String fileContFormat = fileContentData
-                .replaceAll("Registro de mediciones\n", "")
-                .replaceAll("------Calibracion-----\n", "")
-                .replaceAll("--------Testeo--------\n", "")
-                .replaceAll(" ", "")
-                .replaceAll("][", ",")
-                .replaceAll("]\n", ";")
-                .replaceAll("[", "");
-            developer.log(fileContFormat);
-            String fileUrl =
-                'http://${controllerIp.text}:${controllerPort.text}/api/POSTsubirArchivo';
-            postFile(fileUrl, fileContFormat).then((value) {
-              Navigator.pop(context);
-              if (value) {
-                showMessageTOAST(context, "Archivo enviado", Colors.green);
-              } else {
-                showMessageTOAST(
-                    context,
-                    "Error, Conectese a la red movil e intente de nuevo",
-                    Colors.green);
-              }
-            });
-          },
+          onPressed: sendFileApi,
           texto: text,
           colorTexto: Colors.white,
           colorButton: Colors.green.shade300,

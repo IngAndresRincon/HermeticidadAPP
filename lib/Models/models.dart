@@ -73,7 +73,7 @@ class SendSocket {
 }
 
 class ChartData {
-  final String timeP;
+  final DateTime timeP;
   final double value;
 
   ChartData(this.timeP, this.value);
