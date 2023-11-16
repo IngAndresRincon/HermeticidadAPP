@@ -34,6 +34,7 @@ class _TestPageState extends State<TestPage> {
   String conectMns = '';
   bool isInTestState = false;
   bool isInCalibState = false;
+  bool isInCalibStateAux = false;
   bool isInSocket = false;
   bool flagButton = false;
   bool checkboxValue = false;
@@ -43,6 +44,7 @@ class _TestPageState extends State<TestPage> {
   bool isTest = false;
   late Timer pingTimer;
   double contador = 0.0;
+  late ChartSeriesController _chartSeriesController;
 
   String paso0 = "Pasos para realizar la prueba:\n";
   String paso1 = "1.Verifique la correcta conexion del medidor.";
@@ -90,6 +92,20 @@ class _TestPageState extends State<TestPage> {
 
   Future<void> showDataFile() async {
     fileContentData = await widget.storage.readFileData();
+    final fileDataArray = fileContentData
+        .replaceAll("Registro de mediciones\n", "")
+        .replaceAll("------Calibracion-----\n", "")
+        .replaceAll("--------Testeo--------\n", "")
+        .replaceAll("[", "")
+        .replaceAll("]\n", ";")
+        .replaceAll("]", ";")
+        .split(";");
+    chartDataStatic.clear();
+    for (int i = 2; i < fileDataArray.length - 1; i += 4) {
+      chartDataStatic.add(ChartData(dateTimeConvert(fileDataArray[i]),
+          double.parse(fileDataArray[i + 1])));
+    }
+    developer.log(fileDataArray.toString());
     setState(() {});
   }
 
@@ -147,6 +163,8 @@ class _TestPageState extends State<TestPage> {
           DateTime dateTimeP = dateTimeConvert(timeP);
           timeText = dateTimeP.toString();
           chartData.add(ChartData(dateTimeP, parsedData));
+          _chartSeriesController.updateDataSource(
+              addedDataIndex: chartData.length - 1);
           String datosArchivo =
               '${user.nDatos}[${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}][$parsedData]';
           widget.storage.appendTextToFile(datosArchivo);
@@ -190,6 +208,12 @@ class _TestPageState extends State<TestPage> {
             isInTestState = false;
             isInCalibState = false;
           }
+          if (isInCalibStateAux == true && isInCalibState == false) {
+            saveFileData();
+            showMessageTOAST(
+                context, "Calibracion Terminada", Colors.red.shade700);
+          }
+          isInCalibStateAux = isInCalibState;
         } else {
           isInSocket = false;
           checkboxValue = false;
@@ -235,7 +259,6 @@ class _TestPageState extends State<TestPage> {
   }
 
   void initCalib(bool action) {
-    saveFileData();
     setState(() {
       isInCalibState = action;
       SendSocket dataSend;
@@ -253,6 +276,7 @@ class _TestPageState extends State<TestPage> {
         dataSend = SendSocket('calibfin', 0, 0);
         dataJson = jsonEncode(dataSend);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
+        saveFileData();
         showMessageTOAST(context, "Calibracion Terminada", Colors.red.shade700);
         //sincronizeFile();
       }
@@ -260,7 +284,6 @@ class _TestPageState extends State<TestPage> {
   }
 
   void initTest(bool action) {
-    saveFileData();
     setState(() {
       isInTestState = action;
       SendSocket sendData;
@@ -278,6 +301,7 @@ class _TestPageState extends State<TestPage> {
         sendData = SendSocket("togglefin", 0, 0);
         dataJson = jsonEncode(sendData);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
+        saveFileData();
         showMessageTOAST(context, "Prueba Terminada", Colors.red.shade700);
         //sincronizeFile();
       }
@@ -339,6 +363,9 @@ class _TestPageState extends State<TestPage> {
       ),
       series: <ChartSeries>[
         SplineSeries<ChartData, DateTime>(
+          onRendererCreated: (ChartSeriesController controller) {
+            _chartSeriesController = controller;
+          },
           legendItemText: "Presión[PSI]",
           dataSource: data,
           xValueMapper: (ChartData data, _) => data.timeP,

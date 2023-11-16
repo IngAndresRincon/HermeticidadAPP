@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:hermeticidadapp/Page/overlays_options_home.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
 
 import '../Tools/functions.dart';
@@ -53,31 +54,38 @@ class _HomePageState extends State<HomePage> {
                       backgroundColor: Colors.white,
                       child: Image.asset('assets/logo.png')),
                 )),
-            const ListTile(
-              leading: Icon(Icons.message),
-              title: Text('Messages'),
-            ),
-            const ListTile(
-              leading: Icon(Icons.account_circle),
-              title: Text('Profile'),
+            ListTile(
+              onTap: () {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return const ScreenOverlayMessages();
+                    });
+              },
+              leading: const Icon(Icons.message),
+              title: const Text('Messages'),
             ),
             ListTile(
-              onTap: () {},
+              onTap: () {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return const ScreenOverlayProfile();
+                    });
+              },
+              leading: const Icon(Icons.account_circle),
+              title: const Text('Profile'),
+            ),
+            ListTile(
+              onTap: () {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return const ScreenOverlaySettingsHome();
+                    });
+              },
               leading: const Icon(Icons.settings),
               title: const Text('Settings'),
-            ),
-            ListTile(
-              onTap: () async {
-                String strTest =
-                    "2,1,00:00:00,0.00;2,1,00:00:01,17.56;2,1,00:00:02,17.56;2,1,00:00:03,17.56;2,1,00:00:04,17.56;2,1,00:00:05,17.56;2,1,00:00:06,17.56;2,1,00:00:07,17.56;" *
-                        13000;
-                String peticionesUrl =
-                    'http://${controllerIp.text}:${controllerPort.text}/api/POSTobtenerProgramacionPrueba';
-
-                await postFile(peticionesUrl, strTest);
-              },
-              leading: const Icon(Icons.tab),
-              title: const Text('Test'),
             ),
             ListTile(
               onTap: () {

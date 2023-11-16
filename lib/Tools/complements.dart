@@ -11,8 +11,15 @@ Size getScreenSize(BuildContext context) {
 
 TextEditingController controllerEmail = TextEditingController();
 TextEditingController controllerPassword = TextEditingController();
+
 TextEditingController controllerIp = TextEditingController();
 TextEditingController controllerPort = TextEditingController();
+
+TextEditingController controllerNameRegister = TextEditingController();
+TextEditingController controllerLastNameRegister = TextEditingController();
+TextEditingController controllerEmailRegister = TextEditingController();
+TextEditingController controllerPasswordRegister = TextEditingController();
+TextEditingController controllerEmailForget = TextEditingController();
 
 String nombreUsuarioGlobal = "";
 String rolUsuarioGlobal = "";
@@ -23,6 +30,7 @@ int idEstacion = 0;
 int idProgramacion = 0;
 String fileContentData = "";
 List<ChartData> chartData = [];
+List<ChartData> chartDataStatic = [];
 
 Future<bool?> showMessageTOAST(
     BuildContext context, String mensaje, Color color) {
@@ -77,5 +85,3 @@ Future<void> writeCacheData(String ipApi, String portApi) async {
     developer.log("Error al escribir cache");
   }
 }
-
-

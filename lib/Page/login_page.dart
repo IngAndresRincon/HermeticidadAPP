@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Models/models.dart';
+import 'package:hermeticidadapp/Page/overlays_login.dart';
 import '../Tools/complements.dart';
 import '../Tools/functions.dart';
 import '../Widgets/elevate_button.dart';
@@ -177,7 +178,13 @@ class _LoginPageState extends State<LoginPage> {
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return const ScreenOverlayForgetPass();
+                                  });
+                            },
                             child: const Text(
                               "Olvidé mi contraseña",
                               style: TextStyle(
@@ -211,9 +218,15 @@ class _LoginPageState extends State<LoginPage> {
                         height: .08,
                         texto: "Ingresar",
                         colorTexto: Colors.white,
-                        colorButton: Colors.green.shade300),
+                        colorButton: Colors.green.shade400),
                     TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return const ScreenOverlayRegister();
+                              });
+                        },
                         child: const Text(
                           "Resgistrarme",
                           style: TextStyle(
@@ -229,118 +242,5 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
-  }
-}
-
-class ScreenOverlaySetings extends StatefulWidget {
-  const ScreenOverlaySetings({super.key});
-
-  @override
-  State<ScreenOverlaySetings> createState() => _ScreenOverlaySetingsState();
-}
-
-class _ScreenOverlaySetingsState extends State<ScreenOverlaySetings> {
-  @override
-  void initState() {
-    super.initState();
-    readCacheData();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(
-          child: Card(
-              color: const Color.fromARGB(242, 247, 247, 247),
-              child: Container(
-                  padding: const EdgeInsets.all(10),
-                  width: getScreenSize(context).width * 0.9,
-                  height: getScreenSize(context).height * 0.5,
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        height: getScreenSize(context).height * 0.05,
-                        child: Align(
-                          alignment: Alignment.topRight,
-                          child: IconButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              icon: const Icon(Icons.close)),
-                        ),
-                      ),
-                      SizedBox(
-                        height: getScreenSize(context).height * 0.05,
-                        child: const Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            "CONFIGURACIÓN",
-                            style: TextStyle(
-                                letterSpacing: 2,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18),
-                          ),
-                        ),
-                      ),
-                      SizedBox(
-                        height: getScreenSize(context).height * 0.3,
-                        width: getScreenSize(context).width * 0.9,
-                        //color: Colors.black,
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.max,
-                            children: [
-                              CustomerTextFieldLogin(
-                                width: .8,
-                                bsuffixIcon: false,
-                                icondata: Icons.chevron_right,
-                                label: "Ip",
-                                obscure: false,
-                                onTapSuffixIcon: () {},
-                                suffixIcon: Icons.person,
-                                texteditingcontroller: controllerIp,
-                                textinputtype: TextInputType.url,
-                                textColor: Colors.black,
-                                labelColor: Colors.black,
-                              ),
-                              SizedBox(
-                                height: getScreenSize(context).height * 0.03,
-                              ),
-                              CustomerTextFieldLogin(
-                                  label: "Port",
-                                  textinputtype: TextInputType.number,
-                                  obscure: false,
-                                  icondata: Icons.chevron_right,
-                                  texteditingcontroller: controllerPort,
-                                  bsuffixIcon: false,
-                                  onTapSuffixIcon: () {},
-                                  suffixIcon: Icons.person,
-                                  width: .8,
-                                  labelColor: Colors.black,
-                                  textColor: Colors.black),
-                            ]),
-                      ),
-                      SizedBox(
-                        height: getScreenSize(context).height * 0.05,
-                        width: getScreenSize(context).width * 0.9,
-                        child: CustomerElevateButton(
-                            texto: "GUARDAR",
-                            colorTexto: Colors.white,
-                            colorButton: Colors.green.shade400,
-                            onPressed: () {
-                              showDialogLoad(context);
-                              writeCacheData(
-                                      controllerIp.text, controllerPort.text)
-                                  .then((value) {
-                                Navigator.popAndPushNamed(context, 'login');
-                              });
-                            },
-                            height: .05,
-                            width: .5),
-                      ),
-                    ],
-                  ))),
-        ));
   }
 }

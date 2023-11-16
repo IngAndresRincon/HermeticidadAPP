@@ -106,7 +106,7 @@ class _FilePageState extends State<FilePage> {
       series: <ChartSeries>[
         SplineSeries<ChartData, DateTime>(
           legendItemText: "Presión[PSI]",
-          dataSource: chartData,
+          dataSource: chartDataStatic,
           xValueMapper: (ChartData data, _) => data.timeP,
           yValueMapper: (ChartData data, _) => data.value,
           color: Colors.greenAccent.shade400,
