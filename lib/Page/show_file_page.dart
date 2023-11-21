@@ -5,8 +5,6 @@ import 'package:hermeticidadapp/Tools/functions.dart';
 import 'package:hermeticidadapp/Widgets/elevate_button.dart';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
-import 'package:intl/intl.dart';
-
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class FilePage extends StatefulWidget {

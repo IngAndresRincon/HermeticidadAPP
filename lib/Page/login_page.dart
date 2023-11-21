@@ -7,9 +7,6 @@ import '../Tools/complements.dart';
 import '../Tools/functions.dart';
 import '../Widgets/elevate_button.dart';
 import '../Widgets/text_field.dart';
-import 'dart:developer' as developer;
-
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -60,6 +57,174 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
+  Widget _configButton(double height, IconData icon) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: GestureDetector(
+        onTap: () {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return const ScreenOverlaySetings();
+              });
+        },
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: CircleAvatar(
+              radius: 30,
+              backgroundColor: Colors.greenAccent,
+              child: Icon(icon)),
+        ),
+      ),
+    );
+  }
+
+  Widget _titleTexts(double height, String title, String subTitle) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+                letterSpacing: 4,
+                fontSize: 25,
+                color: Colors.white,
+                fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            subTitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+                letterSpacing: 4,
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _loginForm(double height) {
+    return Container(
+      height: getScreenSize(context).height * height,
+      width: getScreenSize(context).width,
+      decoration: const BoxDecoration(
+          color: Colors.black54,
+          borderRadius: BorderRadius.only(topLeft: Radius.elliptical(60, 40))),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          CustomerTextFieldLogin(
+            width: .8,
+            bsuffixIcon: false,
+            icondata: Icons.person,
+            label: "CORREO",
+            obscure: false,
+            onTapSuffixIcon: () {},
+            suffixIcon: iconSuffix,
+            texteditingcontroller: controllerEmail,
+            textinputtype: TextInputType.emailAddress,
+            textColor: Colors.white,
+            labelColor: Colors.white,
+          ),
+          const SizedBox(height: 20),
+          CustomerTextFieldLogin(
+            width: .8,
+            bsuffixIcon: true,
+            icondata: Icons.password_rounded,
+            label: "CONTRASEÑA",
+            obscure: obscurePassword,
+            onTapSuffixIcon: () {
+              setState(() {
+                if (obscurePassword) {
+                  obscurePassword = false;
+                  iconSuffix = Icons.key;
+                } else {
+                  obscurePassword = true;
+                  iconSuffix = Icons.key_off;
+                }
+              });
+            },
+            suffixIcon: iconSuffix,
+            texteditingcontroller: controllerPassword,
+            textinputtype: TextInputType.text,
+            textColor: Colors.white,
+            labelColor: Colors.white,
+          ),
+          SizedBox(
+            width: getScreenSize(context).width * .8,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return const ScreenOverlayForgetPass();
+                        });
+                  },
+                  child: const Text(
+                    "Olvidé mi contraseña",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        // decoration: TextDecoration.underline,
+                        // decorationColor: Colors.green.shade400,
+                        fontSize: 14,
+                        letterSpacing: 1),
+                  )),
+            ),
+          ),
+          const SizedBox(height: 10),
+          CustomerElevateButton(
+              onPressed: () async {
+                if (controllerEmail.text.isEmpty ||
+                    controllerPassword.text.isEmpty) {
+                  showMessageTOAST(
+                      context, "Campos no validos", Colors.red.shade700);
+                  return;
+                }
+
+                Map<String, dynamic> mapDataUser = {
+                  'Usuario': controllerEmail.text,
+                  'Contrasena': controllerPassword.text
+                };
+                funtionButtonLogin(context, mapDataUser);
+              },
+              width: .8,
+              height: .08,
+              texto: "Ingresar",
+              colorTexto: Colors.white,
+              colorButton: Colors.green.shade400),
+          TextButton(
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return const ScreenOverlayRegister();
+                    });
+              },
+              child: const Text(
+                "Resgistrarme",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    letterSpacing: 2),
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _fieldLogin() {
+    return SizedBox();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,171 +237,10 @@ class _LoginPageState extends State<LoginPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(
-                height: getScreenSize(context).height * 0.05,
-              ),
-              SizedBox(
-                height: getScreenSize(context).height * 0.05,
-                child: GestureDetector(
-                  onTap: () {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return const ScreenOverlaySetings();
-                        });
-                  },
-                  child: const Align(
-                    alignment: Alignment.centerRight,
-                    child: CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.greenAccent,
-                        child: Icon(Icons.settings)),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: getScreenSize(context).height * 0.3,
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "HERMETICIDAD INSEPET",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          letterSpacing: 4,
-                          fontSize: 25,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Text(
-                      "BIENVENIDO",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          letterSpacing: 4,
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                height: getScreenSize(context).height * 0.6,
-                width: getScreenSize(context).width,
-                decoration: const BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius:
-                        BorderRadius.only(topLeft: Radius.elliptical(60, 40))),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    CustomerTextFieldLogin(
-                      width: .8,
-                      bsuffixIcon: false,
-                      icondata: Icons.person,
-                      label: "CORREO",
-                      obscure: false,
-                      onTapSuffixIcon: () {},
-                      suffixIcon: iconSuffix,
-                      texteditingcontroller: controllerEmail,
-                      textinputtype: TextInputType.emailAddress,
-                      textColor: Colors.white,
-                      labelColor: Colors.white,
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    CustomerTextFieldLogin(
-                      width: .8,
-                      bsuffixIcon: true,
-                      icondata: Icons.password_rounded,
-                      label: "CONTRASEÑA",
-                      obscure: obscurePassword,
-                      onTapSuffixIcon: () {
-                        setState(() {
-                          if (obscurePassword) {
-                            obscurePassword = false;
-                            iconSuffix = Icons.key;
-                          } else {
-                            obscurePassword = true;
-                            iconSuffix = Icons.key_off;
-                          }
-                        });
-                      },
-                      suffixIcon: iconSuffix,
-                      texteditingcontroller: controllerPassword,
-                      textinputtype: TextInputType.text,
-                      textColor: Colors.white,
-                      labelColor: Colors.white,
-                    ),
-                    SizedBox(
-                      width: getScreenSize(context).width * .8,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                            onPressed: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return const ScreenOverlayForgetPass();
-                                  });
-                            },
-                            child: const Text(
-                              "Olvidé mi contraseña",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  // decoration: TextDecoration.underline,
-                                  // decorationColor: Colors.green.shade400,
-                                  fontSize: 14,
-                                  letterSpacing: 1),
-                            )),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    CustomerElevateButton(
-                        onPressed: () async {
-                          if (controllerEmail.text.isEmpty ||
-                              controllerPassword.text.isEmpty) {
-                            showMessageTOAST(context, "Campos no validos",
-                                Colors.red.shade700);
-                            return;
-                          }
-
-                          Map<String, dynamic> mapDataUser = {
-                            'Usuario': controllerEmail.text,
-                            'Contrasena': controllerPassword.text
-                          };
-                          funtionButtonLogin(context, mapDataUser);
-                        },
-                        width: .8,
-                        height: .08,
-                        texto: "Ingresar",
-                        colorTexto: Colors.white,
-                        colorButton: Colors.green.shade400),
-                    TextButton(
-                        onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                return const ScreenOverlayRegister();
-                              });
-                        },
-                        child: const Text(
-                          "Resgistrarme",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              letterSpacing: 2),
-                        )),
-                  ],
-                ),
-              ),
+              SizedBox(height: getScreenSize(context).height * 0.05),
+              _configButton(0.05, Icons.settings),
+              _titleTexts(0.3, "HERMETICIDAD INSEPET", "BIENVENIDO"),
+              _loginForm(0.6)
             ],
           ),
         ),
