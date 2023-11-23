@@ -57,18 +57,22 @@ class SendSocket {
   final String action;
   final int idEstacion;
   final int idProgramacion;
+  final int pressionCalib;
 
-  SendSocket(this.action, this.idEstacion, this.idProgramacion);
+  SendSocket(
+      this.action, this.idEstacion, this.idProgramacion, this.pressionCalib);
 
   SendSocket.fromJson(Map<String, dynamic> json)
       : action = json['action'],
         idEstacion = json['idEstacion'],
-        idProgramacion = json['idProg'];
+        idProgramacion = json['idProg'],
+        pressionCalib = json['pressCalib'];
 
   Map<String, dynamic> toJson() => {
         'action': action,
         'idEstacion': idEstacion,
         'idProg': idProgramacion,
+        'pressCalib': pressionCalib,
       };
 }
 

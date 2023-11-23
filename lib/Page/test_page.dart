@@ -263,7 +263,7 @@ class _TestPageState extends State<TestPage> {
       SendSocket dataSend;
       String dataJson;
       if (action) {
-        dataSend = SendSocket('calibini', 0, 0);
+        dataSend = SendSocket('calibini', 0, 0,0);
         dataJson = jsonEncode(dataSend);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         chartData.clear();
@@ -272,7 +272,7 @@ class _TestPageState extends State<TestPage> {
             'Registro de calibracion ${DateTime.now().toLocal()}\n');
         showMessageTOAST(context, "Calibracion Iniciada", Colors.green);
       } else {
-        dataSend = SendSocket('calibfin', 0, 0);
+        dataSend = SendSocket('calibfin', 0, 0,0);
         dataJson = jsonEncode(dataSend);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         saveFileData();
@@ -288,7 +288,7 @@ class _TestPageState extends State<TestPage> {
       SendSocket sendData;
       String dataJson;
       if (action) {
-        sendData = SendSocket("toggleini", 0, 0);
+        sendData = SendSocket("toggleini", 0, 0,0);
         dataJson = jsonEncode(sendData);
         channel.sink.add(dataJson);
         readyForFile = false;
@@ -297,7 +297,7 @@ class _TestPageState extends State<TestPage> {
         widget.storage.appendTextToFile(
             'Registro de mediciones ${DateTime.now().toLocal()}\n');
       } else {
-        sendData = SendSocket("togglefin", 0, 0);
+        sendData = SendSocket("togglefin", 0, 0,0);
         dataJson = jsonEncode(sendData);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         saveFileData();
@@ -309,7 +309,7 @@ class _TestPageState extends State<TestPage> {
 
   void sendInfo() {
     setState(() {
-      SendSocket sendData = SendSocket('info', idEstacion, idProgramacion);
+      SendSocket sendData = SendSocket('info', idEstacion, idProgramacion,3);
       String dataJson = jsonEncode(sendData);
       channel.sink.add(dataJson);
     });
