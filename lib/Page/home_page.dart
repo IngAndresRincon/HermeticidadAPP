@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Page/overlays_options_home.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
+import 'package:hermeticidadapp/Widgets/elevate_button.dart';
+import 'package:hermeticidadapp/Widgets/text_field.dart';
 
 import '../Tools/functions.dart';
 
@@ -102,10 +104,10 @@ class _HomePageState extends State<HomePage> {
             image: DecorationImage(
                 image: AssetImage('assets/background_white.jpg'),
                 fit: BoxFit.fill)),
-        child: Column(
+        child: ListView(
           children: [
             Container(
-              height: getScreenSize(context).height * .2,
+              height: getScreenSize(context).height * .1,
             ),
             SizedBox(
               height: getScreenSize(context).height * .3,
@@ -203,7 +205,7 @@ class _HomePageState extends State<HomePage> {
               width: getScreenSize(context).width * .9,
               child: Row(
                 mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   GestureDetector(
                     onTap: () {
@@ -245,7 +247,9 @@ class _HomePageState extends State<HomePage> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      Navigator.pushNamed(context, 'file');
+                      if (controllerPressure.text != '') {
+                        Navigator.pushNamed(context, 'file');
+                      }
                     },
                     child: Card(
                       color: const Color.fromARGB(255, 3, 143, 143),
@@ -329,7 +333,7 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
           child: Container(
             padding: const EdgeInsets.all(10),
             width: getScreenSize(context).width * 0.9,
-            height: getScreenSize(context).height * 0.6,
+            height: getScreenSize(context).height * 0.5,
             child: Column(
               children: [
                 SizedBox(
@@ -355,7 +359,7 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
                       )),
                 ),
                 SizedBox(
-                    height: getScreenSize(context).height * 0.4,
+                    height: getScreenSize(context).height * 0.3,
                     child: dynamicList.isNotEmpty
                         ? ListView.builder(
                             itemCount: dynamicList.length,
@@ -372,7 +376,13 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
                                     }
                                     colorList[index] = Colors.green.shade300;
                                   });
-                                  Navigator.pushNamed(context, 'test');
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return const ConfigTestOverlay();
+                                    },
+                                  );
+                                  //Navigator.pushNamed(context, 'test');
                                 },
                                 child: Card(
                                   color: colorList[index],
@@ -398,6 +408,113 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
                           )),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ConfigTestOverlay extends StatefulWidget {
+  const ConfigTestOverlay({super.key});
+
+  @override
+  State<ConfigTestOverlay> createState() => _ConfigTestOverlayState();
+}
+
+class _ConfigTestOverlayState extends State<ConfigTestOverlay> {
+  Widget _popBar(double heightContent, IconData icon) {
+    return SizedBox(
+      height: getScreenSize(context).height * heightContent,
+      child: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(icon))),
+    );
+  }
+
+  Widget _defaultText(String text, double fontSize, Color color,
+      double letterSpacing, FontWeight fontWeight) {
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+          letterSpacing: letterSpacing,
+          fontSize: fontSize,
+          color: color,
+          fontWeight: fontWeight),
+    );
+  }
+
+  Widget _textFieldConfig(
+      double height,
+      String text,
+      IconData icon,
+      TextInputType textInputType,
+      TextEditingController textEditingController) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: CustomerTextFieldLogin(
+          label: text,
+          textinputtype: textInputType,
+          obscure: false,
+          icondata: icon,
+          texteditingcontroller: textEditingController,
+          bsuffixIcon: false,
+          onTapSuffixIcon: () {},
+          suffixIcon: Icons.person,
+          width: .8,
+          labelColor: Colors.black,
+          textColor: Colors.black),
+    );
+  }
+
+  Widget _configButton(double height, String text) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      width: getScreenSize(context).width * 0.9,
+      child: CustomerElevateButton(
+          texto: text,
+          colorTexto: Colors.white,
+          colorButton: Colors.green.shade400,
+          onPressed: () {
+            pressureCalib = int.parse(controllerPassword.text);
+            timeAperture = int.parse(controllerTimeAperture.text);
+            Navigator.pushNamed(context, 'test');
+          },
+          height: .05,
+          width: .5),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
+        child: Card(
+          color: const Color.fromARGB(242, 247, 247, 247),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            width: getScreenSize(context).width * 0.9,
+            height: getScreenSize(context).height * 0.5,
+            child: Column(children: [
+              _popBar(0.05, Icons.close),
+              _defaultText("CONFIGURACION CALIBRACION", 18, Colors.black54, 2,
+                  FontWeight.bold),
+              _textFieldConfig(
+                  0.1,
+                  "Presion de Calibracion (PSI)",
+                  Icons.chevron_right,
+                  TextInputType.number,
+                  controllerPressure),
+              _textFieldConfig(0.1, "Tolerancia (%)", Icons.chevron_right,
+                  TextInputType.number, controllerTimeAperture),
+              _configButton(0.05, "CONFIGURAR")
+            ]),
           ),
         ),
       ),

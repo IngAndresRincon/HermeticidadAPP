@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:hermeticidadapp/Models/models.dart';
+import 'package:hermeticidadapp/Widgets/text_field.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../Widgets/elevate_button.dart';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
 import 'package:hermeticidadapp/Tools/functions.dart';
+import 'package:flutter/services.dart';
 
 import 'package:web_socket_channel/io.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -41,6 +43,7 @@ class _TestPageState extends State<TestPage> {
   bool pong = false;
   bool readyForFile = false;
   bool isTest = false;
+  bool isHorizontal = false;
   late Timer pingTimer;
   double contador = 0.0;
   late ChartSeriesController _chartSeriesController;
@@ -263,7 +266,7 @@ class _TestPageState extends State<TestPage> {
       SendSocket dataSend;
       String dataJson;
       if (action) {
-        dataSend = SendSocket('calibini', 0, 0,0);
+        dataSend = SendSocket('calibini', 0, 0, 0, 0);
         dataJson = jsonEncode(dataSend);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         chartData.clear();
@@ -272,7 +275,7 @@ class _TestPageState extends State<TestPage> {
             'Registro de calibracion ${DateTime.now().toLocal()}\n');
         showMessageTOAST(context, "Calibracion Iniciada", Colors.green);
       } else {
-        dataSend = SendSocket('calibfin', 0, 0,0);
+        dataSend = SendSocket('calibfin', 0, 0, 0, 0);
         dataJson = jsonEncode(dataSend);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         saveFileData();
@@ -288,7 +291,7 @@ class _TestPageState extends State<TestPage> {
       SendSocket sendData;
       String dataJson;
       if (action) {
-        sendData = SendSocket("toggleini", 0, 0,0);
+        sendData = SendSocket("toggleini", 0, 0, 0, 0);
         dataJson = jsonEncode(sendData);
         channel.sink.add(dataJson);
         readyForFile = false;
@@ -297,7 +300,7 @@ class _TestPageState extends State<TestPage> {
         widget.storage.appendTextToFile(
             'Registro de mediciones ${DateTime.now().toLocal()}\n');
       } else {
-        sendData = SendSocket("togglefin", 0, 0,0);
+        sendData = SendSocket("togglefin", 0, 0, 0, 0);
         dataJson = jsonEncode(sendData);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         saveFileData();
@@ -309,10 +312,25 @@ class _TestPageState extends State<TestPage> {
 
   void sendInfo() {
     setState(() {
-      SendSocket sendData = SendSocket('info', idEstacion, idProgramacion,3);
+      SendSocket sendData = SendSocket(
+          'info', idEstacion, idProgramacion, pressureCalib, timeAperture);
       String dataJson = jsonEncode(sendData);
       channel.sink.add(dataJson);
     });
+  }
+
+  void _changeOrientation(bool isHor) {
+    if (!isHor) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.landscapeLeft,
+      ]);
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    }
   }
 
   Widget _defaultText(
@@ -355,7 +373,7 @@ class _TestPageState extends State<TestPage> {
           intervalType: DateTimeIntervalType.seconds),
       primaryYAxis: NumericAxis(
         axisLine: const AxisLine(width: 2, color: Colors.black45),
-        maximum: 30,
+        maximum: double.parse(controllerPressure.text) * 2,
         minimum: 0,
         labelFormat: '{value}PSI',
         //numberFormat: NumberFormat.compact()
@@ -430,7 +448,7 @@ class _TestPageState extends State<TestPage> {
               if (flagButton) {
                 channel.sink.close();
               }
-              Navigator.pop(context);
+              Navigator.pushNamed(context, 'home');
             },
             icon: const Icon(Icons.arrow_back_ios)),
         elevation: 10,
@@ -455,9 +473,9 @@ class _TestPageState extends State<TestPage> {
             image: DecorationImage(
                 image: AssetImage('assets/background_white.jpg'),
                 fit: BoxFit.fill)),
-        child: Column(
+        child: ListView(
           children: [
-            SizedBox(height: getScreenSize(context).height * 0.1),
+            //SizedBox(height: getScreenSize(context).height * 0.01),
             SizedBox(
               height: getScreenSize(context).height * 0.87,
               child: Column(

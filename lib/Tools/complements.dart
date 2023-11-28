@@ -21,6 +21,9 @@ TextEditingController controllerEmailRegister = TextEditingController();
 TextEditingController controllerPasswordRegister = TextEditingController();
 TextEditingController controllerEmailForget = TextEditingController();
 
+TextEditingController controllerPressure = TextEditingController();
+TextEditingController controllerTimeAperture = TextEditingController();
+
 String nombreUsuarioGlobal = "";
 String rolUsuarioGlobal = "";
 int idUsuarioGlobal = 0;
@@ -28,6 +31,8 @@ String tokenUsuarioGlobal = "";
 String fechaIngresoUsuario = "";
 int idEstacion = 0;
 int idProgramacion = 0;
+int pressureCalib = 3;
+int timeAperture = 1000;
 String fileContentData = "";
 List<ChartData> chartData = [];
 List<ChartData> chartDataStatic = [];
