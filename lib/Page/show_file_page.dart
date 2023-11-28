@@ -96,7 +96,7 @@ class _FilePageState extends State<FilePage> {
           intervalType: DateTimeIntervalType.seconds),
       primaryYAxis: NumericAxis(
         axisLine: const AxisLine(width: 2, color: Colors.black45),
-        maximum: double.parse(controllerPressure.text) * 2,
+        maximum: pressureCalib * 2,
         minimum: 0,
         labelFormat: '{value}PSI',
         //numberFormat: NumberFormat.compact()

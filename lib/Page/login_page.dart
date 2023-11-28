@@ -22,7 +22,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    //controllerPressure.text = '10';
     readCacheData();
   }
 

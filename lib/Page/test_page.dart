@@ -49,12 +49,12 @@ class _TestPageState extends State<TestPage> {
   late ChartSeriesController _chartSeriesController;
 
   String paso0 = "Pasos para realizar la prueba:\n";
-  String paso1 = "1.Verifique la correcta conexion del medidor.";
-  String paso2 = "2.Desconecte su celular de los datos moviles.\n";
+  String paso1 = "Verifique la correcta conexion del medidor.";
+  String paso2 = "Desconecte su celular de los datos moviles.";
   String paso3 =
-      "3.Conecte su dispositivo movil a la red wifi que genera el medidor llamada 'Medidor_PSI' y contraseña 'insepetAd'.\n";
+      "Conecte su dispositivo movil a la red wifi que genera el medidor llamada 'Medidor_PSI' y contraseña 'insepetAd'.";
   String paso4 =
-      "4.Si se conectó a la red correcta el boton 'Sincronizar' se habilitará, oprimalo para conectarse con el medidor y comenzar la prueba.\n";
+      "Si se conectó a la red correcta el boton 'Sincronizar' se habilitará, oprimalo para conectarse con el medidor y comenzar la prueba.";
   @override
   void dispose() {
     if (mounted) {
@@ -67,6 +67,7 @@ class _TestPageState extends State<TestPage> {
           .close(); // Cierra el canal WebSocket cuando el widget se elimina
     }
     isDisposeCalled = true;
+    enableCalib = false;
   }
 
   @override
@@ -75,6 +76,7 @@ class _TestPageState extends State<TestPage> {
     // Configura un temporizador para enviar pings periódicamente
     // widget.storage
     //     .writeFileData('Conexion con el medidor ${DateTime.now().toLocal()}\n');
+    enableCalib ? initCalib(true) : () {};
     ping2();
   }
 
@@ -319,80 +321,105 @@ class _TestPageState extends State<TestPage> {
     });
   }
 
-  void _changeOrientation(bool isHor) {
-    if (!isHor) {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.landscapeLeft,
-      ]);
-    } else {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
-    }
-  }
-
-  Widget _defaultText(
-      String text, double fontSize, Color color, FontWeight fontWeight) {
-    return Text(
-      text,
-      textAlign: TextAlign.center,
-      style: TextStyle(
-          letterSpacing: 4,
-          fontSize: fontSize,
-          color: color,
-          fontWeight: fontWeight),
+  PreferredSizeWidget _appbar() {
+    return AppBar(
+      leading: IconButton(
+          onPressed: () {
+            if (mounted) {
+              pingTimer.cancel();
+            }
+            if (flagButton) {
+              channel.sink.close();
+            }
+            Navigator.pushNamed(context, 'home');
+          },
+          icon: const Icon(Icons.arrow_back_ios)),
+      elevation: 10,
+      title: _defaultText(0.03, 'Test N° ${idProgramacion.toString()}', 18,
+          Colors.black45, FontWeight.bold),
+      actions: const [
+        Padding(
+          padding: EdgeInsets.all(8.0),
+          child: CircleAvatar(
+            radius: 20,
+            backgroundColor: Colors.black54,
+            child: Icon(
+              Icons.person,
+              color: Colors.white,
+            ),
+          ),
+        )
+      ],
     );
   }
 
-  Widget _cardStep(IconData icon, String step) {
+  Widget _defaultText(double height, String text, double fontSize, Color color,
+      FontWeight fontWeight) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            letterSpacing: 4,
+            fontSize: fontSize,
+            color: color,
+            fontWeight: fontWeight),
+      ),
+    );
+  }
+
+  Widget _cardStep(IconData icon, int stepN, String step) {
     return Card(
       child: ListTile(
         leading: Icon(icon),
-        title: Text(step),
+        title: Text('Paso $stepN:'),
+        subtitle: Text(step),
       ),
     );
   }
 
-  Widget _dataGraph(List<ChartData> data) {
-    return SfCartesianChart(
-      legend: Legend(
-        iconBorderWidth: 2,
-        offset: const Offset(120, -80),
-        isVisible: true,
-        position: LegendPosition.bottom,
-        //alignment: ChartAlignment.center
-      ),
-      primaryXAxis: DateTimeAxis(
-          axisLine: const AxisLine(width: 2, color: Colors.black45),
-          title: AxisTitle(text: "Segundos(s)"),
-          autoScrollingMode: AutoScrollingMode.end,
-          autoScrollingDelta: 30,
-          edgeLabelPlacement: EdgeLabelPlacement.shift,
-          intervalType: DateTimeIntervalType.seconds),
-      primaryYAxis: NumericAxis(
-        axisLine: const AxisLine(width: 2, color: Colors.black45),
-        maximum: double.parse(controllerPressure.text) * 2,
-        minimum: 0,
-        labelFormat: '{value}PSI',
-        //numberFormat: NumberFormat.compact()
-      ),
-      series: <ChartSeries>[
-        SplineSeries<ChartData, DateTime>(
-          onRendererCreated: (ChartSeriesController controller) {
-            _chartSeriesController = controller;
-          },
-          legendItemText: "Presión[PSI]",
-          dataSource: data,
-          xValueMapper: (ChartData data, _) => data.timeP,
-          yValueMapper: (ChartData data, _) => data.value,
-          color: Colors.greenAccent.shade400,
-          width: 2,
-          opacity: 1,
-          splineType: SplineType.monotonic,
+  Widget _dataGraph(double height, List<ChartData> data) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: SfCartesianChart(
+        legend: Legend(
+          iconBorderWidth: 2,
+          offset: const Offset(120, -80),
+          isVisible: true,
+          position: LegendPosition.bottom,
+          //alignment: ChartAlignment.center
         ),
-      ],
+        primaryXAxis: DateTimeAxis(
+            axisLine: const AxisLine(width: 2, color: Colors.black45),
+            title: AxisTitle(text: "Segundos(s)"),
+            autoScrollingMode: AutoScrollingMode.end,
+            autoScrollingDelta: 30,
+            edgeLabelPlacement: EdgeLabelPlacement.shift,
+            intervalType: DateTimeIntervalType.seconds),
+        primaryYAxis: NumericAxis(
+          axisLine: const AxisLine(width: 2, color: Colors.black45),
+          maximum: pressureCalib * 2,
+          minimum: 0,
+          labelFormat: '{value}PSI',
+          //numberFormat: NumberFormat.compact()
+        ),
+        series: <ChartSeries>[
+          SplineSeries<ChartData, DateTime>(
+            onRendererCreated: (ChartSeriesController controller) {
+              _chartSeriesController = controller;
+            },
+            legendItemText: "Presión[PSI]",
+            dataSource: data,
+            xValueMapper: (ChartData data, _) => data.timeP,
+            yValueMapper: (ChartData data, _) => data.value,
+            color: Colors.greenAccent.shade400,
+            width: 2,
+            opacity: 1,
+            splineType: SplineType.monotonic,
+          ),
+        ],
+      ),
     );
   }
 
@@ -408,19 +435,23 @@ class _TestPageState extends State<TestPage> {
   }
 
   Widget _rowButtons(
+      double height,
       String textButton1,
       String textButton2,
       void Function() functionButton1,
       void Function() functionButton2,
       bool enableFin) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: <Widget>[
-        _actionButton(!isInCalibState && !isInTestState, functionButton1,
-            Colors.green.shade300, textButton1),
-        _actionButton(
-            enableFin, functionButton2, Colors.redAccent, textButton2),
-      ],
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          _actionButton(!isInCalibState && !isInTestState, functionButton1,
+              Colors.green.shade300, textButton1),
+          _actionButton(
+              enableFin, functionButton2, Colors.redAccent, textButton2),
+        ],
+      ),
     );
   }
 
@@ -439,35 +470,7 @@ class _TestPageState extends State<TestPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        leading: IconButton(
-            onPressed: () {
-              if (mounted) {
-                pingTimer.cancel();
-              }
-              if (flagButton) {
-                channel.sink.close();
-              }
-              Navigator.pushNamed(context, 'home');
-            },
-            icon: const Icon(Icons.arrow_back_ios)),
-        elevation: 10,
-        title: _defaultText('Test N° ${idProgramacion.toString()}', 18,
-            Colors.black45, FontWeight.bold),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.black54,
-              child: Icon(
-                Icons.person,
-                color: Colors.white,
-              ),
-            ),
-          )
-        ],
-      ),
+      appBar: _appbar(),
       body: Container(
         decoration: const BoxDecoration(
             image: DecorationImage(
@@ -475,23 +478,25 @@ class _TestPageState extends State<TestPage> {
                 fit: BoxFit.fill)),
         child: ListView(
           children: [
-            //SizedBox(height: getScreenSize(context).height * 0.01),
-            SizedBox(
-              height: getScreenSize(context).height * 0.87,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _defaultText("PRUEBA DE HERMETICIDAD", 25, Colors.black,
-                      FontWeight.bold),
-                  const SizedBox(height: 20),
-                  _defaultText(macESP32, 16, Colors.black, FontWeight.w500),
-                  const SizedBox(height: 20),
-                  _actionButton(!(isInSocket || !checkboxValue), reconectSocket,
-                      Colors.green.shade300, "Sincronizar"),
-                  const SizedBox(height: 20),
-                  isInSocket ? _buildStartTest(context) : _buildSteps(),
-                ],
-              ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                SizedBox(
+                  height: getScreenSize(context).height * 0.02,
+                ),
+                _defaultText(0.08, "PRUEBA DE HERMETICIDAD", 25, Colors.black,
+                    FontWeight.bold),
+                SizedBox(height: getScreenSize(context).height * 0.02),
+                _defaultText(0.02, macESP32, 16, Colors.black, FontWeight.w500),
+                // true ? Container() : const SizedBox(height: 20),
+                // true
+                //     ? Container()
+                //     : _actionButton(!(isInSocket || !checkboxValue),
+                //         reconectSocket, Colors.green.shade300, "Sincronizar"),
+                // true ? Container() : const SizedBox(height: 20),
+                isInSocket ? _buildStartTest() : _buildSteps(), //inInSocket ?
+              ],
             ),
           ],
         ),
@@ -503,31 +508,151 @@ class _TestPageState extends State<TestPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        _defaultText(paso0, 16, Colors.black, FontWeight.w500),
-        _cardStep(Icons.cable, paso1),
-        _cardStep(Icons.signal_cellular_off, paso2),
-        _cardStep(Icons.wifi, paso3),
-        _cardStep(Icons.radio_button_checked, paso4),
+        const SizedBox(height: 20),
+        _actionButton(!(isInSocket || !checkboxValue), reconectSocket,
+            Colors.green.shade300, "Sincronizar"),
+        const SizedBox(height: 20),
+        _defaultText(0.02, paso0, 16, Colors.black, FontWeight.w500),
+        _cardStep(Icons.cable, 1, paso1),
+        _cardStep(Icons.signal_cellular_off, 2, paso2),
+        _cardStep(Icons.wifi, 3, paso3),
+        _cardStep(Icons.radio_button_checked, 4, paso4),
       ],
     );
   }
 
-  Widget _buildStartTest(BuildContext context) {
+  Widget _buildStartTest() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        _defaultText(receivedText, 16, Colors.black, FontWeight.w500),
-        const SizedBox(height: 10),
-        _defaultText(timeText, 16, Colors.black, FontWeight.w500),
-        _dataGraph(chartData),
-        _rowButtons("Calibrar", "Terminar", () => initCalib(true),
-            () => initCalib(false), isInCalibState),
-        const SizedBox(height: 20),
-        _rowButtons("Iniciar", "Terminar", () => initTest(true),
+        SizedBox(height: getScreenSize(context).height * 0.01),
+        _defaultText(0.02, receivedText, 16, Colors.black, FontWeight.w500),
+        SizedBox(height: getScreenSize(context).height * 0.01),
+        _defaultText(0.02, timeText, 16, Colors.black, FontWeight.w500),
+        _dataGraph(0.5, chartData),
+        _rowButtons(0.05, "Calibrar", "Terminar", () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return const ConfigTestOverlay();
+            },
+          );
+        }, () => initCalib(false), isInCalibState),
+        SizedBox(height: getScreenSize(context).height * 0.01),
+        _rowButtons(0.05, "Iniciar", "Terminar", () => initTest(true),
             () => initTest(false), isInTestState),
-        const SizedBox(height: 20),
+        SizedBox(height: getScreenSize(context).height * 0.01),
         _resultButton("Resultados", Colors.blueAccent)
       ],
+    );
+  }
+}
+
+class ConfigTestOverlay extends StatefulWidget {
+  const ConfigTestOverlay({super.key});
+
+  @override
+  State<ConfigTestOverlay> createState() => _ConfigTestOverlayState();
+}
+
+class _ConfigTestOverlayState extends State<ConfigTestOverlay> {
+  Widget _popBar(double heightContent, IconData icon) {
+    return SizedBox(
+      height: getScreenSize(context).height * heightContent,
+      child: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(icon))),
+    );
+  }
+
+  Widget _defaultText(String text, double fontSize, Color color,
+      double letterSpacing, FontWeight fontWeight) {
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+          letterSpacing: letterSpacing,
+          fontSize: fontSize,
+          color: color,
+          fontWeight: fontWeight),
+    );
+  }
+
+  Widget _textFieldConfig(
+      double height,
+      String text,
+      IconData icon,
+      TextInputType textInputType,
+      TextEditingController textEditingController) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: CustomerTextFieldLogin(
+          label: text,
+          textinputtype: textInputType,
+          obscure: false,
+          icondata: icon,
+          texteditingcontroller: textEditingController,
+          bsuffixIcon: false,
+          onTapSuffixIcon: () {},
+          suffixIcon: Icons.person,
+          width: .8,
+          labelColor: Colors.black,
+          textColor: Colors.black),
+    );
+  }
+
+  Widget _configButton(double height, String text) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      width: getScreenSize(context).width * 0.9,
+      child: CustomerElevateButton(
+          texto: text,
+          colorTexto: Colors.white,
+          colorButton: Colors.green.shade400,
+          onPressed: () {
+            try {
+              pressureCalib = int.parse(controllerPressure.text);
+              timeAperture = int.parse(controllerTimeAperture.text);
+              enableCalib = true;
+              Navigator.pushNamed(context, 'test');
+            } catch (e) {
+              showMessageTOAST(context, "Ingrese un valor", Colors.red);
+            }
+          },
+          height: .05,
+          width: .5),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
+        child: Card(
+          color: const Color.fromARGB(242, 247, 247, 247),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            width: getScreenSize(context).width * 0.9,
+            height: getScreenSize(context).height * 0.4,
+            child: Column(children: [
+              _popBar(0.05, Icons.close),
+              _defaultText("CONFIGURACION CALIBRACION", 18, Colors.black54, 2,
+                  FontWeight.bold),
+              SizedBox(height: getScreenSize(context).height * 0.02),
+              _textFieldConfig(0.1, "Presion (PSI)", Icons.chevron_right,
+                  TextInputType.number, controllerPressure),
+              _textFieldConfig(0.1, "Tolerancia (%)", Icons.chevron_right,
+                  TextInputType.number, controllerTimeAperture),
+              _configButton(0.05, "CONFIGURAR")
+            ]),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -564,6 +689,19 @@ class _ShowFileOverlayState extends State<ShowFileOverlay> {
     });
   }
 
+  Widget _closeBar(double heightContent, IconData icon) {
+    return SizedBox(
+      height: getScreenSize(context).height * heightContent,
+      child: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(icon))),
+    );
+  }
+
   Widget _defaultText(String text, double fontSize, Color color,
       double letterSpacing, FontWeight fontWeight) {
     return Text(
@@ -574,19 +712,6 @@ class _ShowFileOverlayState extends State<ShowFileOverlay> {
           fontSize: fontSize,
           color: color,
           fontWeight: fontWeight),
-    );
-  }
-
-  Widget _popBar(double heightContent, IconData icon) {
-    return SizedBox(
-      height: getScreenSize(context).height * heightContent,
-      child: Align(
-          alignment: Alignment.centerRight,
-          child: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: Icon(icon))),
     );
   }
 
@@ -642,7 +767,7 @@ class _ShowFileOverlayState extends State<ShowFileOverlay> {
             height: getScreenSize(context).height * 0.6,
             child: Column(
               children: [
-                _popBar(0.05, Icons.close),
+                _closeBar(0.05, Icons.close),
                 _scrollData(0.4, fileContentData),
                 SizedBox(height: getScreenSize(context).height * 0.02),
                 _defaultText("*Conecte su dispositivo a la red movil", 14,

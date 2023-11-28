@@ -35,7 +35,7 @@ class _SplashPageState extends State<SplashPage> {
                 padding: EdgeInsets.symmetric(
                     horizontal: size.width * 0.1, vertical: size.height * 0.04),
                 child: Text(
-                  "S I S T E M A S  I N S E P E T",
+                  "SISTEMAS INSEPET",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: Colors.white,

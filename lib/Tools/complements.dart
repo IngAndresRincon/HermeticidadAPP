@@ -31,11 +31,12 @@ String tokenUsuarioGlobal = "";
 String fechaIngresoUsuario = "";
 int idEstacion = 0;
 int idProgramacion = 0;
-int pressureCalib = 3;
+int pressureCalib = 15;
 int timeAperture = 1000;
 String fileContentData = "";
 List<ChartData> chartData = [];
 List<ChartData> chartDataStatic = [];
+bool enableCalib = false;
 
 Future<bool?> showMessageTOAST(
     BuildContext context, String mensaje, Color color) {
