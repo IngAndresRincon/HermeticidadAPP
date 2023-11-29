@@ -76,7 +76,7 @@ class _TestPageState extends State<TestPage> {
     // Configura un temporizador para enviar pings periódicamente
     // widget.storage
     //     .writeFileData('Conexion con el medidor ${DateTime.now().toLocal()}\n');
-    enableCalib ? initCalib(true) : () {};
+    //enableCalib ? initCalib(true) : () {};
     ping2();
   }
 
@@ -228,7 +228,7 @@ class _TestPageState extends State<TestPage> {
     }
   }
 
-  Future<void> reconectSocket() async {
+  Future<void> reconectSocket(bool a) async {
     try {
       if (await isWebSocketAvailable(testUrl)) {
         channel = IOWebSocketChannel.connect(serverUrl);
@@ -369,12 +369,16 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
-  Widget _cardStep(IconData icon, int stepN, String step) {
-    return Card(
-      child: ListTile(
-        leading: Icon(icon),
-        title: Text('Paso $stepN:'),
-        subtitle: Text(step),
+  Widget _cardStep(double height, IconData icon, int stepN, String step) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: Card(
+        elevation: 10,
+        child: ListTile(
+          leading: Icon(icon),
+          title: Text('Paso $stepN:'),
+          subtitle: Text(step),
+        ),
       ),
     );
   }
@@ -423,40 +427,71 @@ class _TestPageState extends State<TestPage> {
     );
   }
 
-  Widget _actionButton(
-      bool enable, void Function() function, Color colorButton, String text) {
+  Widget _actionButton(bool enable, bool state, void Function(bool) function,
+      Color colorButton, String text) {
     return CustomerElevateButton(
         texto: text,
         colorTexto: Colors.white,
-        colorButton: enable ? colorButton : Colors.grey,
-        onPressed: enable ? function : () {},
+        colorButton: !state
+            ? Colors.red
+            : enable
+                ? colorButton
+                : Colors.grey,
+        onPressed: !state
+            ? () => function(false)
+            : enable
+                ? () => function(true)
+                : () {},
         height: .05,
         width: .45);
   }
 
   Widget _rowButtons(
-      double height,
-      String textButton1,
-      String textButton2,
-      void Function() functionButton1,
-      void Function() functionButton2,
-      bool enableFin) {
+    double height,
+    String textButton1,
+    String textButton2,
+    void Function(bool) functionButton1,
+    void Function(bool) functionButton2,
+  ) {
     return SizedBox(
       height: getScreenSize(context).height * height,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: <Widget>[
-          _actionButton(!isInCalibState && !isInTestState, functionButton1,
-              Colors.green.shade300, textButton1),
-          _actionButton(
-              enableFin, functionButton2, Colors.redAccent, textButton2),
+          _actionButton(!isInCalibState && !isInTestState, !isInCalibState,
+              functionButton1, Colors.green.shade300, textButton1),
+          _actionButton(!isInCalibState && !isInTestState, !isInTestState,
+              functionButton2, Colors.green.shade300, textButton2),
         ],
       ),
     );
   }
 
+  Widget _rowInfo(double height, String text) {
+    return SizedBox(
+        height: getScreenSize(context).height * height,
+        width: getScreenSize(context).width * 0.95,
+        child: Card(
+          elevation: 10,
+          child: ListTile(
+            leading: IconButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return const ConfigTestOverlay();
+                  },
+                );
+              },
+              icon: const Icon(Icons.settings),
+            ),
+            title: _defaultText(0.025, text, 15, Colors.black, FontWeight.bold),
+          ),
+        ));
+  }
+
   Widget _resultButton(String text, Color color) {
-    return _actionButton(!isInTestState && !isInCalibState, () {
+    return _actionButton(!isInTestState && !isInCalibState, true, (bool a) {
       showDialog(
         context: context,
         builder: (context) {
@@ -482,20 +517,12 @@ class _TestPageState extends State<TestPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
               children: [
-                SizedBox(
-                  height: getScreenSize(context).height * 0.02,
-                ),
+                SizedBox(height: getScreenSize(context).height * 0.02),
                 _defaultText(0.08, "PRUEBA DE HERMETICIDAD", 25, Colors.black,
                     FontWeight.bold),
-                SizedBox(height: getScreenSize(context).height * 0.02),
+                SizedBox(height: getScreenSize(context).height * 0.01),
                 _defaultText(0.02, macESP32, 16, Colors.black, FontWeight.w500),
-                // true ? Container() : const SizedBox(height: 20),
-                // true
-                //     ? Container()
-                //     : _actionButton(!(isInSocket || !checkboxValue),
-                //         reconectSocket, Colors.green.shade300, "Sincronizar"),
-                // true ? Container() : const SizedBox(height: 20),
-                isInSocket ? _buildStartTest() : _buildSteps(), //inInSocket ?
+                isInSocket ? _buildStartTest() : _buildSteps(),
               ],
             ),
           ],
@@ -508,15 +535,19 @@ class _TestPageState extends State<TestPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        const SizedBox(height: 20),
-        _actionButton(!(isInSocket || !checkboxValue), reconectSocket,
+        SizedBox(height: getScreenSize(context).height * 0.015),
+        _actionButton(!(isInSocket || !checkboxValue), true, reconectSocket,
             Colors.green.shade300, "Sincronizar"),
-        const SizedBox(height: 20),
-        _defaultText(0.02, paso0, 16, Colors.black, FontWeight.w500),
-        _cardStep(Icons.cable, 1, paso1),
-        _cardStep(Icons.signal_cellular_off, 2, paso2),
-        _cardStep(Icons.wifi, 3, paso3),
-        _cardStep(Icons.radio_button_checked, 4, paso4),
+        SizedBox(height: getScreenSize(context).height * 0.015),
+        _defaultText(0.03, paso0, 16, Colors.black, FontWeight.w500),
+        SizedBox(height: getScreenSize(context).height * 0.015),
+        _cardStep(0.1, Icons.cable, 1, paso1),
+        SizedBox(height: getScreenSize(context).height * 0.015),
+        _cardStep(0.1, Icons.signal_cellular_off, 2, paso2),
+        SizedBox(height: getScreenSize(context).height * 0.015),
+        _cardStep(0.13, Icons.wifi, 3, paso3),
+        SizedBox(height: getScreenSize(context).height * 0.015),
+        _cardStep(0.15, Icons.radio_button_checked, 4, paso4),
       ],
     );
   }
@@ -526,21 +557,13 @@ class _TestPageState extends State<TestPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         SizedBox(height: getScreenSize(context).height * 0.01),
-        _defaultText(0.02, receivedText, 16, Colors.black, FontWeight.w500),
+        _defaultText(0.025, receivedText, 16, Colors.black, FontWeight.bold),
         SizedBox(height: getScreenSize(context).height * 0.01),
-        _defaultText(0.02, timeText, 16, Colors.black, FontWeight.w500),
+        _defaultText(0.02, timeText, 16, Colors.black, FontWeight.bold),
         _dataGraph(0.5, chartData),
-        _rowButtons(0.05, "Calibrar", "Terminar", () {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return const ConfigTestOverlay();
-            },
-          );
-        }, () => initCalib(false), isInCalibState),
+        _rowInfo(0.07, 'Calibracion: $pressureCalib(PSI)±$timeAperture% '),
         SizedBox(height: getScreenSize(context).height * 0.01),
-        _rowButtons(0.05, "Iniciar", "Terminar", () => initTest(true),
-            () => initTest(false), isInTestState),
+        _rowButtons(0.05, "Calibrar", "Testear", initCalib, initTest),
         SizedBox(height: getScreenSize(context).height * 0.01),
         _resultButton("Resultados", Colors.blueAccent)
       ],
@@ -618,7 +641,7 @@ class _ConfigTestOverlayState extends State<ConfigTestOverlay> {
               pressureCalib = int.parse(controllerPressure.text);
               timeAperture = int.parse(controllerTimeAperture.text);
               enableCalib = true;
-              Navigator.pushNamed(context, 'test');
+              Navigator.pop(context);
             } catch (e) {
               showMessageTOAST(context, "Ingrese un valor", Colors.red);
             }
