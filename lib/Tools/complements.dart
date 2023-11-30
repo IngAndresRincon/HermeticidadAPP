@@ -36,6 +36,9 @@ int timeAperture = 1;
 String fileContentData = "";
 List<ChartData> chartData = [];
 List<ChartData> chartDataStatic = [];
+List<ChartData> lineToleranceUp = [];
+List<ChartData> lineToleranceDown = [];
+
 bool enableCalib = false;
 
 Future<bool?> showMessageTOAST(

@@ -7,7 +7,6 @@ import '../Widgets/elevate_button.dart';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
 import 'package:hermeticidadapp/Tools/functions.dart';
-import 'package:flutter/services.dart';
 
 import 'package:web_socket_channel/io.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -47,6 +46,8 @@ class _TestPageState extends State<TestPage> {
   late Timer pingTimer;
   double contador = 0.0;
   late ChartSeriesController _chartSeriesController;
+  late ChartSeriesController _toleranceUpSeriesController;
+  late ChartSeriesController _toleranceDownSeriesController;
 
   String paso0 = "Pasos para realizar la prueba:\n";
   String paso1 = "Verifique la correcta conexion del medidor.";
@@ -167,8 +168,16 @@ class _TestPageState extends State<TestPage> {
           DateTime dateTimeP = dateTimeConvert(timeP);
           timeText = dateTimeP.toString();
           chartData.add(ChartData(dateTimeP, parsedData));
+          lineToleranceUp.add(
+              ChartData(dateTimeP, pressureCalib * (1 + 0.01 * timeAperture)));
+          lineToleranceDown.add(
+              ChartData(dateTimeP, pressureCalib * (1 - 0.01 * timeAperture)));
           _chartSeriesController.updateDataSource(
               addedDataIndex: chartData.length - 1);
+          _toleranceUpSeriesController.updateDataSource(
+              addedDataIndex: lineToleranceUp.length - 1);
+          _toleranceDownSeriesController.updateDataSource(
+              addedDataIndex: lineToleranceDown.length - 1);
           String datosArchivo =
               '${user.nDatos}[${DateTime.now().hour}:${DateTime.now().minute}:${DateTime.now().second}][$parsedData]';
           widget.storage.appendTextToFile(datosArchivo);
@@ -263,6 +272,7 @@ class _TestPageState extends State<TestPage> {
   }
 
   void initCalib(bool action) {
+    sendInfo();
     setState(() {
       isInCalibState = action;
       SendSocket dataSend;
@@ -272,6 +282,8 @@ class _TestPageState extends State<TestPage> {
         dataJson = jsonEncode(dataSend);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         chartData.clear();
+        lineToleranceDown.clear();
+        lineToleranceUp.clear();
         readyForFile = false;
         widget.storage.appendTextToFile(
             'Registro de calibracion ${DateTime.now().toLocal()}\n');
@@ -298,6 +310,8 @@ class _TestPageState extends State<TestPage> {
         channel.sink.add(dataJson);
         readyForFile = false;
         chartData.clear();
+        lineToleranceDown.clear();
+        lineToleranceUp.clear();
         showMessageTOAST(context, "Prueba Iniciada", Colors.green);
         widget.storage.appendTextToFile(
             'Registro de mediciones ${DateTime.now().toLocal()}\n');
@@ -389,7 +403,7 @@ class _TestPageState extends State<TestPage> {
       child: SfCartesianChart(
         legend: Legend(
           iconBorderWidth: 2,
-          offset: const Offset(120, -80),
+          offset: const Offset(20, -80),
           isVisible: true,
           position: LegendPosition.bottom,
           //alignment: ChartAlignment.center
@@ -399,8 +413,9 @@ class _TestPageState extends State<TestPage> {
             title: AxisTitle(text: "Segundos(s)"),
             autoScrollingMode: AutoScrollingMode.end,
             autoScrollingDelta: 30,
-            edgeLabelPlacement: EdgeLabelPlacement.shift,
-            intervalType: DateTimeIntervalType.seconds),
+            //edgeLabelPlacement: EdgeLabelPlacement.shift,
+            intervalType: DateTimeIntervalType.seconds,
+            interval: 5),
         primaryYAxis: NumericAxis(
           axisLine: const AxisLine(width: 2, color: Colors.black45),
           maximum: pressureCalib * 2,
@@ -422,6 +437,36 @@ class _TestPageState extends State<TestPage> {
             opacity: 1,
             splineType: SplineType.monotonic,
           ),
+          LineSeries<ChartData, DateTime>(
+            onRendererCreated: (ChartSeriesController controller) {
+              _toleranceUpSeriesController = controller;
+            },
+            legendItemText: '+$timeAperture%',
+            dataSource: lineToleranceUp,
+            xValueMapper: (ChartData lineToleranceUp, _) =>
+                lineToleranceUp.timeP,
+            yValueMapper: (ChartData lineToleranceUp, _) =>
+                lineToleranceUp.value,
+            color: Colors.cyan,
+            width: 1,
+            opacity: 0.4,
+            //dashArray: const <double>[10, 10],
+          ),
+          LineSeries<ChartData, DateTime>(
+            onRendererCreated: (ChartSeriesController controller) {
+              _toleranceDownSeriesController = controller;
+            },
+            legendItemText: "-$timeAperture%",
+            dataSource: lineToleranceDown,
+            xValueMapper: (ChartData lineToleranceDown, _) =>
+                lineToleranceDown.timeP,
+            yValueMapper: (ChartData lineToleranceDown, _) =>
+                lineToleranceDown.value,
+            color: Colors.cyan,
+            width: 1,
+            opacity: 0.4,
+            //dashArray: const <double>[10, 10],
+          )
         ],
       ),
     );

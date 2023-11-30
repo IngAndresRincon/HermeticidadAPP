@@ -80,7 +80,7 @@ class _FilePageState extends State<FilePage> {
               const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       legend: Legend(
         iconBorderWidth: 2,
-        offset: const Offset(110, -80),
+        offset: const Offset(20, -80),
         isVisible: true,
         position: LegendPosition.bottom,
         //alignment: ChartAlignment.center
@@ -113,6 +113,28 @@ class _FilePageState extends State<FilePage> {
           splineType: SplineType.monotonic,
           //dashArray: const <double>[5, 5],
         ),
+        LineSeries<ChartData, DateTime>(
+          legendItemText: '+$timeAperture%',
+          dataSource: lineToleranceUp,
+          xValueMapper: (ChartData lineToleranceUp, _) => lineToleranceUp.timeP,
+          yValueMapper: (ChartData lineToleranceUp, _) => lineToleranceUp.value,
+          color: Colors.cyan,
+          width: 1,
+          opacity: 0.4,
+          //dashArray: const <double>[10, 10],
+        ),
+        LineSeries<ChartData, DateTime>(
+          legendItemText: "-$timeAperture%",
+          dataSource: lineToleranceDown,
+          xValueMapper: (ChartData lineToleranceDown, _) =>
+              lineToleranceDown.timeP,
+          yValueMapper: (ChartData lineToleranceDown, _) =>
+              lineToleranceDown.value,
+          color: Colors.cyan,
+          width: 1,
+          opacity: 0.4,
+          //dashArray: const <double>[10, 10],
+        )
       ],
     );
   }
