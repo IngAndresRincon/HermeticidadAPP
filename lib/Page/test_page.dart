@@ -271,6 +271,15 @@ class _TestPageState extends State<TestPage> {
     });
   }
 
+  void sendInfo() {
+    setState(() {
+      SendSocket sendData = SendSocket(
+          'info', idEstacion, idProgramacion, pressureCalib, timeAperture);
+      String dataJson = jsonEncode(sendData);
+      channel.sink.add(dataJson);
+    });
+  }
+
   void initCalib(bool action) {
     sendInfo();
     setState(() {
@@ -323,15 +332,6 @@ class _TestPageState extends State<TestPage> {
         showMessageTOAST(context, "Prueba Terminada", Colors.red.shade700);
         //sincronizeFile();
       }
-    });
-  }
-
-  void sendInfo() {
-    setState(() {
-      SendSocket sendData = SendSocket(
-          'info', idEstacion, idProgramacion, pressureCalib, timeAperture);
-      String dataJson = jsonEncode(sendData);
-      channel.sink.add(dataJson);
     });
   }
 

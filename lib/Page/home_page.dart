@@ -266,7 +266,8 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
         .then((List<dynamic> value) {
       //print(value);
       setState(() {
-        dynamicList = value;
+        value.isNotEmpty ? dynamicList = value : dynamicList = requestList;
+        requestList = dynamicList;
         for (var i = 0; i < dynamicList.length; i++) {
           colorList.add(Colors.white);
         }

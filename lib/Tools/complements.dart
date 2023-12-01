@@ -39,6 +39,8 @@ List<ChartData> chartDataStatic = [];
 List<ChartData> lineToleranceUp = [];
 List<ChartData> lineToleranceDown = [];
 
+List<dynamic> requestList = [];
+
 bool enableCalib = false;
 
 Future<bool?> showMessageTOAST(
