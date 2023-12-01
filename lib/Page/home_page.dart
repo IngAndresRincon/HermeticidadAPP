@@ -250,7 +250,7 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
   late List<dynamic> dynamicList = [];
   late List<dynamic> colorList = [];
   @override
-  void initState() {
+  void initState() {                                      
     super.initState();
     getListSchedule();
   }
@@ -266,8 +266,7 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
         .then((List<dynamic> value) {
       //print(value);
       setState(() {
-        value.isNotEmpty ? dynamicList = value : dynamicList = requestList;
-        requestList = dynamicList;
+        dynamicList = value;
         for (var i = 0; i < dynamicList.length; i++) {
           colorList.add(Colors.white);
         }

@@ -105,7 +105,7 @@ class _ScreenOverlaySetingsState extends State<ScreenOverlaySetings> {
                       _defaultText(
                           0.05, "CONFIGURACION", 18, 2, FontWeight.bold),
                       _textFieldConfig(0.1, "Ip", Icons.chevron_right,
-                          TextInputType.url, controllerIp),
+                          TextInputType.number, controllerIp),
                       _textFieldConfig(0.1, "Puerto", Icons.chevron_right,
                           TextInputType.number, controllerPort),
                       _configButton(0.05, "Guardar"),

@@ -95,12 +95,34 @@ class _FilePageState extends State<FilePage> {
           edgeLabelPlacement: EdgeLabelPlacement.shift,
           intervalType: DateTimeIntervalType.seconds),
       primaryYAxis: NumericAxis(
-        axisLine: const AxisLine(width: 2, color: Colors.black45),
-        maximum: pressureCalib * 2,
-        minimum: 0,
-        labelFormat: '{value}PSI',
-        //numberFormat: NumberFormat.compact()
-      ),
+          axisLine: const AxisLine(width: 2, color: Colors.black45),
+          maximum: pressureCalib * 2,
+          minimum: 0,
+          labelFormat: '{value}PSI',
+          plotBands: <PlotBand>[
+            PlotBand(
+              isVisible: true,
+              start: pressureCalib * (1 - 0.01 * timeAperture),
+              end: pressureCalib * (1 + 0.01 * timeAperture),
+              opacity: 0.5,
+              color: Colors.blueGrey.shade100,
+              borderWidth: 1,
+              dashArray: const <double>[5, 5],
+              text: '±$timeAperture%',
+              horizontalTextAlignment: TextAnchor.end,
+              verticalTextAlignment: TextAnchor.end,
+              textStyle: const TextStyle(color: Colors.black),
+            ),
+            PlotBand(
+              isVisible: true,
+              start: pressureCalib,
+              end: pressureCalib,
+              opacity: 0.5,
+              borderColor: Colors.cyan,
+              borderWidth: 1,
+              dashArray: const <double>[8, 8],
+            )
+          ]),
       series: <ChartSeries>[
         SplineSeries<ChartData, DateTime>(
           legendItemText: "Presión[PSI]",
@@ -113,28 +135,6 @@ class _FilePageState extends State<FilePage> {
           splineType: SplineType.monotonic,
           //dashArray: const <double>[5, 5],
         ),
-        LineSeries<ChartData, DateTime>(
-          legendItemText: '+$timeAperture%',
-          dataSource: lineToleranceUp,
-          xValueMapper: (ChartData lineToleranceUp, _) => lineToleranceUp.timeP,
-          yValueMapper: (ChartData lineToleranceUp, _) => lineToleranceUp.value,
-          color: Colors.cyan,
-          width: 1,
-          opacity: 0.4,
-          //dashArray: const <double>[10, 10],
-        ),
-        LineSeries<ChartData, DateTime>(
-          legendItemText: "-$timeAperture%",
-          dataSource: lineToleranceDown,
-          xValueMapper: (ChartData lineToleranceDown, _) =>
-              lineToleranceDown.timeP,
-          yValueMapper: (ChartData lineToleranceDown, _) =>
-              lineToleranceDown.value,
-          color: Colors.cyan,
-          width: 1,
-          opacity: 0.4,
-          //dashArray: const <double>[10, 10],
-        )
       ],
     );
   }

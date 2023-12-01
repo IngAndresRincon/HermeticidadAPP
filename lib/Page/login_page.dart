@@ -31,28 +31,34 @@ class _LoginPageState extends State<LoginPage> {
         'http://${controllerIp.text}:${controllerPort.text}/api/POSTvalidarIngreso';
     postLogin(postUrl, jsonEncode(map)).then((value) {
       Navigator.pop(context);
-      if (value != "500") {
-        List<dynamic> dynamicData = jsonDecode(value);
-        List<UserModel> dataUser =
-            dynamicData.map((item) => UserModel.fromJson(item)).toList();
-        if (dataUser.isNotEmpty) {
-          if (dataUser[0].activo) {
-            nombreUsuarioGlobal = dataUser[0].nombre;
-            rolUsuarioGlobal = dataUser[0].rol;
-            tokenUsuarioGlobal = dataUser[0].guid;
-            idUsuarioGlobal = dataUser[0].id;
-            fechaIngresoUsuario = dataUser[0].fecha;
-            Navigator.pushReplacementNamed(context, 'home');
+      try {
+        if (value != "500") {
+          List<dynamic> dynamicData = jsonDecode(value);
+          List<UserModel> dataUser =
+              dynamicData.map((item) => UserModel.fromJson(item)).toList();
+          if (dataUser.isNotEmpty) {
+            if (dataUser[0].activo) {
+              nombreUsuarioGlobal = dataUser[0].nombre;
+              rolUsuarioGlobal = dataUser[0].rol;
+              tokenUsuarioGlobal = dataUser[0].guid;
+              idUsuarioGlobal = dataUser[0].id;
+              fechaIngresoUsuario = dataUser[0].fecha;
+              Navigator.pushReplacementNamed(context, 'home');
+            } else {
+              showMessageTOAST(
+                  context, "Usuario no activo", Colors.red.shade700);
+            }
           } else {
-            showMessageTOAST(context, "Usuario no activo", Colors.red.shade700);
+            showMessageTOAST(
+                context, "No se encuentra ningún usuario", Colors.red.shade700);
           }
         } else {
           showMessageTOAST(
-              context, "No se encuentra ningún usuario", Colors.red.shade700);
+              context, "No se pudo procesar la solicitud", Colors.red.shade700);
         }
-      } else {
+      } catch (e) {
         showMessageTOAST(
-            context, "No se pudo procesar la solicitud", Colors.red.shade700);
+            context, "Verifique la conexion a internet", Colors.red.shade700);
       }
     });
   }
@@ -109,6 +115,87 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  Widget _textFieldLogin(double height, String text, IconData icon, bool hide,
+      TextEditingController controller, TextInputType inputType) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: CustomerTextFieldLogin(
+        width: .8,
+        bsuffixIcon: hide,
+        icondata: icon,
+        label: text,
+        obscure: hide ? obscurePassword : false,
+        onTapSuffixIcon: hide
+            ? () {
+                setState(() {
+                  if (obscurePassword) {
+                    obscurePassword = false;
+                    iconSuffix = Icons.key;
+                  } else {
+                    obscurePassword = true;
+                    iconSuffix = Icons.key_off;
+                  }
+                });
+              }
+            : () {},
+        suffixIcon: iconSuffix,
+        texteditingcontroller: controller,
+        textinputtype: inputType,
+        textColor: Colors.white,
+        labelColor: Colors.white,
+      ),
+    );
+  }
+
+  Widget _textButton(double height, String text, AlignmentGeometry alignment,
+      double fontSize, Widget overlay) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      width: getScreenSize(context).width * .8,
+      child: Align(
+        alignment: alignment,
+        child: TextButton(
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return overlay;
+                  });
+            },
+            child: Text(
+              text,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  // decoration: TextDecoration.underline,
+                  // decorationColor: Colors.green.shade400,
+                  fontSize: fontSize,
+                  letterSpacing: 1),
+            )),
+      ),
+    );
+  }
+
+  Widget _loginButton(double height, String text) {
+    return CustomerElevateButton(
+        onPressed: () async {
+          if (controllerEmail.text.isEmpty || controllerPassword.text.isEmpty) {
+            showMessageTOAST(context, "Campos no validos", Colors.red.shade700);
+            return;
+          }
+
+          Map<String, dynamic> mapDataUser = {
+            'Usuario': controllerEmail.text,
+            'Contrasena': controllerPassword.text
+          };
+          funtionButtonLogin(context, mapDataUser);
+        },
+        width: .8,
+        height: height,
+        texto: text,
+        colorTexto: Colors.white,
+        colorButton: Colors.green.shade400);
+  }
+
   Widget _loginForm(double height) {
     return Container(
       height: getScreenSize(context).height * height,
@@ -120,102 +207,16 @@ class _LoginPageState extends State<LoginPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.max,
         children: [
-          CustomerTextFieldLogin(
-            width: .8,
-            bsuffixIcon: false,
-            icondata: Icons.person,
-            label: "CORREO",
-            obscure: false,
-            onTapSuffixIcon: () {},
-            suffixIcon: iconSuffix,
-            texteditingcontroller: controllerEmail,
-            textinputtype: TextInputType.emailAddress,
-            textColor: Colors.white,
-            labelColor: Colors.white,
-          ),
-          const SizedBox(height: 20),
-          CustomerTextFieldLogin(
-            width: .8,
-            bsuffixIcon: true,
-            icondata: Icons.password_rounded,
-            label: "CONTRASEÑA",
-            obscure: obscurePassword,
-            onTapSuffixIcon: () {
-              setState(() {
-                if (obscurePassword) {
-                  obscurePassword = false;
-                  iconSuffix = Icons.key;
-                } else {
-                  obscurePassword = true;
-                  iconSuffix = Icons.key_off;
-                }
-              });
-            },
-            suffixIcon: iconSuffix,
-            texteditingcontroller: controllerPassword,
-            textinputtype: TextInputType.text,
-            textColor: Colors.white,
-            labelColor: Colors.white,
-          ),
-          SizedBox(
-            width: getScreenSize(context).width * .8,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                  onPressed: () {
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return const ScreenOverlayForgetPass();
-                        });
-                  },
-                  child: const Text(
-                    "Olvidé mi contraseña",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        // decoration: TextDecoration.underline,
-                        // decorationColor: Colors.green.shade400,
-                        fontSize: 14,
-                        letterSpacing: 1),
-                  )),
-            ),
-          ),
-          const SizedBox(height: 10),
-          CustomerElevateButton(
-              onPressed: () async {
-                if (controllerEmail.text.isEmpty ||
-                    controllerPassword.text.isEmpty) {
-                  showMessageTOAST(
-                      context, "Campos no validos", Colors.red.shade700);
-                  return;
-                }
-
-                Map<String, dynamic> mapDataUser = {
-                  'Usuario': controllerEmail.text,
-                  'Contrasena': controllerPassword.text
-                };
-                funtionButtonLogin(context, mapDataUser);
-              },
-              width: .8,
-              height: .08,
-              texto: "Ingresar",
-              colorTexto: Colors.white,
-              colorButton: Colors.green.shade400),
-          TextButton(
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return const ScreenOverlayRegister();
-                    });
-              },
-              child: const Text(
-                "Resgistrarme",
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    letterSpacing: 2),
-              )),
+          _textFieldLogin(0.1, "CORREO", Icons.person, false, controllerEmail,
+              TextInputType.emailAddress),
+          _textFieldLogin(0.07, "CONTRASEÑA", Icons.password_rounded, true,
+              controllerPassword, TextInputType.text),
+          _textButton(0.05, "Olvidé mi contraseña", Alignment.centerRight, 14,
+              const ScreenOverlayForgetPass()),
+          SizedBox(height: getScreenSize(context).height * 0.02),
+          _loginButton(0.08, "Ingresar"),
+          _textButton(0.06, "Registrarme", Alignment.center, 16,
+              const ScreenOverlayRegister()),
         ],
       ),
     );
