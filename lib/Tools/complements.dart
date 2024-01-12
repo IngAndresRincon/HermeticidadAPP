@@ -3,7 +3,9 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hermeticidadapp/Models/models.dart';
+import 'package:hermeticidadapp/Tools/encripter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:camera/camera.dart';
 
 Size getScreenSize(BuildContext context) {
   return MediaQuery.of(context).size;
@@ -23,6 +25,8 @@ TextEditingController controllerEmailForget = TextEditingController();
 
 TextEditingController controllerPressure = TextEditingController();
 TextEditingController controllerTimeAperture = TextEditingController();
+
+Encriptador encriptador = Encriptador();
 
 String nombreUsuarioGlobal = "";
 String rolUsuarioGlobal = "";

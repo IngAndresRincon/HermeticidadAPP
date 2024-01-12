@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:hermeticidadapp/Widgets/text_field.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../Widgets/elevate_button.dart';
 import 'package:http/http.dart' as http;
@@ -46,6 +49,7 @@ class _TestPageState extends State<TestPage> {
   late Timer pingTimer;
   double contador = 0.0;
   late ChartSeriesController _chartSeriesController;
+  List<File> _imageFiles = [];
 
   String paso0 = "Pasos para realizar la prueba:\n";
   String paso1 = "Verifique la correcta conexion del medidor.";
@@ -59,7 +63,6 @@ class _TestPageState extends State<TestPage> {
     if (mounted) {
       pingTimer.cancel();
     }
-
     super.dispose();
     if (flagButton) {
       channel.sink
@@ -76,6 +79,7 @@ class _TestPageState extends State<TestPage> {
     // widget.storage
     //     .writeFileData('Conexion con el medidor ${DateTime.now().toLocal()}\n');
     //enableCalib ? initCalib(true) : () {};
+    _loadImages();
     ping2();
   }
 
@@ -325,6 +329,30 @@ class _TestPageState extends State<TestPage> {
     });
   }
 
+  Future<void> _loadImages() async {
+    try {
+      // Obtener el directorio donde se almacenan las imágenes
+      final directory = await getTemporaryDirectory();
+      // Listar todos los archivos en el directorio
+      List<FileSystemEntity> files = directory.listSync();
+      // Filtrar solo los archivos de tipo imagen (puedes ajustar esto según los tipos de imágenes que estás almacenando)
+      List<File> imageFiles = files
+          .whereType<File>()
+          .where((file) => file.path.toLowerCase().endsWith('.png'))
+          .toList();
+
+      print(
+          'Lista de imágenes cargada: ${imageFiles.map((file) => file.path).toList()}');
+
+      setState(() {
+        _imageFiles.clear(); // Limpiar la lista antes de cargar nuevas imágenes
+        _imageFiles = imageFiles;
+      });
+    } catch (e) {
+      print('Error al cargar las imágenes: $e');
+    }
+  }
+
   PreferredSizeWidget _appbar() {
     return AppBar(
       leading: IconButton(
@@ -528,6 +556,12 @@ class _TestPageState extends State<TestPage> {
     }, color, text);
   }
 
+  Widget _cameraButton(String text, Color color) {
+    return _actionButton(true, true, (bool a) {
+      Navigator.pushNamed(context, 'camera');
+    }, color, text);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -575,6 +609,27 @@ class _TestPageState extends State<TestPage> {
         _cardStep(0.13, Icons.wifi, 3, paso3),
         SizedBox(height: getScreenSize(context).height * 0.015),
         _cardStep(0.15, Icons.radio_button_checked, 4, paso4),
+        SizedBox(height: getScreenSize(context).height * 0.015),
+        _imageFiles.isNotEmpty
+            ? SizedBox(
+                width: getScreenSize(context).width * 0.9,
+                height: getScreenSize(context).height * 0.2,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _imageFiles.length,
+                  itemBuilder: (context, index) {
+                    return Container(
+                      margin: const EdgeInsets.only(right: 8.0),
+                      child: Image.file(
+                        _imageFiles[index],
+                        width: getScreenSize(context).width * 0.2,
+                      ),
+                    );
+                  },
+                ),
+              )
+            : Container(),
+        _cameraButton("Evidencias", Colors.green.shade300),
       ],
     );
   }

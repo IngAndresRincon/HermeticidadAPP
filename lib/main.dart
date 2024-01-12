@@ -5,6 +5,7 @@ import 'package:hermeticidadapp/Page/test_page.dart';
 import 'Page/home_page.dart';
 import 'Page/login_page.dart';
 import 'Page/splash_page.dart';
+import 'Page/camera_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
         'home': (context) => const HomePage(),
         'test': (context) => TestPage(),
         'file': (context) => FilePage(),
+        'camera': (context) => const CameraPage(),
       },
       initialRoute: 'splash',
       theme: ThemeData(

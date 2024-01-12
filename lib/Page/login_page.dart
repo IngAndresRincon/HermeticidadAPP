@@ -185,7 +185,7 @@ class _LoginPageState extends State<LoginPage> {
 
           Map<String, dynamic> mapDataUser = {
             'Usuario': controllerEmail.text,
-            'Contrasena': controllerPassword.text
+            'Contrasena': encriptador.encrypter(controllerPassword.text)
           };
           funtionButtonLogin(context, mapDataUser);
         },

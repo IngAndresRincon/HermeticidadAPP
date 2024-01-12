@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Page/overlays_options_home.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../Tools/functions.dart';
 
@@ -35,6 +37,24 @@ class _HomePageState extends State<HomePage> {
         )
       ],
     );
+  }
+
+  Future<void> _clearDirectory() async {
+    try {
+      // Obtener el directorio donde se almacenan las imágenes
+      final directory = await getTemporaryDirectory();
+      // Listar todos los archivos en el directorio
+      // Eliminar el directorio completo y su contenido
+      await directory.delete(recursive: true);
+    } catch (e) {
+      print('Error al limpiar el directorio: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _clearDirectory();
   }
 
   Widget _drawerheader() {
@@ -250,7 +270,7 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
   late List<dynamic> dynamicList = [];
   late List<dynamic> colorList = [];
   @override
-  void initState() {                                      
+  void initState() {
     super.initState();
     getListSchedule();
   }
