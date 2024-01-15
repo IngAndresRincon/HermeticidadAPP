@@ -57,7 +57,7 @@ class _CameraPageState extends State<CameraPage> {
         // Scroll automático al final del ListView
         if (_capturedImages.length > 4) {
           _scrollController.animateTo(
-            _scrollController.position.extentTotal,
+            _scrollController.position.devicePixelRatio,
             duration: const Duration(milliseconds: 500),
             curve: Curves.easeInOut,
           );

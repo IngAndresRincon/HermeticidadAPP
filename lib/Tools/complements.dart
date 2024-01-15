@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:hermeticidadapp/Tools/encripter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:camera/camera.dart';
+import 'package:timeline_tile/timeline_tile.dart';
 
 Size getScreenSize(BuildContext context) {
   return MediaQuery.of(context).size;
@@ -98,5 +98,46 @@ Future<void> writeCacheData(String ipApi, String portApi) async {
     await prefs.setString('cacheJson', cacheJson);
   } catch (e) {
     developer.log("Error al escribir cache");
+  }
+}
+
+class ItemLineTime extends StatelessWidget {
+  final bool isFirts;
+  final bool isLast;
+  final bool isPast;
+  const ItemLineTime(
+      {super.key,
+      required this.isFirts,
+      required this.isLast,
+      required this.isPast});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 200,
+      child: TimelineTile(
+        isFirst: isFirts,
+        isLast: isLast,
+        beforeLineStyle:
+            LineStyle(color: isPast ? Colors.blue : Colors.blue.shade100),
+        indicatorStyle: IndicatorStyle(
+            width: getScreenSize(context).width * 0.1,
+            color: isPast ? Colors.blue : Colors.blue.shade100,
+            iconStyle: IconStyle(
+                iconData: Icons.done,
+                color: isPast ? Colors.white : Colors.blue.shade100)),
+        endChild: Container(
+          margin: EdgeInsets.all(getScreenSize(context).width * 0.1),
+          padding: EdgeInsets.all(getScreenSize(context).width * 0.1),
+          decoration: BoxDecoration(
+              color: isPast ? Colors.blue.shade500 : Colors.blue.shade100,
+              borderRadius: BorderRadius.circular(10)),
+          child: Text(
+            "Hello",
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      ),
+    );
   }
 }

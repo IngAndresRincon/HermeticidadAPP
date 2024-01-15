@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hermeticidadapp/Page/home_timeline_page.dart';
 import 'package:hermeticidadapp/Page/show_file_page.dart';
 import 'package:hermeticidadapp/Page/test_page.dart';
 
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
         'splash': (context) => const SplashPage(),
         'login': (context) => const LoginPage(),
         'home': (context) => const HomePage(),
+        'home1': (context) => const HomeTimeLinePage(),
         'test': (context) => TestPage(),
         'file': (context) => FilePage(),
         'camera': (context) => const CameraPage(),
