@@ -4,8 +4,6 @@ import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' show join; // Importa la función join
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
 
 class CameraPage extends StatefulWidget {
@@ -46,7 +44,7 @@ class _CameraPageState extends State<CameraPage> {
         File(picture.path).copy(path);
 
         // La foto ha sido tomada y almacenada en 'path'
-        print('Foto tomada y guardada en: $path');
+        developer.log('Foto tomada y guardada en: $path');
 
         // Mostrar el efecto de flash al tomar la foto
         setState(() {
@@ -67,7 +65,7 @@ class _CameraPageState extends State<CameraPage> {
         }
       }
     } catch (e) {
-      print('Error al tomar la foto: $e');
+      developer.log('Error al tomar la foto: $e');
     }
   }
 
@@ -89,8 +87,8 @@ class _CameraPageState extends State<CameraPage> {
     return AppBar(
       leading: IconButton(
           onPressed: () {
-            dispose();
-            Navigator.pushNamed(context, 'test');
+            
+            Navigator.pop(context);
           },
           icon: const Icon(Icons.arrow_back_ios)),
       elevation: 10,

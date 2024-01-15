@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
+import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:http/http.dart' as http;
 
 //late String pingUrl;
@@ -91,3 +94,59 @@ Future<List<dynamic>> getScheduleAPI(String peticionesUrl, jsonRequest) async {
 
   return listGetSchedule;
 }
+
+
+  Future<String> convertImageToBase64(File imageFile) async {
+    try {
+      Uint8List byteImage = await imageFile.readAsBytes();
+      String base64String = base64Encode(byteImage);
+      return base64String;
+    } catch (e) {
+      developer.log('Error al convertir la imagen a bytes: $e');
+      return '';
+    }
+  }
+
+  Future<List<bool>> sendImagesToApi(List<File> imageFiles) async {
+    List<bool> status = [];
+    final client = http.Client();
+    String fileUrl =
+        'http://${controllerIp.text}:${controllerPort.text}/api/POSTsubirImagen';
+    try {
+      for (var imageFile in imageFiles) {
+        String imageDataString = await convertImageToBase64(imageFile);
+        imageDataString = 'data:image/png;base64,$imageDataString';
+        Map<String, dynamic> mapImageinfo = {
+          'IdSolicitud': idProgramacion,
+          'imagen': imageDataString
+        };
+        String jsonDataImage = jsonEncode(mapImageinfo);
+
+        //developer.log('Json de imagen: $mapImageinfo');
+        var response = await client
+            .post(Uri.parse(fileUrl),
+                headers: {"Content-Type": "application/json"},
+                body: jsonDataImage)
+            .timeout(const Duration(seconds: 10));
+        if (response.statusCode == 200) {
+          // La solicitud se realizó con éxito
+          status.add(true);
+          developer.log('Respuesta: ${response.body}');
+        } else {
+          // Hubo un error en la solicitud
+          status.add(false);
+          developer.log(
+              'Error en la solicitud. Código de estado: ${response.statusCode}');
+        }
+        developer.log('Respuesta de la API: ${response.statusCode}');
+      }
+    } catch (e) {
+      developer.log('Error: $e');
+      client.close();
+      status.add(false);
+    } finally {
+      client.close();
+    }
+    return status;
+  }
+
