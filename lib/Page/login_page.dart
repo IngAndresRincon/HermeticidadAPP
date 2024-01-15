@@ -183,11 +183,6 @@ class _LoginPageState extends State<LoginPage> {
             return;
           }
 
-          if (controllerEmail.text == "1" && controllerPassword.text == "1") {
-            Navigator.pushNamed(context, 'home1');
-            return;
-          }
-
           Map<String, dynamic> mapDataUser = {
             'Usuario': controllerEmail.text,
             'Contrasena': encriptador.encrypter(controllerPassword.text)

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:hermeticidadapp/Models/models.dart';
 import 'package:hermeticidadapp/Page/overlays_options_home.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:path_provider/path_provider.dart';
@@ -287,6 +288,8 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
       //print(value);
       setState(() {
         dynamicList = value;
+        requestList =
+            dynamicList.map((item) => Request.fromJson(item)).toList();
         for (var i = 0; i < dynamicList.length; i++) {
           colorList.add(Colors.white);
         }
@@ -336,12 +339,13 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
                         setState(() {
                           idProgramacion = dynamicList[index]['IdProgramacion'];
                           idEstacion = dynamicList[index]['IdEstacion'];
+                          indexProgramacion = index;
                           for (var i = 0; i < colorList.length; i++) {
                             colorList[i] = Colors.white;
                           }
                           colorList[index] = Colors.green.shade300;
                         });
-                        Navigator.pushNamed(context, 'test');
+                        Navigator.pushNamed(context, 'home1');
                         //Navigator.pushNamed(context, 'test');
                       },
                       leading: IconButton(

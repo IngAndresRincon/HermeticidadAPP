@@ -27,6 +27,9 @@ TextEditingController controllerEmailForget = TextEditingController();
 TextEditingController controllerPressure = TextEditingController();
 TextEditingController controllerTimeAperture = TextEditingController();
 
+TextEditingController controllerFabrication = TextEditingController();
+TextEditingController controllerLote = TextEditingController();
+
 Encriptador encriptador = Encriptador();
 
 String nombreUsuarioGlobal = "";
@@ -36,6 +39,7 @@ String tokenUsuarioGlobal = "";
 String fechaIngresoUsuario = "";
 int idEstacion = 0;
 int idProgramacion = 0;
+int indexProgramacion = 0;
 int pressureCalib = 15;
 int timeAperture = 10;
 String fileContentData = "";
@@ -44,7 +48,7 @@ List<ChartData> chartDataStatic = [];
 List<ChartData> lineToleranceUp = [];
 List<ChartData> lineToleranceDown = [];
 
-List<dynamic> requestList = [];
+List<Request> requestList = [];
 
 bool enableCalib = false;
 
@@ -106,11 +110,15 @@ class ItemLineTime extends StatelessWidget {
   final bool isFirts;
   final bool isLast;
   final bool isPast;
+  final bool isNext;
+  final String text;
   const ItemLineTime(
       {super.key,
       required this.isFirts,
       required this.isLast,
-      required this.isPast});
+      required this.isPast,
+      required this.isNext,
+      required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -119,23 +127,44 @@ class ItemLineTime extends StatelessWidget {
       child: TimelineTile(
         isFirst: isFirts,
         isLast: isLast,
-        beforeLineStyle:
-            LineStyle(color: isPast ? Colors.blue : Colors.blue.shade100),
+        beforeLineStyle: LineStyle(
+            color: isPast
+                ? Colors.green
+                : isNext
+                    ? Colors.blue
+                    : Colors.blue.shade100),
         indicatorStyle: IndicatorStyle(
             width: getScreenSize(context).width * 0.1,
-            color: isPast ? Colors.blue : Colors.blue.shade100,
+            color: isPast
+                ? Colors.green
+                : isNext
+                    ? Colors.blue
+                    : Colors.blue.shade100,
             iconStyle: IconStyle(
                 iconData: Icons.done,
-                color: isPast ? Colors.white : Colors.blue.shade100)),
+                color: isPast
+                    ? Colors.white
+                    : isNext
+                        ? Colors.blue
+                        : Colors.blue.shade100)),
         endChild: Container(
-          margin: EdgeInsets.all(getScreenSize(context).width * 0.1),
+          margin: EdgeInsets.all(getScreenSize(context).width * 0.05),
           padding: EdgeInsets.all(getScreenSize(context).width * 0.1),
           decoration: BoxDecoration(
-              color: isPast ? Colors.blue.shade500 : Colors.blue.shade100,
+              color: isPast
+                  ? Colors.green
+                  : isNext
+                      ? Colors.blue
+                      : Colors.blue.shade100,
               borderRadius: BorderRadius.circular(10)),
           child: Text(
-            "Hello",
-            style: TextStyle(color: Colors.white),
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                letterSpacing: 2,
+                fontSize: 20,
+                color: Colors.white,
+                fontWeight: FontWeight.bold),
           ),
         ),
       ),

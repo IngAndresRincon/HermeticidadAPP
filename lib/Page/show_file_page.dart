@@ -202,14 +202,18 @@ class _FilePageState extends State<FilePage> {
     return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: _appBar(),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        body: ListView(
           children: [
-            SizedBox(height: getScreenSize(context).height * .1),
-            _extendedGraph(0.7),
-            _defaultText(0.02, "*Conecte su dispositivo a la red movil", 14,
-                Colors.red, 2, FontWeight.bold),
-            _sendDataButton(0.05, "Enviar Datos")
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                SizedBox(height: getScreenSize(context).height * .1),
+                _extendedGraph(0.7),
+                _defaultText(0.02, "*Conecte su dispositivo a la red movil", 14,
+                    Colors.red, 2, FontWeight.bold),
+                _sendDataButton(0.05, "Enviar Datos")
+              ],
+            ),
           ],
         ));
   }

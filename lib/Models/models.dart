@@ -60,8 +60,8 @@ class SendSocket {
   final int pressionCalib;
   final int timeAperture;
 
-  SendSocket(
-      this.action, this.idEstacion, this.idProgramacion, this.pressionCalib, this.timeAperture);
+  SendSocket(this.action, this.idEstacion, this.idProgramacion,
+      this.pressionCalib, this.timeAperture);
 
   SendSocket.fromJson(Map<String, dynamic> json)
       : action = json['action'],
@@ -75,7 +75,7 @@ class SendSocket {
         'idEstacion': idEstacion,
         'idProg': idProgramacion,
         'pressCalib': pressionCalib,
-        'timeAperture' : timeAperture,
+        'timeAperture': timeAperture,
       };
 }
 
@@ -144,4 +144,54 @@ class StorageFile {
     final fileSink = file.openWrite(mode: FileMode.append);
     fileSink.add(data);
   }
+}
+
+class Request {
+  late int idProcesoProgramacion;
+  late bool registroInicio;
+  late bool registroFoto;
+  late bool registroCalibracion;
+  late bool registroIncioPrueba;
+  late bool registroResultados;
+  late bool registroFinal;
+  late int idProgramacion;
+  late String ordenTrabajo;
+  late String nombreEstacion;
+
+  Request(
+      {required this.idProcesoProgramacion,
+      required this.registroInicio,
+      required this.registroFoto,
+      required this.registroCalibracion,
+      required this.registroIncioPrueba,
+      required this.registroResultados,
+      required this.registroFinal,
+      required this.idProgramacion,
+      required this.ordenTrabajo,
+      required this.nombreEstacion});
+
+  factory Request.fromJson(Map<String, dynamic> json) {
+    return Request(
+        idProcesoProgramacion: json['IdProcesoProgramacion'],
+        registroInicio: json['RegistroInicio'],
+        registroFoto: json['RegistroFoto'],
+        registroCalibracion: json['RegistroCalibracion'],
+        registroIncioPrueba: json['RegistroInicioPrueba'],
+        registroResultados: json['RegistroResultados'],
+        registroFinal: json['RegistroFinal'],
+        idProgramacion: json['IdProgramacion'],
+        ordenTrabajo: json['OT'],
+        nombreEstacion: json['Estacion']);
+  }
+  Map<String, dynamic> toJson() => {
+        'IdProcesoProgramacion': idProcesoProgramacion,
+        'RegistroInicio': registroInicio,
+        'RegistroFoto': registroFoto,
+        'RegistroCalibracion': registroCalibracion,
+        'RegistroInicioPrueba': registroIncioPrueba,
+        'RegistroResultados': registroResultados,
+        'IdProgramacion': idProgramacion,
+        'OT': ordenTrabajo,
+        'Estacion': nombreEstacion
+      };
 }
