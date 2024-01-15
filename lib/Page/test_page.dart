@@ -331,28 +331,23 @@ class _TestPageState extends State<TestPage> {
 
   Future<void> _loadImages() async {
     try {
-      // Obtener el directorio donde se almacenan las imágenes
       final directory = await getTemporaryDirectory();
-      // Listar todos los archivos en el directorio
       List<FileSystemEntity> files = directory.listSync();
-      // Filtrar solo los archivos de tipo imagen (puedes ajustar esto según los tipos de imágenes que estás almacenando)
       List<File> imageFiles = files
           .whereType<File>()
           .where((file) => file.path.toLowerCase().endsWith('.png'))
           .toList();
-
-      print(
+      developer.log(
           'Lista de imágenes cargada: ${imageFiles.map((file) => file.path).toList()}');
-
       setState(() {
-        _imageFiles.clear(); // Limpiar la lista antes de cargar nuevas imágenes
+        _imageFiles.clear();
         _imageFiles = imageFiles;
       });
     } catch (e) {
-      print('Error al cargar las imágenes: $e');
+      developer.log('Error al cargar las imágenes: $e');
     }
   }
-
+  
   PreferredSizeWidget _appbar() {
     return AppBar(
       leading: IconButton(
@@ -562,6 +557,32 @@ class _TestPageState extends State<TestPage> {
     }, color, text);
   }
 
+  Widget _sendImagesButton(String text, Color color) {
+    return _actionButton(true, true, (bool a) {
+      sendImagesToApi(_imageFiles);
+    }, color, text);
+  }
+
+  Widget _imagesList(double widthList, double height, double widthImage) {
+    return SizedBox(
+      width: getScreenSize(context).width * widthList,
+      height: getScreenSize(context).height * height,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _imageFiles.length,
+        itemBuilder: (context, index) {
+          return Container(
+            margin: const EdgeInsets.only(right: 8.0),
+            child: Image.file(
+              _imageFiles[index],
+              width: getScreenSize(context).width * widthImage,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -610,26 +631,10 @@ class _TestPageState extends State<TestPage> {
         SizedBox(height: getScreenSize(context).height * 0.015),
         _cardStep(0.15, Icons.radio_button_checked, 4, paso4),
         SizedBox(height: getScreenSize(context).height * 0.015),
-        _imageFiles.isNotEmpty
-            ? SizedBox(
-                width: getScreenSize(context).width * 0.9,
-                height: getScreenSize(context).height * 0.2,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _imageFiles.length,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      margin: const EdgeInsets.only(right: 8.0),
-                      child: Image.file(
-                        _imageFiles[index],
-                        width: getScreenSize(context).width * 0.2,
-                      ),
-                    );
-                  },
-                ),
-              )
-            : Container(),
+        _imageFiles.isNotEmpty ? _imagesList(0.9, 0.2, 0.2) : Container(),
         _cameraButton("Evidencias", Colors.green.shade300),
+        SizedBox(height: getScreenSize(context).height * 0.015),
+        _sendImagesButton("Enviar", Colors.green.shade300)
       ],
     );
   }

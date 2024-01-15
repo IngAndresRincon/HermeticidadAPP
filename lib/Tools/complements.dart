@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:hermeticidadapp/Tools/encripter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:timeline_tile/timeline_tile.dart';
 
 Size getScreenSize(BuildContext context) {

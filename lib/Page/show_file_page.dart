@@ -72,93 +72,128 @@ class _FilePageState extends State<FilePage> {
     });
   }
 
-  Widget _extendedGraph() {
-    return SfCartesianChart(
-      title: ChartTitle(
-          text: 'REGISTRO PRUEBA DE HERMETICIDAD',
-          textStyle:
-              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-      legend: Legend(
-        iconBorderWidth: 2,
-        offset: const Offset(20, -80),
-        isVisible: true,
-        position: LegendPosition.bottom,
-        //alignment: ChartAlignment.center
-      ),
-      tooltipBehavior: _tooltipBehavior,
-      zoomPanBehavior: _zoomPanBehavior,
-      // plotAreaBorderWidth: 2,
-      // plotAreaBorderColor: Colors.black,
-      primaryXAxis: DateTimeAxis(
-          axisLine: const AxisLine(width: 2, color: Colors.black45),
-          title: AxisTitle(text: "Segundos(s)"),
-          edgeLabelPlacement: EdgeLabelPlacement.shift,
-          intervalType: DateTimeIntervalType.seconds),
-      primaryYAxis: NumericAxis(
-          axisLine: const AxisLine(width: 2, color: Colors.black45),
-          maximum: pressureCalib * 2,
-          minimum: 0,
-          labelFormat: '{value}PSI',
-          plotBands: <PlotBand>[
-            PlotBand(
-              isVisible: true,
-              start: pressureCalib * (1 - 0.01 * timeAperture),
-              end: pressureCalib * (1 + 0.01 * timeAperture),
-              opacity: 0.5,
-              color: Colors.blueGrey.shade100,
-              borderWidth: 1,
-              dashArray: const <double>[5, 5],
-              text: '±$timeAperture%',
-              horizontalTextAlignment: TextAnchor.end,
-              verticalTextAlignment: TextAnchor.end,
-              textStyle: const TextStyle(color: Colors.black),
-            ),
-            PlotBand(
-              isVisible: true,
-              start: pressureCalib,
-              end: pressureCalib,
-              opacity: 0.5,
-              borderColor: Colors.cyan,
-              borderWidth: 1,
-              dashArray: const <double>[8, 8],
-            )
-          ]),
-      series: <ChartSeries>[
-        SplineSeries<ChartData, DateTime>(
-          legendItemText: "Presión[PSI]",
-          dataSource: chartDataStatic,
-          xValueMapper: (ChartData data, _) => data.timeP,
-          yValueMapper: (ChartData data, _) => data.value,
-          color: Colors.greenAccent.shade400,
-          width: 2,
-          opacity: 1,
-          splineType: SplineType.monotonic,
-          //dashArray: const <double>[5, 5],
+  Widget _extendedGraph(double height) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: SfCartesianChart(
+        title: ChartTitle(
+            text: 'REGISTRO PRUEBA DE HERMETICIDAD',
+            textStyle:
+                const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        legend: Legend(
+          iconBorderWidth: 2,
+          offset: const Offset(20, -80),
+          isVisible: true,
+          position: LegendPosition.bottom,
+          //alignment: ChartAlignment.center
         ),
-      ],
+        tooltipBehavior: _tooltipBehavior,
+        zoomPanBehavior: _zoomPanBehavior,
+        // plotAreaBorderWidth: 2,
+        // plotAreaBorderColor: Colors.black,
+        primaryXAxis: DateTimeAxis(
+            axisLine: const AxisLine(width: 2, color: Colors.black45),
+            title: AxisTitle(text: "Segundos(s)"),
+            edgeLabelPlacement: EdgeLabelPlacement.shift,
+            intervalType: DateTimeIntervalType.seconds),
+        primaryYAxis: NumericAxis(
+            axisLine: const AxisLine(width: 2, color: Colors.black45),
+            maximum: pressureCalib * 2,
+            minimum: 0,
+            labelFormat: '{value}PSI',
+            plotBands: <PlotBand>[
+              PlotBand(
+                isVisible: true,
+                start: pressureCalib * (1 - 0.01 * timeAperture),
+                end: pressureCalib * (1 + 0.01 * timeAperture),
+                opacity: 0.5,
+                color: Colors.blueGrey.shade100,
+                borderWidth: 1,
+                dashArray: const <double>[5, 5],
+                text: '±$timeAperture%',
+                horizontalTextAlignment: TextAnchor.end,
+                verticalTextAlignment: TextAnchor.end,
+                textStyle: const TextStyle(color: Colors.black),
+              ),
+              PlotBand(
+                isVisible: true,
+                start: pressureCalib,
+                end: pressureCalib,
+                opacity: 0.5,
+                borderColor: Colors.cyan,
+                borderWidth: 1,
+                dashArray: const <double>[8, 8],
+              )
+            ]),
+        series: <ChartSeries>[
+          SplineSeries<ChartData, DateTime>(
+            legendItemText: "Presión[PSI]",
+            dataSource: chartDataStatic,
+            xValueMapper: (ChartData data, _) => data.timeP,
+            yValueMapper: (ChartData data, _) => data.value,
+            color: Colors.greenAccent.shade400,
+            width: 2,
+            opacity: 1,
+            splineType: SplineType.monotonic,
+            //dashArray: const <double>[5, 5],
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _sendDataButton(String text) {
-    return CustomerElevateButton(
-        onPressed: sendFileApi,
-        texto: text,
-        colorTexto: Colors.white,
-        colorButton: Colors.green.shade300,
-        height: .05,
-        width: .5);
+  Widget _sendDataButton(double height, String text) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: CustomerElevateButton(
+          onPressed: sendFileApi,
+          texto: text,
+          colorTexto: Colors.white,
+          colorButton: Colors.green.shade300,
+          height: .05,
+          width: .5),
+    );
   }
 
-  Widget _defaultText(String text, double fontSize, Color color,
+  Widget _defaultText(double height, String text, double fontSize, Color color,
       double letterSpacing, FontWeight fontWeight) {
-    return Text(
-      text,
-      textAlign: TextAlign.center,
-      style: TextStyle(
-          letterSpacing: letterSpacing,
-          fontSize: fontSize,
-          color: color,
-          fontWeight: fontWeight),
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            letterSpacing: letterSpacing,
+            fontSize: fontSize,
+            color: color,
+            fontWeight: fontWeight),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _appBar() {
+    return AppBar(
+      leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: const Icon(Icons.arrow_back_ios)),
+      elevation: 10,
+      title: _defaultText(
+          0.2, "Measurement", 18, Colors.black45, 2, FontWeight.bold),
+      actions: const [
+        Padding(
+          padding: EdgeInsets.all(8.0),
+          child: CircleAvatar(
+            radius: 20,
+            backgroundColor: Colors.black54,
+            child: Icon(
+              Icons.person,
+              color: Colors.white,
+            ),
+          ),
+        )
+      ],
     );
   }
 
@@ -166,48 +201,15 @@ class _FilePageState extends State<FilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          leading: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: const Icon(Icons.arrow_back_ios)),
-          elevation: 10,
-          title: _defaultText(
-              "Measurement", 18, Colors.black45, 2, FontWeight.bold),
-          actions: const [
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.black54,
-                child: Icon(
-                  Icons.person,
-                  color: Colors.white,
-                ),
-              ),
-            )
-          ],
-        ),
+        appBar: _appBar(),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            SizedBox(
-              height: getScreenSize(context).height * .1,
-              width: getScreenSize(context).width,
-            ),
-            SizedBox(
-                height: getScreenSize(context).height * .7,
-                width: getScreenSize(context).width,
-                child: _extendedGraph()),
-            SizedBox(
-                height: getScreenSize(context).height * .02,
-                child: _defaultText("*Conecte su dispositivo a la red movil",
-                    14, Colors.red, 2, FontWeight.bold)),
-            SizedBox(
-                height: getScreenSize(context).height * .05,
-                //width: getScreenSize(context).width,
-                child: _sendDataButton("Enviar Datos"))
+            SizedBox(height: getScreenSize(context).height * .1),
+            _extendedGraph(0.7),
+            _defaultText(0.02, "*Conecte su dispositivo a la red movil", 14,
+                Colors.red, 2, FontWeight.bold),
+            _sendDataButton(0.05, "Enviar Datos")
           ],
         ));
   }
