@@ -4,6 +4,9 @@ import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' show join; // Importa la función join
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
 
 class CameraPage extends StatefulWidget {
   const CameraPage({super.key});
@@ -125,6 +128,48 @@ class _CameraPageState extends State<CameraPage> {
     );
   }
 
+  Widget _photoScreen() {
+    return Container(
+      color: Colors.black,
+      width: double.infinity,
+      height: double.infinity,
+    );
+  }
+
+  Widget _photoButton(double positionBotton, IconData icon) {
+    return Positioned(
+      bottom: positionBotton,
+      child: FloatingActionButton(
+        onPressed: _takePicture,
+        child: Icon(icon),
+      ),
+    );
+  }
+
+  Widget _imagesList(double widthList, double height, double widthImage) {
+    return Positioned(
+      bottom: 100.0,
+      child: SizedBox(
+        width: getScreenSize(context).width * widthList,
+        height: getScreenSize(context).height * height,
+        child: ListView.builder(
+          controller: _scrollController,
+          scrollDirection: Axis.horizontal,
+          itemCount: _capturedImages.length,
+          itemBuilder: (context, index) {
+            return Container(
+              margin: const EdgeInsets.only(right: 8.0),
+              child: Image.file(
+                _capturedImages[index],
+                width: getScreenSize(context).width * widthImage,
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!flagCamera) {
@@ -137,43 +182,9 @@ class _CameraPageState extends State<CameraPage> {
         alignment: Alignment.center,
         children: [
           Positioned.fill(child: CameraPreview(cameraController)),
-          _flash
-              ? Container(
-                  color: Colors.black,
-                  width: double.infinity,
-                  height: double.infinity,
-                )
-              : Container(),
-          Positioned(
-            bottom: 36.0,
-            child: FloatingActionButton(
-              onPressed: _takePicture,
-              child: const Icon(Icons.camera),
-            ),
-          ),
-          _capturedImages.isNotEmpty
-              ? Positioned(
-                  bottom: 100.0,
-                  child: SizedBox(
-                    width: getScreenSize(context).width * 0.9,
-                    height: getScreenSize(context).height * 0.2,
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _capturedImages.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          margin: const EdgeInsets.only(right: 8.0),
-                          child: Image.file(
-                            _capturedImages[index],
-                            width: getScreenSize(context).width * 0.2,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                )
-              : Container(),
+          _flash ? _photoScreen() : Container(),
+          _photoButton(36, Icons.camera),
+          _capturedImages.isNotEmpty ? _imagesList(0.9, 0.2, 0.2) : Container(),
         ],
       ),
     );
