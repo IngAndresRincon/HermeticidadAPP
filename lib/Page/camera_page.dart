@@ -87,7 +87,6 @@ class _CameraPageState extends State<CameraPage> {
     return AppBar(
       leading: IconButton(
           onPressed: () {
-            
             Navigator.pop(context);
           },
           icon: const Icon(Icons.arrow_back_ios)),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hermeticidadapp/Page/timeline_overlays.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
+import 'package:hermeticidadapp/Tools/functions.dart';
 import 'package:hermeticidadapp/Widgets/elevate_button.dart';
 import 'package:hermeticidadapp/Widgets/text_field.dart';
 import 'package:timeline_tile/timeline_tile.dart';
@@ -16,6 +18,7 @@ class _HomeTimeLinePageState extends State<HomeTimeLinePage> {
   List<bool> nextList = [false, false, false, false, false, false];
 
   void savePastState() {
+    pastList.clear();
     pastList.add(requestList[indexProgramacion].registroInicio);
     pastList.add(requestList[indexProgramacion].registroFoto);
     pastList.add(requestList[indexProgramacion].registroCalibracion);
@@ -105,7 +108,7 @@ class _HomeTimeLinePageState extends State<HomeTimeLinePage> {
 
   Widget _selectOption(
     String text,
-    Widget modalWindow,
+    StatefulWidget modalWindow,
     bool isFirst,
     bool isLast,
     bool isPast,
@@ -114,12 +117,16 @@ class _HomeTimeLinePageState extends State<HomeTimeLinePage> {
     return GestureDetector(
         onTap: isNext
             ? () {
-                showModalBottomSheet(
-                  context: context,
-                  builder: (context) {
-                    return modalWindow;
-                  },
-                );
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return modalWindow;
+                    }).then((value) {
+                  setState(() {
+                    savePastState();
+                    refreshNextState();
+                  });
+                });
               }
             : () {},
         child: ItemLineTime(
@@ -128,22 +135,6 @@ class _HomeTimeLinePageState extends State<HomeTimeLinePage> {
             isPast: isPast,
             isNext: isNext,
             text: text));
-  }
-
-  Widget _preForm() {
-    return SizedBox(
-      width: getScreenSize(context).width,
-      height: getScreenSize(context).height,
-      child: Column(
-        children: [
-          SizedBox(height: getScreenSize(context).height * 0.05),
-          _defaultText(0.1, "FORMULARIO PARA REALIZACION DE PRUEBA", 25,
-              Colors.black, FontWeight.bold),
-          SizedBox(height: getScreenSize(context).height * 0.03),
-
-        ],
-      ),
-    );
   }
 
   Widget _photosMenu() {
@@ -214,18 +205,28 @@ class _HomeTimeLinePageState extends State<HomeTimeLinePage> {
                 16,
                 Colors.black,
                 FontWeight.bold),
-            _selectOption("Formulario de Inicio", _preForm(), true, false,
-                pastList[0], nextList[0]),
-            _selectOption("Evidencias Fotograficas", _photosMenu(), false,
-                false, pastList[1], nextList[1]),
-            _selectOption("Calibracion", _testMenu(), false, false, pastList[2],
-                nextList[2]),
             _selectOption(
-                "Prueba", _testMenu(), false, false, pastList[3], nextList[3]),
-            _selectOption("Resultados", _testMenu(), false, false, pastList[4],
-                nextList[4]),
-            _selectOption("Formulario Final", _sendMenu(), false, true,
-                pastList[5], nextList[5]),
+                "Formulario de Inicio",
+                const TimeLineOverlayFirstForm(),
+                true,
+                false,
+                pastList[0],
+                nextList[0]),
+            _selectOption(
+                "Evidencias Fotograficas",
+                const TimeLineOverlayPhoto(),
+                false,
+                false,
+                pastList[1],
+                nextList[1]),
+            _selectOption("Calibracion", const TimeLineOverlayFirstForm(),
+                false, false, pastList[2], nextList[2]),
+            _selectOption("Prueba", const TimeLineOverlayFirstForm(), false,
+                false, pastList[3], nextList[3]),
+            _selectOption("Resultados", const TimeLineOverlayFirstForm(), false,
+                false, pastList[4], nextList[4]),
+            _selectOption("Formulario Final", const TimeLineOverlayFirstForm(),
+                false, true, pastList[5], nextList[5]),
           ],
         ),
       ),

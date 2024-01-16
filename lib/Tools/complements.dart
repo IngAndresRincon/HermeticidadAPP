@@ -50,6 +50,7 @@ List<ChartData> lineToleranceDown = [];
 
 List<Request> requestList = [];
 
+
 bool enableCalib = false;
 
 Future<bool?> showMessageTOAST(
@@ -160,7 +161,7 @@ class ItemLineTime extends StatelessWidget {
           child: Text(
             text,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
                 letterSpacing: 2,
                 fontSize: 20,
                 color: Colors.white,
