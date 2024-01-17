@@ -278,18 +278,18 @@ class _TimeLineOverlayPhotoState extends State<TimeLineOverlayPhoto> {
     );
   }
 
-  Widget _photoCard() {
+  Widget _photoCard(int imageIndex) {
     return SizedBox(
       height: getScreenSize(context).height * 0.2,
       width: getScreenSize(context).width * 0.3,
       child: Card(
         color: Colors.transparent,
         child: Container(
-          decoration: _imageFiles.isNotEmpty
+          decoration: imageIndex < _imageFiles.length
               ? BoxDecoration(
                   borderRadius: BorderRadius.circular(15.0),
                   image: DecorationImage(
-                    image: FileImage(_imageFiles.last),
+                    image: FileImage(_imageFiles[imageIndex]),
                     fit: BoxFit
                         .cover, // Ajusta la imagen para cubrir toda la caja
                   ),
@@ -334,11 +334,11 @@ class _TimeLineOverlayPhotoState extends State<TimeLineOverlayPhoto> {
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
-                      _photoCard(),
-                      _photoCard(),
-                      _photoCard(),
-                      _photoCard(),
-                      _photoCard()
+                      _photoCard(0),
+                      _photoCard(1),
+                      _photoCard(2),
+                      _photoCard(3),
+                      _photoCard(4)
                     ],
                   ),
                 )
