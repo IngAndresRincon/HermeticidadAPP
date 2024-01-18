@@ -47,6 +47,7 @@ class _HomePageState extends State<HomePage> {
       // Listar todos los archivos en el directorio
       // Eliminar el directorio completo y su contenido
       await directory.delete(recursive: true);
+      fileList.clear();
     } catch (e) {
       developer.log('Error al limpiar el directorio: $e');
     }
@@ -276,6 +277,19 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
     getListSchedule();
   }
 
+  Future<void> _clearDirectory() async {
+    try {
+      // Obtener el directorio donde se almacenan las imágenes
+      final directory = await getTemporaryDirectory();
+      // Listar todos los archivos en el directorio
+      // Eliminar el directorio completo y su contenido
+      await directory.delete(recursive: true);
+      fileList.clear();
+    } catch (e) {
+      developer.log('Error al limpiar el directorio: $e');
+    }
+  }
+
   Future<void> getListSchedule() async {
     Map<String, dynamic> mapGetSchedule = {
       'IdUsuario': idUsuarioGlobal,
@@ -345,7 +359,10 @@ class _ScreenOverlaySchedulesState extends State<ScreenOverlaySchedules> {
                           }
                           colorList[index] = Colors.green.shade300;
                         });
-                        Navigator.pushNamed(context, 'home1');
+                        Navigator.pushNamed(context, 'home1').then((value) {
+                          _clearDirectory();
+                          getListSchedule();
+                        });
                         //Navigator.pushNamed(context, 'test');
                       },
                       leading: IconButton(

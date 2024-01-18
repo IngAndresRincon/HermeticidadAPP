@@ -54,10 +54,8 @@ class _TestPageState extends State<TestPage> {
   String paso0 = "Pasos para realizar la prueba:\n";
   String paso1 = "Verifique la correcta conexion del medidor.";
   String paso2 = "Desconecte su celular de los datos moviles.";
-  String paso3 =
-      "Conecte su dispositivo movil a la red wifi que genera el medidor llamada 'Medidor_PSI' y contraseña 'insepetAd'.";
-  String paso4 =
-      "Si se conectó a la red correcta el boton 'Sincronizar' se habilitará, oprimalo para conectarse con el medidor y comenzar la prueba.";
+  String paso3 = "Conectese a la red WIFI 'Medidor_PSI'.";
+  String paso4 = "Oprima el boton 'Sincronizar'.";
   @override
   void dispose() {
     if (mounted) {
@@ -347,7 +345,7 @@ class _TestPageState extends State<TestPage> {
       developer.log('Error al cargar las imágenes: $e');
     }
   }
-  
+
   PreferredSizeWidget _appbar() {
     return AppBar(
       leading: IconButton(
@@ -392,20 +390,6 @@ class _TestPageState extends State<TestPage> {
             fontSize: fontSize,
             color: color,
             fontWeight: fontWeight),
-      ),
-    );
-  }
-
-  Widget _cardStep(double height, IconData icon, int stepN, String step) {
-    return SizedBox(
-      height: getScreenSize(context).height * height,
-      child: Card(
-        elevation: 10,
-        child: ListTile(
-          leading: Icon(icon),
-          title: Text('Paso $stepN:'),
-          subtitle: Text(step),
-        ),
       ),
     );
   }
@@ -551,38 +535,6 @@ class _TestPageState extends State<TestPage> {
     }, color, text);
   }
 
-  Widget _cameraButton(String text, Color color) {
-    return _actionButton(true, true, (bool a) {
-      Navigator.pushNamed(context, 'camera');
-    }, color, text);
-  }
-
-  Widget _sendImagesButton(String text, Color color) {
-    return _actionButton(true, true, (bool a) {
-      sendImagesToApi(_imageFiles);
-    }, color, text);
-  }
-
-  Widget _imagesList(double widthList, double height, double widthImage) {
-    return SizedBox(
-      width: getScreenSize(context).width * widthList,
-      height: getScreenSize(context).height * height,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _imageFiles.length,
-        itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.only(right: 8.0),
-            child: Image.file(
-              _imageFiles[index],
-              width: getScreenSize(context).width * widthImage,
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -618,23 +570,27 @@ class _TestPageState extends State<TestPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         SizedBox(height: getScreenSize(context).height * 0.015),
+        // _actionButton(true, true, (bool a) {
+        //   setState(() {
+        //     isInSocket = true;
+        //   });
+        // }, Colors.green.shade300, "Sincronizar"),
         _actionButton(!(isInSocket || !checkboxValue), true, reconectSocket,
             Colors.green.shade300, "Sincronizar"),
-        SizedBox(height: getScreenSize(context).height * 0.015),
-        _defaultText(0.03, paso0, 16, Colors.black, FontWeight.w500),
-        SizedBox(height: getScreenSize(context).height * 0.015),
-        _cardStep(0.1, Icons.cable, 1, paso1),
-        SizedBox(height: getScreenSize(context).height * 0.015),
-        _cardStep(0.1, Icons.signal_cellular_off, 2, paso2),
-        SizedBox(height: getScreenSize(context).height * 0.015),
-        _cardStep(0.13, Icons.wifi, 3, paso3),
-        SizedBox(height: getScreenSize(context).height * 0.015),
-        _cardStep(0.15, Icons.radio_button_checked, 4, paso4),
-        SizedBox(height: getScreenSize(context).height * 0.015),
-        _imageFiles.isNotEmpty ? _imagesList(0.9, 0.2, 0.2) : Container(),
-        _cameraButton("Evidencias", Colors.green.shade300),
-        SizedBox(height: getScreenSize(context).height * 0.015),
-        _sendImagesButton("Enviar", Colors.green.shade300)
+        ItemStepLine(
+            isFirts: true, isLast: false, icon: Icons.cable, text: paso1),
+        ItemStepLine(
+            isFirts: false,
+            isLast: false,
+            icon: Icons.signal_cellular_off,
+            text: paso2),
+        ItemStepLine(
+            isFirts: false, isLast: false, icon: Icons.wifi, text: paso3),
+        ItemStepLine(
+            isFirts: false,
+            isLast: true,
+            icon: Icons.radio_button_checked,
+            text: paso4)
       ],
     );
   }

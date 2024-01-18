@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hermeticidadapp/Models/models.dart';
@@ -27,8 +28,8 @@ TextEditingController controllerEmailForget = TextEditingController();
 TextEditingController controllerPressure = TextEditingController();
 TextEditingController controllerTimeAperture = TextEditingController();
 
-TextEditingController controllerFabrication = TextEditingController();
-TextEditingController controllerLote = TextEditingController();
+TextEditingController controllerNameStationForm = TextEditingController();
+TextEditingController controllerResponsableForm = TextEditingController();
 
 Encriptador encriptador = Encriptador();
 
@@ -49,7 +50,9 @@ List<ChartData> lineToleranceUp = [];
 List<ChartData> lineToleranceDown = [];
 
 List<Request> requestList = [];
-
+Map<String, File> fileList = {};
+String fileName = '';
+List<String> nameImages = ['Estación', 'Manometro', 'Kit', 'Tuberia', 'Tanque'];
 
 bool enableCalib = false;
 
@@ -157,6 +160,53 @@ class ItemLineTime extends StatelessWidget {
                   : isNext
                       ? Colors.blue
                       : Colors.blue.shade100,
+              borderRadius: BorderRadius.circular(10)),
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+                letterSpacing: 2,
+                fontSize: 20,
+                color: Colors.white,
+                fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ItemStepLine extends StatelessWidget {
+  final bool isFirts;
+  final bool isLast;
+  final IconData icon;
+  final String text;
+  const ItemStepLine(
+      {super.key,
+      required this.isFirts,
+      required this.isLast,
+      required this.icon,
+      required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 200,
+      child: TimelineTile(
+        alignment: TimelineAlign.manual,
+        lineXY: 0.1,
+        isFirst: isFirts,
+        isLast: isLast,
+        beforeLineStyle: const LineStyle(color: Colors.green),
+        indicatorStyle: IndicatorStyle(
+            width: getScreenSize(context).width * 0.1,
+            color: Colors.green,
+            iconStyle: IconStyle(iconData: icon, color: Colors.white)),
+        endChild: Container(
+          margin: EdgeInsets.all(getScreenSize(context).width * 0.05),
+          padding: EdgeInsets.all(getScreenSize(context).width * 0.1),
+          decoration: BoxDecoration(
+              color: Colors.green.shade400,
               borderRadius: BorderRadius.circular(10)),
           child: Text(
             text,

@@ -63,49 +63,6 @@ class _HomeTimeLinePageState extends State<HomeTimeLinePage> {
     );
   }
 
-  Widget _textFieldConfig(
-      double height,
-      String text,
-      IconData icon,
-      TextInputType textInputType,
-      TextEditingController textEditingController) {
-    return SizedBox(
-      height: getScreenSize(context).height * height,
-      child: CustomerTextFieldLogin(
-          label: text,
-          textinputtype: textInputType,
-          obscure: false,
-          icondata: icon,
-          texteditingcontroller: textEditingController,
-          bsuffixIcon: false,
-          onTapSuffixIcon: () {},
-          suffixIcon: Icons.person,
-          width: .8,
-          labelColor: Colors.black,
-          textColor: Colors.black),
-    );
-  }
-
-  Widget _configButton(double height, String text) {
-    return SizedBox(
-      height: getScreenSize(context).height * height,
-      width: getScreenSize(context).width * 0.9,
-      child: CustomerElevateButton(
-          texto: text,
-          colorTexto: Colors.white,
-          colorButton: Colors.green.shade400,
-          onPressed: () {
-            showDialogLoad(context);
-            writeCacheData(controllerIp.text, controllerPort.text)
-                .then((value) {
-              Navigator.popAndPushNamed(context, 'login');
-            });
-          },
-          height: .05,
-          width: .5),
-    );
-  }
-
   Widget _selectOption(
     String text,
     StatefulWidget modalWindow,
@@ -135,48 +92,6 @@ class _HomeTimeLinePageState extends State<HomeTimeLinePage> {
             isPast: isPast,
             isNext: isNext,
             text: text));
-  }
-
-  Widget _photosMenu() {
-    return SizedBox(
-      width: getScreenSize(context).width,
-      height: getScreenSize(context).height,
-      child: Column(
-        children: [
-          SizedBox(height: getScreenSize(context).height * 0.05),
-          _defaultText(0.1, "FOTOGRAFIAS TOMADAS COMO EVIDENCIAS", 25,
-              Colors.black, FontWeight.bold)
-        ],
-      ),
-    );
-  }
-
-  Widget _testMenu() {
-    return SizedBox(
-      width: getScreenSize(context).width,
-      height: getScreenSize(context).height,
-      child: Column(
-        children: [
-          SizedBox(height: getScreenSize(context).height * 0.05),
-          _defaultText(
-              0.1, "MENU DE PRUEBAS", 25, Colors.black, FontWeight.bold)
-        ],
-      ),
-    );
-  }
-
-  Widget _sendMenu() {
-    return SizedBox(
-      width: getScreenSize(context).width,
-      height: getScreenSize(context).height,
-      child: Column(
-        children: [
-          SizedBox(height: getScreenSize(context).height * 0.05),
-          _defaultText(
-              0.1, "MENU DE ENVIADO", 25, Colors.black, FontWeight.bold)
-        ],
-      ),
-    );
   }
 
   @override
@@ -219,8 +134,8 @@ class _HomeTimeLinePageState extends State<HomeTimeLinePage> {
                 false,
                 pastList[1],
                 nextList[1]),
-            _selectOption("Calibracion", const TimeLineOverlayFirstForm(),
-                false, false, pastList[2], nextList[2]),
+            _selectOption("Calibracion", const TimeLineOverlayCalib(), false,
+                false, pastList[2], nextList[2]),
             _selectOption("Prueba", const TimeLineOverlayFirstForm(), false,
                 false, pastList[3], nextList[3]),
             _selectOption("Resultados", const TimeLineOverlayFirstForm(), false,

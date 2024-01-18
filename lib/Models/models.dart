@@ -157,6 +157,7 @@ class Request {
   late int idProgramacion;
   late String ordenTrabajo;
   late String nombreEstacion;
+  late String tipoPrueba;
 
   Request(
       {required this.idProcesoProgramacion,
@@ -168,7 +169,8 @@ class Request {
       required this.registroFinal,
       required this.idProgramacion,
       required this.ordenTrabajo,
-      required this.nombreEstacion});
+      required this.nombreEstacion,
+      required this.tipoPrueba});
 
   factory Request.fromJson(Map<String, dynamic> json) {
     return Request(
@@ -181,7 +183,8 @@ class Request {
         registroFinal: json['RegistroFinal'],
         idProgramacion: json['IdProgramacion'],
         ordenTrabajo: json['OT'],
-        nombreEstacion: json['Estacion']);
+        nombreEstacion: json['Estacion'],
+        tipoPrueba: json['TipoPrueba']);
   }
   Map<String, dynamic> toJson() => {
         'IdProcesoProgramacion': idProcesoProgramacion,
@@ -192,6 +195,7 @@ class Request {
         'RegistroResultados': registroResultados,
         'IdProgramacion': idProgramacion,
         'OT': ordenTrabajo,
-        'Estacion': nombreEstacion
+        'Estacion': nombreEstacion,
+        'TipoPrueba': tipoPrueba
       };
 }

@@ -23,7 +23,7 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
   late List<dynamic> dynamicList = [];
   late DateTime _selectedDate;
   late TextEditingController _dateController;
-
+  int selectedValue = 0;
   @override
   void initState() {
     super.initState();
@@ -47,6 +47,21 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
             dynamicList.map((item) => Request.fromJson(item)).toList();
       });
     });
+  }
+
+  Future<void> sendFirstForm() async {
+    Map<String, dynamic> mapFirstForm = {
+      'Token': tokenUsuarioGlobal,
+      'IdProgramacion': requestList[indexProgramacion].idProgramacion,
+      'NombreEstacion': controllerNameStationForm.text,
+      'ResponsableEstacion': controllerResponsableForm.text,
+      'IdTipoPrueba': selectedValue,
+      'Autorizado': true,
+      'Fecha': _dateController.text
+    };
+    String sendFormUrl =
+        'http://${controllerIp.text}:${controllerPort.text}/api/POSTformularioAutorizacion';
+    sendForm(sendFormUrl, jsonEncode(mapFirstForm));
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -119,6 +134,35 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
     );
   }
 
+  Widget _rowRadioButtons(double height) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        _defaultText(0.03, "Tipo de prueba", 14, Colors.black, FontWeight.bold),
+        RadioListTile(
+          title: const Text('Linea'),
+          value: 0,
+          groupValue: selectedValue,
+          onChanged: (value) {
+            setState(() {
+              selectedValue = value!;
+            });
+          },
+        ),
+        RadioListTile(
+          title: const Text('Tanque'),
+          value: 1,
+          groupValue: selectedValue,
+          onChanged: (value) {
+            setState(() {
+              selectedValue = value!;
+            });
+          },
+        ),
+      ]),
+    );
+  }
+
   Widget _sendButton(double height, String text) {
     return SizedBox(
       height: getScreenSize(context).height * height,
@@ -129,6 +173,7 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
           colorButton: Colors.green.shade400,
           onPressed: () {
             showDialogLoad(context);
+            sendFirstForm();
             sendCloseItemTimeLine(
                     requestList[indexProgramacion].idProcesoProgramacion, 1)
                 .then((value) {
@@ -171,19 +216,14 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
                           "Nombre de la estación",
                           Icons.chevron_right,
                           TextInputType.text,
-                          controllerPressure),
+                          controllerNameStationForm),
                       _textFieldForm(
                           0.1,
                           "Responsable de la estación",
                           Icons.chevron_right,
                           TextInputType.text,
-                          controllerPressure),
-                      _textFieldForm(
-                          0.09,
-                          "Tipo de prueba",
-                          Icons.chevron_right,
-                          TextInputType.text,
-                          controllerPressure),
+                          controllerResponsableForm),
+                      _rowRadioButtons(0.17),
                       SizedBox(
                         height: getScreenSize(context).height * 0.12,
                         child: CustomerCalendarTextFormField(
@@ -197,8 +237,6 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
                             isEmail: false,
                             selecDate: () => _selectDate(context)),
                       ),
-                      _textFieldForm(0.1, "Hora de inicio", Icons.chevron_right,
-                          TextInputType.text, controllerPressure),
                     ],
                   ),
                 ),
@@ -222,10 +260,32 @@ class TimeLineOverlayPhoto extends StatefulWidget {
 
 class _TimeLineOverlayPhotoState extends State<TimeLineOverlayPhoto> {
   List<File> _imageFiles = [];
+  final List<File> _images = [];
+  final List<String> keysImg = [];
+  late List<dynamic> dynamicList = [];
+
+  Future<void> getListSchedule() async {
+    Map<String, dynamic> mapGetSchedule = {
+      'IdUsuario': idUsuarioGlobal,
+      'GuidSesion': tokenUsuarioGlobal
+    };
+    String peticionesUrl =
+        'http://${controllerIp.text}:${controllerPort.text}/api/POSTobtenerProgramacionPrueba';
+    await getScheduleAPI(peticionesUrl, jsonEncode(mapGetSchedule))
+        .then((List<dynamic> value) {
+      //print(value);
+      setState(() {
+        dynamicList = value;
+        requestList =
+            dynamicList.map((item) => Request.fromJson(item)).toList();
+      });
+    });
+  }
 
   @override
   void initState() {
     _loadImages();
+    nameImages[4] = requestList[indexProgramacion].tipoPrueba;
     super.initState();
   }
 
@@ -278,37 +338,81 @@ class _TimeLineOverlayPhotoState extends State<TimeLineOverlayPhoto> {
     );
   }
 
-  Widget _photoCard(int imageIndex) {
-    return SizedBox(
-      height: getScreenSize(context).height * 0.2,
-      width: getScreenSize(context).width * 0.3,
-      child: Card(
-        color: Colors.transparent,
-        child: Container(
-          decoration: imageIndex < _imageFiles.length
-              ? BoxDecoration(
-                  borderRadius: BorderRadius.circular(15.0),
-                  image: DecorationImage(
-                    image: FileImage(_imageFiles[imageIndex]),
-                    fit: BoxFit
-                        .cover, // Ajusta la imagen para cubrir toda la caja
+  Widget _photoCard(String fName) {
+    return Column(
+      children: [
+        _defaultText(0.03, fName, 14, Colors.black, FontWeight.bold),
+        SizedBox(
+          height: getScreenSize(context).height * 0.2,
+          width: getScreenSize(context).width * 0.3,
+          child: Card(
+            color: Colors.transparent,
+            child: Container(
+              decoration: fileList[fName] != null
+                  ? BoxDecoration(
+                      borderRadius: BorderRadius.circular(15.0),
+                      image: DecorationImage(
+                        image: FileImage(fileList[fName]!),
+                        fit: BoxFit
+                            .cover, // Ajusta la imagen para cubrir toda la caja
+                      ),
+                    )
+                  : null,
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: getScreenSize(context).height * 0.19,
+                    child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: IconButton(
+                            color: Colors.green,
+                            onPressed: () {
+                              fileName = fName;
+                              Navigator.pushNamed(context, 'camera')
+                                  .then((value) {
+                                //_loadImages();
+                                setState(() {});
+                              });
+                            },
+                            icon: const Icon(Icons.camera))),
                   ),
-                )
-              : null,
-          child: Column(
-            children: [
-              Align(
-                  alignment: Alignment.topLeft,
-                  child: IconButton(
-                      color: Colors.green,
-                      onPressed: () {
-                        Navigator.pushNamed(context, 'camera');
-                      },
-                      icon: const Icon(Icons.camera))),
-            ],
+                ],
+              ),
+            ),
           ),
         ),
-      ),
+      ],
+    );
+  }
+
+  Widget _sendButton(double height, String text) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      width: getScreenSize(context).width * 0.9,
+      child: CustomerElevateButton(
+          texto: text,
+          colorTexto: Colors.white,
+          colorButton: Colors.green.shade400,
+          onPressed: () {
+            _images.clear();
+            showDialogLoad(context);
+            for (int i = 0; i < 5; i++) {
+              _images.add(fileList[nameImages[i]]!);
+            }
+            sendImagesToApi(_images, nameImages);
+            sendCloseItemTimeLine(
+                    requestList[indexProgramacion].idProcesoProgramacion, 2)
+                .then((value) {
+              Navigator.pop(context);
+            });
+            showDialogLoad(context);
+            getListSchedule().then((value) {
+              Navigator.pop(context);
+            });
+            Navigator.pop(context);
+          },
+          height: .05,
+          width: .5),
     );
   }
 
@@ -330,18 +434,20 @@ class _TimeLineOverlayPhotoState extends State<TimeLineOverlayPhoto> {
                     FontWeight.bold),
                 SizedBox(
                   width: getScreenSize(context).width * 0.8,
-                  height: getScreenSize(context).height * 0.2,
+                  height: getScreenSize(context).height * 0.25,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
-                      _photoCard(0),
-                      _photoCard(1),
-                      _photoCard(2),
-                      _photoCard(3),
-                      _photoCard(4)
+                      _photoCard(nameImages[0]),
+                      _photoCard(nameImages[1]),
+                      _photoCard(nameImages[2]),
+                      _photoCard(nameImages[3]),
+                      _photoCard(nameImages[4])
                     ],
                   ),
-                )
+                ),
+                SizedBox(height: getScreenSize(context).height * 0.05),
+                _sendButton(0.05, "Enviar")
               ],
             ),
           ),
@@ -389,6 +495,47 @@ class _TimeLineOverlayCalibState extends State<TimeLineOverlayCalib> {
     );
   }
 
+  Widget _textFieldForm(
+      double height,
+      String text,
+      IconData icon,
+      TextInputType textInputType,
+      TextEditingController textEditingController) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: CustomerTextFieldLogin(
+          label: text,
+          textinputtype: textInputType,
+          obscure: false,
+          icondata: icon,
+          texteditingcontroller: textEditingController,
+          bsuffixIcon: false,
+          onTapSuffixIcon: () {},
+          suffixIcon: Icons.person,
+          width: .8,
+          labelColor: Colors.black,
+          textColor: Colors.black),
+    );
+  }
+
+  Widget _sendButton(double height, String text) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      width: getScreenSize(context).width * 0.9,
+      child: CustomerElevateButton(
+          texto: text,
+          colorTexto: Colors.white,
+          colorButton: Colors.green.shade400,
+          onPressed: () {
+            pressureCalib = int.parse(controllerPressure.text);
+            enableCalib = true;
+            Navigator.pushNamed(context, 'test');
+          },
+          height: .05,
+          width: .5),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -399,12 +546,19 @@ class _TimeLineOverlayCalibState extends State<TimeLineOverlayCalib> {
           child: Container(
             padding: const EdgeInsets.all(10),
             width: getScreenSize(context).width * 0.9,
-            height: getScreenSize(context).height * 0.54,
+            height: getScreenSize(context).height * 0.35,
             child: Column(
               children: [
                 _closeBar(0.05, Icons.close),
                 _defaultText(
-                    0.1, "Calibracion", 20, Colors.black, FontWeight.bold)
+                    0.1, "Calibración", 20, Colors.black, FontWeight.bold),
+                _textFieldForm(
+                    0.1,
+                    "Presión de Calibración (PSI)",
+                    Icons.chevron_right,
+                    TextInputType.text,
+                    controllerPressure),
+                _sendButton(0.05, "Ir a Calibracion")
               ],
             ),
           ),

@@ -39,10 +39,8 @@ class _CameraPageState extends State<CameraPage> {
           (await getTemporaryDirectory()).path,
           '${DateTime.now()}.png',
         );
-
         XFile picture = await cameraController.takePicture();
         File(picture.path).copy(path);
-
         // La foto ha sido tomada y almacenada en 'path'
         developer.log('Foto tomada y guardada en: $path');
 
@@ -54,6 +52,8 @@ class _CameraPageState extends State<CameraPage> {
         setState(() {
           _flash = false;
           _capturedImages.add(File(path));
+          fileList[fileName] = File(path);
+          Navigator.pop(context);
         });
         // Scroll automático al final del ListView
         if (_capturedImages.length > 4) {
@@ -143,6 +143,12 @@ class _CameraPageState extends State<CameraPage> {
     );
   }
 
+  Widget _imageNameText(double positionText) {
+    return Positioned(
+        top: positionText,
+        child: _defaultText(0.1, fileName, 25, Colors.white, FontWeight.bold));
+  }
+
   Widget _imagesList(double widthList, double height, double widthImage) {
     return Positioned(
       bottom: 100.0,
@@ -180,6 +186,7 @@ class _CameraPageState extends State<CameraPage> {
         children: [
           Positioned.fill(child: CameraPreview(cameraController)),
           _flash ? _photoScreen() : Container(),
+          _imageNameText(150),
           _photoButton(36, Icons.camera),
           _capturedImages.isNotEmpty ? _imagesList(0.9, 0.2, 0.2) : Container(),
         ],

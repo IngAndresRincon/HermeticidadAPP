@@ -145,18 +145,45 @@ Future<bool> sendCloseItemTimeLine(int idProceso, int tipoProceso) async {
   return status;
 }
 
-Future<List<bool>> sendImagesToApi(List<File> imageFiles) async {
+Future<bool> sendForm(String sendUrl, String sendJson) async {
+  bool status = false;
+  final client = http.Client();
+  var response = await client
+      .post(Uri.parse(sendUrl),
+          headers: {"Content-Type": "application/json"}, body: sendJson)
+      .timeout(const Duration(seconds: 10));
+  if (response.statusCode == 200) {
+    developer.log('Respuesta:${response.body}');
+    status = true;
+  } else {
+    status = false;
+    developer.log('Error al enviar el formulario');
+  }
+  try {} catch (e) {
+    developer.log('Error: $e');
+    client.close();
+    status = false;
+  } finally {
+    client.close();
+  }
+  return status;
+}
+
+Future<List<bool>> sendImagesToApi(
+    List<File> imageFiles, List<String> nameFiles) async {
   List<bool> status = [];
   final client = http.Client();
   String fileUrl =
       'http://${controllerIp.text}:${controllerPort.text}/api/POSTsubirImagen';
   try {
-    for (var imageFile in imageFiles) {
-      String imageDataString = await convertImageToBase64(imageFile);
+    for (int i = 0; i < imageFiles.length; i++) {
+      String imageDataString = await convertImageToBase64(imageFiles[i]);
       imageDataString = 'data:image/png;base64,$imageDataString';
+      String nameImg = nameFiles[i];
       Map<String, dynamic> mapImageinfo = {
         'IdSolicitud': idProgramacion,
-        'imagen': imageDataString
+        'imagen': imageDataString,
+        'Nombre': nameImg
       };
       String jsonDataImage = jsonEncode(mapImageinfo);
 
@@ -187,5 +214,3 @@ Future<List<bool>> sendImagesToApi(List<File> imageFiles) async {
   }
   return status;
 }
-
-
