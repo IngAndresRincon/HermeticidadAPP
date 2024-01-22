@@ -465,6 +465,26 @@ class TimeLineOverlayCalib extends StatefulWidget {
 }
 
 class _TimeLineOverlayCalibState extends State<TimeLineOverlayCalib> {
+  late List<dynamic> dynamicList = [];
+
+  Future<void> getListSchedule() async {
+    Map<String, dynamic> mapGetSchedule = {
+      'IdUsuario': idUsuarioGlobal,
+      'GuidSesion': tokenUsuarioGlobal
+    };
+    String peticionesUrl =
+        'http://${controllerIp.text}:${controllerPort.text}/api/POSTobtenerProgramacionPrueba';
+    await getScheduleAPI(peticionesUrl, jsonEncode(mapGetSchedule))
+        .then((List<dynamic> value) {
+      //print(value);
+      setState(() {
+        dynamicList = value;
+        requestList =
+            dynamicList.map((item) => Request.fromJson(item)).toList();
+      });
+    });
+  }
+
   Widget _closeBar(double height, IconData icon) {
     return SizedBox(
       height: getScreenSize(context).height * height,
@@ -529,7 +549,15 @@ class _TimeLineOverlayCalibState extends State<TimeLineOverlayCalib> {
           onPressed: () {
             pressureCalib = int.parse(controllerPressure.text);
             enableCalib = true;
-            Navigator.pushNamed(context, 'test');
+            calibEvent = true;
+            Navigator.pushNamed(context, 'test').then((value) {
+              calibEvent = false;
+              showDialogLoad(context);
+              getListSchedule().then((value) {
+                Navigator.pop(context);
+              });
+              Navigator.pop(context);
+            });
           },
           height: .05,
           width: .5),
@@ -556,9 +584,488 @@ class _TimeLineOverlayCalibState extends State<TimeLineOverlayCalib> {
                     0.1,
                     "Presión de Calibración (PSI)",
                     Icons.chevron_right,
-                    TextInputType.text,
+                    TextInputType.number,
                     controllerPressure),
                 _sendButton(0.05, "Ir a Calibracion")
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class TimeLineOverlayTest extends StatefulWidget {
+  const TimeLineOverlayTest({super.key});
+
+  @override
+  State<TimeLineOverlayTest> createState() => _TimeLineOverlayTestState();
+}
+
+class _TimeLineOverlayTestState extends State<TimeLineOverlayTest> {
+  late List<dynamic> dynamicList = [];
+
+  Future<void> getListSchedule() async {
+    Map<String, dynamic> mapGetSchedule = {
+      'IdUsuario': idUsuarioGlobal,
+      'GuidSesion': tokenUsuarioGlobal
+    };
+    String peticionesUrl =
+        'http://${controllerIp.text}:${controllerPort.text}/api/POSTobtenerProgramacionPrueba';
+    await getScheduleAPI(peticionesUrl, jsonEncode(mapGetSchedule))
+        .then((List<dynamic> value) {
+      //print(value);
+      setState(() {
+        dynamicList = value;
+        requestList =
+            dynamicList.map((item) => Request.fromJson(item)).toList();
+      });
+    });
+  }
+
+  Widget _closeBar(double height, IconData icon) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: Align(
+        alignment: Alignment.topRight,
+        child: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(icon)),
+      ),
+    );
+  }
+
+  Widget _defaultText(double height, String text, double fontSize, Color color,
+      FontWeight fontWeight) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            letterSpacing: 4,
+            fontSize: fontSize,
+            color: color,
+            fontWeight: fontWeight),
+      ),
+    );
+  }
+
+  Widget _sendButton(double height, String text) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      width: getScreenSize(context).width * 0.9,
+      child: CustomerElevateButton(
+          texto: text,
+          colorTexto: Colors.white,
+          colorButton: Colors.green.shade400,
+          onPressed: () {
+            calibEvent = false;
+            Navigator.pushNamed(context, 'test').then((value) {
+              showDialogLoad(context);
+              getListSchedule().then((value) {
+                Navigator.pop(context);
+              });
+              Navigator.pop(context);
+            });
+          },
+          height: .05,
+          width: .5),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
+        child: Card(
+          color: const Color.fromARGB(242, 247, 247, 247),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            width: getScreenSize(context).width * 0.9,
+            height: getScreenSize(context).height * 0.25,
+            child: Column(
+              children: [
+                _closeBar(0.05, Icons.close),
+                _defaultText(0.1, "Prueaba de Hermeticidad", 20, Colors.black,
+                    FontWeight.bold),
+                _sendButton(0.05, "Ir a la prueba")
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class TimeLineOverlayResults extends StatefulWidget {
+  const TimeLineOverlayResults({super.key});
+
+  @override
+  State<TimeLineOverlayResults> createState() => _TimeLineOverlayResultsState();
+}
+
+class _TimeLineOverlayResultsState extends State<TimeLineOverlayResults> {
+  late List<dynamic> dynamicList = [];
+
+  Future<void> getListSchedule() async {
+    Map<String, dynamic> mapGetSchedule = {
+      'IdUsuario': idUsuarioGlobal,
+      'GuidSesion': tokenUsuarioGlobal
+    };
+    String peticionesUrl =
+        'http://${controllerIp.text}:${controllerPort.text}/api/POSTobtenerProgramacionPrueba';
+    await getScheduleAPI(peticionesUrl, jsonEncode(mapGetSchedule))
+        .then((List<dynamic> value) {
+      //print(value);
+      setState(() {
+        dynamicList = value;
+        requestList =
+            dynamicList.map((item) => Request.fromJson(item)).toList();
+      });
+    });
+  }
+
+  Widget _closeBar(double heightContent, IconData icon) {
+    return SizedBox(
+      height: getScreenSize(context).height * heightContent,
+      child: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(icon))),
+    );
+  }
+
+  Widget _defaultText(String text, double fontSize, Color color,
+      double letterSpacing, FontWeight fontWeight) {
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+          letterSpacing: letterSpacing,
+          fontSize: fontSize,
+          color: color,
+          fontWeight: fontWeight),
+    );
+  }
+
+  Widget _scrollData(double heightContent, String fileData) {
+    return SizedBox(
+      height: getScreenSize(context).height * heightContent,
+      child: CustomScrollView(
+        slivers: <Widget>[
+          SliverPadding(
+            padding: const EdgeInsets.all(8),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate(
+                <Widget>[
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _defaultText(
+                          fileData, 16, Colors.black, 4, FontWeight.w500)
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sendButton(double heightContent, String text) {
+    return SizedBox(
+      height: getScreenSize(context).height * heightContent,
+      child: CustomerElevateButton(
+          onPressed: () {
+            Navigator.pushNamed(context, 'file').then((value) {
+              showDialogLoad(context);
+              getListSchedule().then((value) {
+                Navigator.pop(context);
+              });
+              Navigator.pop(context);
+            });
+          },
+          texto: text,
+          colorTexto: Colors.white,
+          colorButton: Colors.green.shade300,
+          height: .05,
+          width: .5),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
+        child: Card(
+          color: const Color.fromARGB(242, 247, 247, 247),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            width: getScreenSize(context).width * 0.9,
+            height: getScreenSize(context).height * 0.65,
+            child: Column(
+              children: [
+                _closeBar(0.05, Icons.close),
+                _defaultText(
+                    "Resultados", 20, Colors.black, 2, FontWeight.bold),
+                _scrollData(0.4, requestList[indexProgramacion].fileData),
+                SizedBox(height: getScreenSize(context).height * 0.02),
+                _defaultText("*Conecte su dispositivo a la red movil", 14,
+                    Colors.red, 2, FontWeight.bold),
+                SizedBox(height: getScreenSize(context).height * 0.02),
+                _sendButton(0.05, "Ver Grafica"),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class TimeLineOverlayLastForm extends StatefulWidget {
+  const TimeLineOverlayLastForm({super.key});
+
+  @override
+  State<TimeLineOverlayLastForm> createState() =>
+      _TimeLineOverlayLastFormState();
+}
+
+class _TimeLineOverlayLastFormState extends State<TimeLineOverlayLastForm> {
+  late List<dynamic> dynamicList = [];
+  late DateTime _selectedDate;
+  late TextEditingController _dateController;
+  int selectedValue = 0;
+  @override
+  void initState() {
+    super.initState();
+    _dateController = TextEditingController();
+    _selectedDate = DateTime.now();
+  }
+
+  Future<void> getListSchedule() async {
+    Map<String, dynamic> mapGetSchedule = {
+      'IdUsuario': idUsuarioGlobal,
+      'GuidSesion': tokenUsuarioGlobal
+    };
+    String peticionesUrl =
+        'http://${controllerIp.text}:${controllerPort.text}/api/POSTobtenerProgramacionPrueba';
+    await getScheduleAPI(peticionesUrl, jsonEncode(mapGetSchedule))
+        .then((List<dynamic> value) {
+      //print(value);
+      setState(() {
+        dynamicList = value;
+        requestList =
+            dynamicList.map((item) => Request.fromJson(item)).toList();
+      });
+    });
+  }
+
+  Future<void> sendLastForm() async {
+    Map<String, dynamic> mapFirstForm = {
+      'Token': tokenUsuarioGlobal,
+      'IdProgramacion': requestList[indexProgramacion].idProgramacion,
+      'NombreEstacion': controllerNameStationForm.text,
+      'ResponsableEstacion': controllerResponsableForm.text,
+      'IdTipoPrueba': selectedValue,
+      'Autorizado': true,
+      'Fecha': _dateController.text
+    };
+    String sendFormUrl =
+        'http://${controllerIp.text}:${controllerPort.text}/api/POSTformularioAutorizacion';
+    sendForm(sendFormUrl, jsonEncode(mapFirstForm));
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2101),
+    );
+
+    if (pickedDate != null && pickedDate != _selectedDate) {
+      setState(() {
+        _selectedDate = pickedDate;
+        _dateController.text =
+            '${pickedDate.year.toString()}-${pickedDate.month.toString()}-${pickedDate.day.toString()}'; // Puedes formatear la fecha según tus necesidades
+      });
+    }
+  }
+
+  Widget _closeBar(double height, IconData icon) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: Align(
+        alignment: Alignment.topRight,
+        child: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(icon)),
+      ),
+    );
+  }
+
+  Widget _defaultText(double height, String text, double fontSize, Color color,
+      FontWeight fontWeight) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            letterSpacing: 4,
+            fontSize: fontSize,
+            color: color,
+            fontWeight: fontWeight),
+      ),
+    );
+  }
+
+  Widget _textFieldForm(
+      double height,
+      String text,
+      IconData icon,
+      TextInputType textInputType,
+      TextEditingController textEditingController) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: CustomerTextFieldLogin(
+          label: text,
+          textinputtype: textInputType,
+          obscure: false,
+          icondata: icon,
+          texteditingcontroller: textEditingController,
+          bsuffixIcon: false,
+          onTapSuffixIcon: () {},
+          suffixIcon: Icons.person,
+          width: .8,
+          labelColor: Colors.black,
+          textColor: Colors.black),
+    );
+  }
+
+  Widget _rowRadioButtons(double height) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        _defaultText(0.03, "Tipo de prueba", 14, Colors.black, FontWeight.bold),
+        RadioListTile(
+          title: const Text('Linea'),
+          value: 0,
+          groupValue: selectedValue,
+          onChanged: (value) {
+            setState(() {
+              selectedValue = value!;
+            });
+          },
+        ),
+        RadioListTile(
+          title: const Text('Tanque'),
+          value: 1,
+          groupValue: selectedValue,
+          onChanged: (value) {
+            setState(() {
+              selectedValue = value!;
+            });
+          },
+        ),
+      ]),
+    );
+  }
+
+  Widget _sendButton(double height, String text) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      width: getScreenSize(context).width * 0.9,
+      child: CustomerElevateButton(
+          texto: text,
+          colorTexto: Colors.white,
+          colorButton: Colors.green.shade400,
+          onPressed: () {
+            showDialogLoad(context);
+            //sendLastForm();
+            sendCloseItemTimeLine(
+                    requestList[indexProgramacion].idProcesoProgramacion, 6)
+                .then((value) {
+              Navigator.pop(context);
+            });
+            showDialogLoad(context);
+            getListSchedule().then((value) {
+              Navigator.pop(context);
+            });
+            Navigator.pop(context);
+          },
+          height: .05,
+          width: .5),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
+        child: Card(
+          color: const Color.fromARGB(242, 247, 247, 247),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            width: getScreenSize(context).width * 0.9,
+            height: getScreenSize(context).height * 0.54,
+            child: Column(
+              children: [
+                _closeBar(0.05, Icons.close),
+                _defaultText(
+                    0.05, "DATOS FINALES", 20, Colors.black, FontWeight.bold),
+                SizedBox(
+                  height: getScreenSize(context).height * 0.35,
+                  child: ListView(
+                    children: [
+                      SizedBox(height: getScreenSize(context).height * 0.01),
+                      _textFieldForm(
+                          0.1,
+                          "Nombre de la estación",
+                          Icons.chevron_right,
+                          TextInputType.text,
+                          controllerNameStationForm),
+                      _textFieldForm(
+                          0.1,
+                          "Responsable de la estación",
+                          Icons.chevron_right,
+                          TextInputType.text,
+                          controllerResponsableForm),
+                      _rowRadioButtons(0.17),
+                      SizedBox(
+                        height: getScreenSize(context).height * 0.12,
+                        child: CustomerCalendarTextFormField(
+                            width: 0.8,
+                            icon: Icons.label,
+                            label: "Fecha de realizacion",
+                            keyboardType: TextInputType.datetime,
+                            obscureText: false,
+                            controller: _dateController,
+                            isInputFormat: false,
+                            isEmail: false,
+                            selecDate: () => _selectDate(context)),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: getScreenSize(context).height * 0.015),
+                _sendButton(0.05, "Enviar")
               ],
             ),
           ),

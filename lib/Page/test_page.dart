@@ -56,19 +56,19 @@ class _TestPageState extends State<TestPage> {
   String paso2 = "Desconecte su celular de los datos moviles.";
   String paso3 = "Conectese a la red WIFI 'Medidor_PSI'.";
   String paso4 = "Oprima el boton 'Sincronizar'.";
-  @override
-  void dispose() {
-    if (mounted) {
-      pingTimer.cancel();
-    }
-    super.dispose();
-    if (flagButton) {
-      channel.sink
-          .close(); // Cierra el canal WebSocket cuando el widget se elimina
-    }
-    isDisposeCalled = true;
-    enableCalib = false;
-  }
+  // @override
+  // void dispose() {
+  //   if (mounted) {
+  //     pingTimer.cancel();
+  //   }
+  //   super.dispose();
+  //   if (flagButton) {
+  //     channel.sink
+  //         .close(); // Cierra el canal WebSocket cuando el widget se elimina
+  //   }
+  //   isDisposeCalled = true;
+  //   enableCalib = false;
+  // }
 
   @override
   void initState() {
@@ -78,7 +78,7 @@ class _TestPageState extends State<TestPage> {
     //     .writeFileData('Conexion con el medidor ${DateTime.now().toLocal()}\n');
     //enableCalib ? initCalib(true) : () {};
     _loadImages();
-    ping2();
+    //ping2();
   }
 
   void ping2() {
@@ -96,8 +96,10 @@ class _TestPageState extends State<TestPage> {
   }
 
   Future<void> showDataFile() async {
-    fileContentData = await widget.storage.readFileData();
-    final fileDataArray = fileContentData
+    requestList[indexProgramacion].fileData =
+        await widget.storage.readFileData();
+    final fileDataArray = requestList[indexProgramacion]
+        .fileData
         .replaceAll("Registro de mediciones\n", "")
         .replaceAll("------Calibracion-----\n", "")
         .replaceAll("--------Testeo--------\n", "")
@@ -350,13 +352,13 @@ class _TestPageState extends State<TestPage> {
     return AppBar(
       leading: IconButton(
           onPressed: () {
-            if (mounted) {
-              pingTimer.cancel();
-            }
-            if (flagButton) {
-              channel.sink.close();
-            }
-            Navigator.pushNamed(context, 'home');
+            // if (mounted) {
+            //   pingTimer.cancel();
+            // }
+            // if (flagButton) {
+            //   channel.sink.close();
+            // }
+            Navigator.pop(context);
           },
           icon: const Icon(Icons.arrow_back_ios)),
       elevation: 10,
@@ -477,7 +479,7 @@ class _TestPageState extends State<TestPage> {
                 ? () => function(true)
                 : () {},
         height: .05,
-        width: .45);
+        width: .9);
   }
 
   Widget _rowButtons(
@@ -489,13 +491,21 @@ class _TestPageState extends State<TestPage> {
   ) {
     return SizedBox(
       height: getScreenSize(context).height * height,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          _actionButton(!isInCalibState && !isInTestState, !isInCalibState,
-              functionButton1, Colors.green.shade300, textButton1),
-          _actionButton(!isInCalibState && !isInTestState, !isInTestState,
-              functionButton2, Colors.green.shade300, textButton2),
+          calibEvent
+              ? _actionButton(
+                  !isInCalibState && !isInTestState,
+                  !isInCalibState,
+                  functionButton1,
+                  Colors.green.shade300,
+                  textButton1)
+              : Container(),
+          !calibEvent
+              ? _actionButton(!isInCalibState && !isInTestState, !isInTestState,
+                  functionButton2, Colors.green.shade300, textButton2)
+              : Container(),
         ],
       ),
     );
@@ -526,12 +536,17 @@ class _TestPageState extends State<TestPage> {
 
   Widget _resultButton(String text, Color color) {
     return _actionButton(!isInTestState && !isInCalibState, true, (bool a) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const ShowFileOverlay();
-        },
-      );
+      int response = 0;
+      if (calibEvent) {
+        response = 3;
+      } else {
+        response = 4;
+      }
+      sendCloseItemTimeLine(
+              requestList[indexProgramacion].idProcesoProgramacion, response)
+          .then((value) {
+        Navigator.pop(context);
+      });
     }, color, text);
   }
 
@@ -570,13 +585,13 @@ class _TestPageState extends State<TestPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         SizedBox(height: getScreenSize(context).height * 0.015),
-        // _actionButton(true, true, (bool a) {
-        //   setState(() {
-        //     isInSocket = true;
-        //   });
-        // }, Colors.green.shade300, "Sincronizar"),
-        _actionButton(!(isInSocket || !checkboxValue), true, reconectSocket,
-            Colors.green.shade300, "Sincronizar"),
+        _actionButton(true, true, (bool a) {
+          setState(() {
+            isInSocket = true;
+          });
+        }, Colors.green.shade300, "Sincronizar"),
+        // _actionButton(!(isInSocket || !checkboxValue), true, reconectSocket,
+        //     Colors.green.shade300, "Sincronizar"),
         ItemStepLine(
             isFirts: true, isLast: false, icon: Icons.cable, text: paso1),
         ItemStepLine(
@@ -606,9 +621,10 @@ class _TestPageState extends State<TestPage> {
         _dataGraph(0.5, chartData),
         _rowInfo(0.07, 'Calibracion: $pressureCalib(PSI)±$timeAperture% '),
         SizedBox(height: getScreenSize(context).height * 0.01),
-        _rowButtons(0.05, "Calibrar", "Testear", initCalib, initTest),
+        _rowButtons(
+            0.05, "Iniciar Calibracion", "Iniciar Prueba", initCalib, initTest),
         SizedBox(height: getScreenSize(context).height * 0.01),
-        _resultButton("Resultados", Colors.blueAccent)
+        _resultButton("Enviar confirmación", Colors.blueAccent)
       ],
     );
   }
@@ -733,7 +749,8 @@ class ShowFileOverlay extends StatefulWidget {
 class _ShowFileOverlayState extends State<ShowFileOverlay> {
   void sendFileApi() {
     showDialogLoad(context);
-    String fileContFormat = fileContentData
+    String fileContFormat = requestList[indexProgramacion]
+        .fileData
         .replaceAll("Registro de mediciones\n", "")
         .replaceAll("------Calibracion-----\n", "")
         .replaceAll("--------Testeo--------\n", "")
@@ -834,7 +851,7 @@ class _ShowFileOverlayState extends State<ShowFileOverlay> {
             child: Column(
               children: [
                 _closeBar(0.05, Icons.close),
-                _scrollData(0.4, fileContentData),
+                _scrollData(0.4, requestList[indexProgramacion].fileData),
                 SizedBox(height: getScreenSize(context).height * 0.02),
                 _defaultText("*Conecte su dispositivo a la red movil", 14,
                     Colors.red, 2, FontWeight.bold),

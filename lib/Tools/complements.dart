@@ -43,7 +43,7 @@ int idProgramacion = 0;
 int indexProgramacion = 0;
 int pressureCalib = 15;
 int timeAperture = 10;
-String fileContentData = "";
+//String fileContentData = "";
 List<ChartData> chartData = [];
 List<ChartData> chartDataStatic = [];
 List<ChartData> lineToleranceUp = [];
@@ -53,6 +53,8 @@ List<Request> requestList = [];
 Map<String, File> fileList = {};
 String fileName = '';
 List<String> nameImages = ['Estación', 'Manometro', 'Kit', 'Tuberia', 'Tanque'];
+
+bool calibEvent = false;
 
 bool enableCalib = false;
 
