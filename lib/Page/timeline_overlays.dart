@@ -21,14 +21,10 @@ class TimeLineOverlayFirstForm extends StatefulWidget {
 
 class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
   late List<dynamic> dynamicList = [];
-  late DateTime _selectedDate;
-  late TextEditingController _dateController;
   int selectedValue = 0;
   @override
   void initState() {
     super.initState();
-    _dateController = TextEditingController();
-    _selectedDate = DateTime.now();
   }
 
   Future<void> getListSchedule() async {
@@ -57,28 +53,11 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
       'ResponsableEstacion': controllerResponsableForm.text,
       'IdTipoPrueba': selectedValue,
       'Autorizado': true,
-      'Fecha': _dateController.text
+      'Fecha': DateTime.now().toString()
     };
     String sendFormUrl =
         'http://${controllerIp.text}:${controllerPort.text}/api/POSTformularioAutorizacion';
     sendForm(sendFormUrl, jsonEncode(mapFirstForm));
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2101),
-    );
-
-    if (pickedDate != null && pickedDate != _selectedDate) {
-      setState(() {
-        _selectedDate = pickedDate;
-        _dateController.text =
-            '${pickedDate.year.toString()}-${pickedDate.month.toString()}-${pickedDate.day.toString()}'; // Puedes formatear la fecha según tus necesidades
-      });
-    }
   }
 
   Widget _closeBar(double height, IconData icon) {
@@ -173,16 +152,16 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
           colorButton: Colors.green.shade400,
           onPressed: () {
             showDialogLoad(context);
-            sendFirstForm();
-            sendCloseItemTimeLine(
-                    requestList[indexProgramacion].idProcesoProgramacion, 1)
-                .then((value) {
-              Navigator.pop(context);
+            sendFirstForm().then((value) {
+              sendCloseItemTimeLine(
+                      requestList[indexProgramacion].idProcesoProgramacion, 1)
+                  .then((value) {
+                getListSchedule().then((value) {
+                  Navigator.pop(context);
+                });
+              });
             });
-            showDialogLoad(context);
-            getListSchedule().then((value) {
-              Navigator.pop(context);
-            });
+            showMessageTOAST(context, "Proceso Completado", Colors.green);
             Navigator.pop(context);
           },
           height: .05,
@@ -224,23 +203,23 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
                           TextInputType.text,
                           controllerResponsableForm),
                       _rowRadioButtons(0.17),
-                      SizedBox(
-                        height: getScreenSize(context).height * 0.12,
-                        child: CustomerCalendarTextFormField(
-                            width: 0.8,
-                            icon: Icons.label,
-                            label: "Fecha de realizacion",
-                            keyboardType: TextInputType.datetime,
-                            obscureText: false,
-                            controller: _dateController,
-                            isInputFormat: false,
-                            isEmail: false,
-                            selecDate: () => _selectDate(context)),
-                      ),
+                      // SizedBox(
+                      //   height: getScreenSize(context).height * 0.12,
+                      //   child: CustomerCalendarTextFormField(
+                      //       width: 0.8,
+                      //       icon: Icons.label,
+                      //       label: "Fecha de realizacion",
+                      //       keyboardType: TextInputType.datetime,
+                      //       obscureText: false,
+                      //       controller: _dateController,
+                      //       isInputFormat: false,
+                      //       isEmail: false,
+                      //       selecDate: () => _selectDate(context)),
+                      // ),
                     ],
                   ),
                 ),
-                SizedBox(height: getScreenSize(context).height * 0.015),
+                // SizedBox(height: getScreenSize(context).height * 0.015),
                 _sendButton(0.05, "Enviar")
               ],
             ),
@@ -392,25 +371,30 @@ class _TimeLineOverlayPhotoState extends State<TimeLineOverlayPhoto> {
       child: CustomerElevateButton(
           texto: text,
           colorTexto: Colors.white,
-          colorButton: Colors.green.shade400,
-          onPressed: () {
-            _images.clear();
-            showDialogLoad(context);
-            for (int i = 0; i < 5; i++) {
-              _images.add(fileList[nameImages[i]]!);
-            }
-            sendImagesToApi(_images, nameImages);
-            sendCloseItemTimeLine(
-                    requestList[indexProgramacion].idProcesoProgramacion, 2)
-                .then((value) {
-              Navigator.pop(context);
-            });
-            showDialogLoad(context);
-            getListSchedule().then((value) {
-              Navigator.pop(context);
-            });
-            Navigator.pop(context);
-          },
+          colorButton:
+              fileList.length == 5 ? Colors.green.shade400 : Colors.grey,
+          onPressed: fileList.length == 5
+              ? () {
+                  _images.clear();
+                  showDialogLoad(context);
+                  for (int i = 0; i < 5; i++) {
+                    _images.add(fileList[nameImages[i]]!);
+                  }
+                  sendImagesToApi(_images, nameImages).then((value) {
+                    sendCloseItemTimeLine(
+                            requestList[indexProgramacion]
+                                .idProcesoProgramacion,
+                            2)
+                        .then((value) {
+                      getListSchedule().then((value) {
+                        Navigator.pop(context);
+                      });
+                    });
+                  });
+                  showMessageTOAST(context, "Proceso Completado", Colors.green);
+                  Navigator.pop(context);
+                }
+              : () {},
           height: .05,
           width: .5),
     );
@@ -547,18 +531,53 @@ class _TimeLineOverlayCalibState extends State<TimeLineOverlayCalib> {
           colorTexto: Colors.white,
           colorButton: Colors.green.shade400,
           onPressed: () {
-            pressureCalib = int.parse(controllerPressure.text);
-            enableCalib = true;
-            calibEvent = true;
-            Navigator.pushNamed(context, 'test').then((value) {
-              calibEvent = false;
-              showDialogLoad(context);
-              getListSchedule().then((value) {
-                Navigator.pop(context);
-              });
-              Navigator.pop(context);
-            });
+            try {
+              pressureCalib = int.parse(controllerPressure.text);
+              enableCalib = true;
+              calibEvent = true;
+              Navigator.pushReplacementNamed(context, 'test');
+            } catch (e) {
+              showMessageTOAST(
+                  context, "El campo de presión está vacio", Colors.red);
+            }
           },
+          height: .05,
+          width: .5),
+    );
+  }
+
+  Widget _sendApiButton(double height, String text) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      width: getScreenSize(context).width * 0.9,
+      child: CustomerElevateButton(
+          texto: text,
+          colorTexto: Colors.white,
+          colorButton: completeTest ? Colors.green.shade400 : Colors.grey,
+          onPressed: completeTest
+              ? () {
+                  int response = 0;
+                  if (calibEvent) {
+                    response = 3;
+                  } else {
+                    response = 4;
+                  }
+                  showDialogLoad(context);
+                  sendCloseItemTimeLine(
+                          requestList[indexProgramacion].idProcesoProgramacion,
+                          response)
+                      .then((value) {
+                    calibEvent = false;
+                    getListSchedule().then((value) {
+                      showMessageTOAST(
+                          context, "Proceso Completado", Colors.green);
+                      Navigator.pop(context);
+                    });
+                  });
+                  completeTest = false;
+                  Navigator.pop(context);
+                }
+              : () {},
           height: .05,
           width: .5),
     );
@@ -574,7 +593,7 @@ class _TimeLineOverlayCalibState extends State<TimeLineOverlayCalib> {
           child: Container(
             padding: const EdgeInsets.all(10),
             width: getScreenSize(context).width * 0.9,
-            height: getScreenSize(context).height * 0.35,
+            height: getScreenSize(context).height * 0.42,
             child: Column(
               children: [
                 _closeBar(0.05, Icons.close),
@@ -586,7 +605,11 @@ class _TimeLineOverlayCalibState extends State<TimeLineOverlayCalib> {
                     Icons.chevron_right,
                     TextInputType.number,
                     controllerPressure),
-                _sendButton(0.05, "Ir a Calibracion")
+                _sendButton(0.05, "Ir a Calibracion"),
+                SizedBox(height: getScreenSize(context).height * 0.02),
+                _defaultText(0.02, "*Conectar los datos moviles", 14,
+                    Colors.red, FontWeight.bold),
+                _sendApiButton(0.05, "Enviar Confirmación")
               ],
             ),
           ),
@@ -664,14 +687,45 @@ class _TimeLineOverlayTestState extends State<TimeLineOverlayTest> {
           colorButton: Colors.green.shade400,
           onPressed: () {
             calibEvent = false;
-            Navigator.pushNamed(context, 'test').then((value) {
-              showDialogLoad(context);
-              getListSchedule().then((value) {
-                Navigator.pop(context);
-              });
-              Navigator.pop(context);
-            });
+            Navigator.pushNamed(context, 'test');
           },
+          height: .05,
+          width: .5),
+    );
+  }
+
+  Widget _sendApiButton(double height, String text) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      width: getScreenSize(context).width * 0.9,
+      child: CustomerElevateButton(
+          texto: text,
+          colorTexto: Colors.white,
+          colorButton: completeTest ? Colors.green.shade400 : Colors.grey,
+          onPressed: completeTest
+              ? () {
+                  int response = 0;
+                  if (calibEvent) {
+                    response = 3;
+                  } else {
+                    response = 4;
+                  }
+                  showDialogLoad(context);
+                  sendCloseItemTimeLine(
+                          requestList[indexProgramacion].idProcesoProgramacion,
+                          response)
+                      .then((value) {
+                    calibEvent = false;
+                    getListSchedule().then((value) {
+                      showMessageTOAST(
+                          context, "Proceso Completado", Colors.green);
+                      Navigator.pop(context);
+                    });
+                  });
+                  completeTest = false;
+                  Navigator.pop(context);
+                }
+              : () {},
           height: .05,
           width: .5),
     );
@@ -687,13 +741,17 @@ class _TimeLineOverlayTestState extends State<TimeLineOverlayTest> {
           child: Container(
             padding: const EdgeInsets.all(10),
             width: getScreenSize(context).width * 0.9,
-            height: getScreenSize(context).height * 0.25,
+            height: getScreenSize(context).height * 0.35,
             child: Column(
               children: [
                 _closeBar(0.05, Icons.close),
                 _defaultText(0.1, "Prueaba de Hermeticidad", 20, Colors.black,
                     FontWeight.bold),
-                _sendButton(0.05, "Ir a la prueba")
+                _sendButton(0.05, "Ir a la prueba"),
+                SizedBox(height: getScreenSize(context).height * 0.03),
+                _defaultText(0.02, "*Conectar los datos moviles", 14,
+                    Colors.red, FontWeight.bold),
+                _sendApiButton(0.05, "Enviar Confirmación")
               ],
             ),
           ),
@@ -788,6 +846,7 @@ class _TimeLineOverlayResultsState extends State<TimeLineOverlayResults> {
       height: getScreenSize(context).height * heightContent,
       child: CustomerElevateButton(
           onPressed: () {
+            developer.log(fileData);
             Navigator.pushNamed(context, 'file').then((value) {
               showDialogLoad(context);
               getListSchedule().then((value) {
@@ -820,7 +879,7 @@ class _TimeLineOverlayResultsState extends State<TimeLineOverlayResults> {
                 _closeBar(0.05, Icons.close),
                 _defaultText(
                     "Resultados", 20, Colors.black, 2, FontWeight.bold),
-                _scrollData(0.4, requestList[indexProgramacion].fileData),
+                _scrollData(0.4, fileData),
                 SizedBox(height: getScreenSize(context).height * 0.02),
                 _defaultText("*Conecte su dispositivo a la red movil", 14,
                     Colors.red, 2, FontWeight.bold),
@@ -845,14 +904,10 @@ class TimeLineOverlayLastForm extends StatefulWidget {
 
 class _TimeLineOverlayLastFormState extends State<TimeLineOverlayLastForm> {
   late List<dynamic> dynamicList = [];
-  late DateTime _selectedDate;
-  late TextEditingController _dateController;
   int selectedValue = 0;
   @override
   void initState() {
     super.initState();
-    _dateController = TextEditingController();
-    _selectedDate = DateTime.now();
   }
 
   Future<void> getListSchedule() async {
@@ -874,35 +929,14 @@ class _TimeLineOverlayLastFormState extends State<TimeLineOverlayLastForm> {
   }
 
   Future<void> sendLastForm() async {
-    Map<String, dynamic> mapFirstForm = {
+    Map<String, dynamic> mapLastForm = {
       'Token': tokenUsuarioGlobal,
       'IdProgramacion': requestList[indexProgramacion].idProgramacion,
-      'NombreEstacion': controllerNameStationForm.text,
-      'ResponsableEstacion': controllerResponsableForm.text,
-      'IdTipoPrueba': selectedValue,
-      'Autorizado': true,
-      'Fecha': _dateController.text
+      'FechaFin': DateTime.now().toString()
     };
     String sendFormUrl =
         'http://${controllerIp.text}:${controllerPort.text}/api/POSTformularioAutorizacion';
-    sendForm(sendFormUrl, jsonEncode(mapFirstForm));
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2101),
-    );
-
-    if (pickedDate != null && pickedDate != _selectedDate) {
-      setState(() {
-        _selectedDate = pickedDate;
-        _dateController.text =
-            '${pickedDate.year.toString()}-${pickedDate.month.toString()}-${pickedDate.day.toString()}'; // Puedes formatear la fecha según tus necesidades
-      });
-    }
+    sendForm(sendFormUrl, jsonEncode(mapLastForm));
   }
 
   Widget _closeBar(double height, IconData icon) {
@@ -958,35 +992,6 @@ class _TimeLineOverlayLastFormState extends State<TimeLineOverlayLastForm> {
     );
   }
 
-  Widget _rowRadioButtons(double height) {
-    return SizedBox(
-      height: getScreenSize(context).height * height,
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        _defaultText(0.03, "Tipo de prueba", 14, Colors.black, FontWeight.bold),
-        RadioListTile(
-          title: const Text('Linea'),
-          value: 0,
-          groupValue: selectedValue,
-          onChanged: (value) {
-            setState(() {
-              selectedValue = value!;
-            });
-          },
-        ),
-        RadioListTile(
-          title: const Text('Tanque'),
-          value: 1,
-          groupValue: selectedValue,
-          onChanged: (value) {
-            setState(() {
-              selectedValue = value!;
-            });
-          },
-        ),
-      ]),
-    );
-  }
-
   Widget _sendButton(double height, String text) {
     return SizedBox(
       height: getScreenSize(context).height * height,
@@ -997,16 +1002,16 @@ class _TimeLineOverlayLastFormState extends State<TimeLineOverlayLastForm> {
           colorButton: Colors.green.shade400,
           onPressed: () {
             showDialogLoad(context);
-            //sendLastForm();
-            sendCloseItemTimeLine(
-                    requestList[indexProgramacion].idProcesoProgramacion, 6)
-                .then((value) {
-              Navigator.pop(context);
+            sendLastForm().then((value) {
+              sendCloseItemTimeLine(
+                      requestList[indexProgramacion].idProcesoProgramacion, 6)
+                  .then((value) {
+                getListSchedule().then((value) {
+                  Navigator.pop(context);
+                });
+              });
             });
-            showDialogLoad(context);
-            getListSchedule().then((value) {
-              Navigator.pop(context);
-            });
+            showMessageTOAST(context, "Proceso Completado", Colors.green);
             Navigator.pop(context);
           },
           height: .05,
@@ -1024,43 +1029,17 @@ class _TimeLineOverlayLastFormState extends State<TimeLineOverlayLastForm> {
           child: Container(
             padding: const EdgeInsets.all(10),
             width: getScreenSize(context).width * 0.9,
-            height: getScreenSize(context).height * 0.54,
+            height: getScreenSize(context).height * 0.3,
             child: Column(
               children: [
                 _closeBar(0.05, Icons.close),
                 _defaultText(
                     0.05, "DATOS FINALES", 20, Colors.black, FontWeight.bold),
                 SizedBox(
-                  height: getScreenSize(context).height * 0.35,
+                  height: getScreenSize(context).height * 0.1,
                   child: ListView(
                     children: [
                       SizedBox(height: getScreenSize(context).height * 0.01),
-                      _textFieldForm(
-                          0.1,
-                          "Nombre de la estación",
-                          Icons.chevron_right,
-                          TextInputType.text,
-                          controllerNameStationForm),
-                      _textFieldForm(
-                          0.1,
-                          "Responsable de la estación",
-                          Icons.chevron_right,
-                          TextInputType.text,
-                          controllerResponsableForm),
-                      _rowRadioButtons(0.17),
-                      SizedBox(
-                        height: getScreenSize(context).height * 0.12,
-                        child: CustomerCalendarTextFormField(
-                            width: 0.8,
-                            icon: Icons.label,
-                            label: "Fecha de realizacion",
-                            keyboardType: TextInputType.datetime,
-                            obscureText: false,
-                            controller: _dateController,
-                            isInputFormat: false,
-                            isEmail: false,
-                            selecDate: () => _selectDate(context)),
-                      ),
                     ],
                   ),
                 ),

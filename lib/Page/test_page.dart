@@ -49,26 +49,24 @@ class _TestPageState extends State<TestPage> {
   late Timer pingTimer;
   double contador = 0.0;
   late ChartSeriesController _chartSeriesController;
-  List<File> _imageFiles = [];
 
   String paso0 = "Pasos para realizar la prueba:\n";
   String paso1 = "Verifique la correcta conexion del medidor.";
   String paso2 = "Desconecte su celular de los datos moviles.";
   String paso3 = "Conectese a la red WIFI 'Medidor_PSI'.";
   String paso4 = "Oprima el boton 'Sincronizar'.";
-  // @override
-  // void dispose() {
-  //   if (mounted) {
-  //     pingTimer.cancel();
-  //   }
-  //   super.dispose();
-  //   if (flagButton) {
-  //     channel.sink
-  //         .close(); // Cierra el canal WebSocket cuando el widget se elimina
-  //   }
-  //   isDisposeCalled = true;
-  //   enableCalib = false;
-  // }
+  @override
+  void dispose() {
+    if (mounted) {
+      pingTimer.cancel();
+      developer.log('El timer está activo: ${pingTimer.isActive}');
+    }
+    if (flagButton) {
+      channel.sink.close();
+    }
+    enableCalib = false;
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -77,8 +75,8 @@ class _TestPageState extends State<TestPage> {
     // widget.storage
     //     .writeFileData('Conexion con el medidor ${DateTime.now().toLocal()}\n');
     //enableCalib ? initCalib(true) : () {};
-    _loadImages();
-    //ping2();
+    //_loadImages();
+    ping2();
   }
 
   void ping2() {
@@ -96,10 +94,8 @@ class _TestPageState extends State<TestPage> {
   }
 
   Future<void> showDataFile() async {
-    requestList[indexProgramacion].fileData =
-        await widget.storage.readFileData();
-    final fileDataArray = requestList[indexProgramacion]
-        .fileData
+    fileData = await widget.storage.readFileData();
+    final fileDataArray = fileData
         .replaceAll("Registro de mediciones\n", "")
         .replaceAll("------Calibracion-----\n", "")
         .replaceAll("--------Testeo--------\n", "")
@@ -329,36 +325,18 @@ class _TestPageState extends State<TestPage> {
     });
   }
 
-  Future<void> _loadImages() async {
-    try {
-      final directory = await getTemporaryDirectory();
-      List<FileSystemEntity> files = directory.listSync();
-      List<File> imageFiles = files
-          .whereType<File>()
-          .where((file) => file.path.toLowerCase().endsWith('.png'))
-          .toList();
-      developer.log(
-          'Lista de imágenes cargada: ${imageFiles.map((file) => file.path).toList()}');
-      setState(() {
-        _imageFiles.clear();
-        _imageFiles = imageFiles;
-      });
-    } catch (e) {
-      developer.log('Error al cargar las imágenes: $e');
-    }
-  }
-
   PreferredSizeWidget _appbar() {
     return AppBar(
       leading: IconButton(
           onPressed: () {
-            // if (mounted) {
-            //   pingTimer.cancel();
-            // }
-            // if (flagButton) {
-            //   channel.sink.close();
-            // }
-            Navigator.pop(context);
+            if (mounted) {
+              pingTimer.cancel();
+            }
+            if (flagButton) {
+              channel.sink.close();
+            }
+            completeTest = true;
+            Navigator.pushReplacementNamed(context, 'home1');
           },
           icon: const Icon(Icons.arrow_back_ios)),
       elevation: 10,
@@ -536,17 +514,8 @@ class _TestPageState extends State<TestPage> {
 
   Widget _resultButton(String text, Color color) {
     return _actionButton(!isInTestState && !isInCalibState, true, (bool a) {
-      int response = 0;
-      if (calibEvent) {
-        response = 3;
-      } else {
-        response = 4;
-      }
-      sendCloseItemTimeLine(
-              requestList[indexProgramacion].idProcesoProgramacion, response)
-          .then((value) {
-        Navigator.pop(context);
-      });
+      completeTest = true;
+      Navigator.pushReplacementNamed(context, 'home1');
     }, color, text);
   }
 
@@ -585,13 +554,13 @@ class _TestPageState extends State<TestPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         SizedBox(height: getScreenSize(context).height * 0.015),
-        _actionButton(true, true, (bool a) {
-          setState(() {
-            isInSocket = true;
-          });
-        }, Colors.green.shade300, "Sincronizar"),
-        // _actionButton(!(isInSocket || !checkboxValue), true, reconectSocket,
-        //     Colors.green.shade300, "Sincronizar"),
+        // _actionButton(true, true, (bool a) {
+        //   setState(() {
+        //     isInSocket = true;
+        //   });
+        // }, Colors.green.shade300, "Sincronizar"),
+        _actionButton(!(isInSocket || !checkboxValue), true, reconectSocket,
+            Colors.green.shade300, "Sincronizar"),
         ItemStepLine(
             isFirts: true, isLast: false, icon: Icons.cable, text: paso1),
         ItemStepLine(
@@ -624,7 +593,7 @@ class _TestPageState extends State<TestPage> {
         _rowButtons(
             0.05, "Iniciar Calibracion", "Iniciar Prueba", initCalib, initTest),
         SizedBox(height: getScreenSize(context).height * 0.01),
-        _resultButton("Enviar confirmación", Colors.blueAccent)
+        //_resultButton("Enviar confirmación", Colors.blueAccent)
       ],
     );
   }
@@ -851,7 +820,7 @@ class _ShowFileOverlayState extends State<ShowFileOverlay> {
             child: Column(
               children: [
                 _closeBar(0.05, Icons.close),
-                _scrollData(0.4, requestList[indexProgramacion].fileData),
+                _scrollData(0.4, fileData),
                 SizedBox(height: getScreenSize(context).height * 0.02),
                 _defaultText("*Conecte su dispositivo a la red movil", 14,
                     Colors.red, 2, FontWeight.bold),

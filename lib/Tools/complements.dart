@@ -50,12 +50,12 @@ List<ChartData> lineToleranceUp = [];
 List<ChartData> lineToleranceDown = [];
 
 List<Request> requestList = [];
+String fileData = "";
 Map<String, File> fileList = {};
 String fileName = '';
 List<String> nameImages = ['Estación', 'Manometro', 'Kit', 'Tuberia', 'Tanque'];
-
+bool completeTest = false;
 bool calibEvent = false;
-
 bool enableCalib = false;
 
 Future<bool?> showMessageTOAST(

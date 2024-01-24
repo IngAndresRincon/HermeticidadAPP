@@ -214,7 +214,7 @@ class _HomePageState extends State<HomePage> {
             );
           }),
           _buttonCards("PRUEBA", 'assets/test.png', 0.3, () {
-            Navigator.pushNamed(context, 'file');
+            //Navigator.pushNamed(context, 'file');
           }),
         ],
       ),
