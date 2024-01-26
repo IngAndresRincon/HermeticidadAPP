@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Page/timeline_overlays.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
-import 'package:hermeticidadapp/Tools/functions.dart';
-import 'package:hermeticidadapp/Widgets/elevate_button.dart';
-import 'package:hermeticidadapp/Widgets/text_field.dart';
-import 'package:timeline_tile/timeline_tile.dart';
 
 class HomeTimeLinePage extends StatefulWidget {
   const HomeTimeLinePage({super.key});
@@ -63,14 +59,8 @@ class _HomeTimeLinePageState extends State<HomeTimeLinePage> {
     );
   }
 
-  Widget _selectOption(
-    String text,
-    StatefulWidget modalWindow,
-    bool isFirst,
-    bool isLast,
-    bool isPast,
-    bool isNext,
-  ) {
+  Widget _selectOption(String text, StatefulWidget modalWindow, bool isFirst,
+      bool isLast, bool isPast, bool isNext) {
     return GestureDetector(
         onTap: isNext
             ? () {
@@ -87,11 +77,15 @@ class _HomeTimeLinePageState extends State<HomeTimeLinePage> {
               }
             : () {},
         child: ItemLineTime(
-            isFirts: isFirst,
-            isLast: isLast,
-            isPast: isPast,
-            isNext: isNext,
-            text: text));
+          isFirts: isFirst,
+          isLast: isLast,
+          isPast: isPast,
+          isNext: isNext,
+          text: text,
+          pastColor: const Color(0xFF27AA69),
+          nextColor: const Color(0xFF2B619C),
+          noPastColor: const Color(0xFFDADADA),
+        ));
   }
 
   @override

@@ -36,7 +36,6 @@ class _CustomerCalendarTextFormFieldState
   Widget build(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width * widget.width,
-
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: TextFormField(
         inputFormatters: widget.isInputFormat

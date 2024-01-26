@@ -1,10 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:hermeticidadapp/Widgets/text_field.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../Widgets/elevate_button.dart';
 import 'package:http/http.dart' as http;
@@ -63,6 +60,7 @@ class _TestPageState extends State<TestPage> {
     }
     if (flagButton) {
       channel.sink.close();
+      developer.log("Socket Cerrado");
     }
     enableCalib = false;
     super.dispose();
@@ -81,9 +79,9 @@ class _TestPageState extends State<TestPage> {
 
   void ping2() {
     pingTimer = Timer.periodic(const Duration(seconds: 2), (_) {
-      if (!isDisposeCalled) {
-        ping();
-      }
+      //if (!isDisposeCalled) {
+      ping();
+      //}
     });
   }
 
@@ -262,12 +260,10 @@ class _TestPageState extends State<TestPage> {
   }
 
   void sendInfo() {
-    setState(() {
-      SendSocket sendData = SendSocket(
-          'info', idEstacion, idProgramacion, pressureCalib, timeAperture);
-      String dataJson = jsonEncode(sendData);
-      channel.sink.add(dataJson);
-    });
+    SendSocket sendData = SendSocket(
+        'info', idEstacion, idProgramacion, pressureCalib, timeAperture);
+    String dataJson = jsonEncode(sendData);
+    channel.sink.add(dataJson);
   }
 
   void initCalib(bool action) {
@@ -334,9 +330,14 @@ class _TestPageState extends State<TestPage> {
             }
             if (flagButton) {
               channel.sink.close();
+              developer.log("Socket Cerrado");
+            }
+            if (pingTimer.isActive) {
+              pingTimer.cancel();
             }
             completeTest = true;
-            Navigator.pushReplacementNamed(context, 'home1');
+            Navigator.pop(context);
+            //Navigator.pushReplacementNamed(context, 'home1');
           },
           icon: const Icon(Icons.arrow_back_ios)),
       elevation: 10,
@@ -477,12 +478,12 @@ class _TestPageState extends State<TestPage> {
                   !isInCalibState && !isInTestState,
                   !isInCalibState,
                   functionButton1,
-                  Colors.green.shade300,
+                  const Color(0xFF27AA69),
                   textButton1)
               : Container(),
           !calibEvent
               ? _actionButton(!isInCalibState && !isInTestState, !isInTestState,
-                  functionButton2, Colors.green.shade300, textButton2)
+                  functionButton2, const Color(0xFF27AA69), textButton2)
               : Container(),
         ],
       ),
@@ -510,13 +511,6 @@ class _TestPageState extends State<TestPage> {
             title: _defaultText(0.025, text, 15, Colors.black, FontWeight.bold),
           ),
         ));
-  }
-
-  Widget _resultButton(String text, Color color) {
-    return _actionButton(!isInTestState && !isInCalibState, true, (bool a) {
-      completeTest = true;
-      Navigator.pushReplacementNamed(context, 'home1');
-    }, color, text);
   }
 
   @override
@@ -560,20 +554,30 @@ class _TestPageState extends State<TestPage> {
         //   });
         // }, Colors.green.shade300, "Sincronizar"),
         _actionButton(!(isInSocket || !checkboxValue), true, reconectSocket,
-            Colors.green.shade300, "Sincronizar"),
+            const Color(0xFF27AA69), "Sincronizar"),
         ItemStepLine(
-            isFirts: true, isLast: false, icon: Icons.cable, text: paso1),
+            isFirts: true,
+            isLast: false,
+            icon: Icons.cable,
+            title: 'Verificar',
+            text: paso1),
         ItemStepLine(
             isFirts: false,
             isLast: false,
             icon: Icons.signal_cellular_off,
+            title: 'Desconectar Datos',
             text: paso2),
         ItemStepLine(
-            isFirts: false, isLast: false, icon: Icons.wifi, text: paso3),
+            isFirts: false,
+            isLast: false,
+            icon: Icons.wifi,
+            title: 'Conectar Wi-Fi',
+            text: paso3),
         ItemStepLine(
             isFirts: false,
             isLast: true,
             icon: Icons.radio_button_checked,
+            title: 'Sincronizar',
             text: paso4)
       ],
     );
@@ -701,133 +705,6 @@ class _ConfigTestOverlayState extends State<ConfigTestOverlay> {
                   TextInputType.number, controllerTimeAperture),
               _configButton(0.05, "CONFIGURAR")
             ]),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class ShowFileOverlay extends StatefulWidget {
-  const ShowFileOverlay({super.key});
-
-  @override
-  State<ShowFileOverlay> createState() => _ShowFileOverlayState();
-}
-
-class _ShowFileOverlayState extends State<ShowFileOverlay> {
-  void sendFileApi() {
-    showDialogLoad(context);
-    String fileContFormat = requestList[indexProgramacion]
-        .fileData
-        .replaceAll("Registro de mediciones\n", "")
-        .replaceAll("------Calibracion-----\n", "")
-        .replaceAll("--------Testeo--------\n", "")
-        .replaceAll(" ", "")
-        .replaceAll("][", ",")
-        .replaceAll("]\n", ";")
-        .replaceAll("[", "");
-    developer.log(fileContFormat);
-    String fileUrl =
-        'http://${controllerIp.text}:${controllerPort.text}/api/POSTsubirArchivo';
-    postFile(fileUrl, fileContFormat).then((value) {
-      Navigator.pop(context);
-      if (value) {
-        showMessageTOAST(context, "Archivo enviado", Colors.green);
-      } else {
-        showMessageTOAST(context,
-            "Error, Conectese a la red movil e intente de nuevo", Colors.green);
-      }
-    });
-  }
-
-  Widget _closeBar(double heightContent, IconData icon) {
-    return SizedBox(
-      height: getScreenSize(context).height * heightContent,
-      child: Align(
-          alignment: Alignment.centerRight,
-          child: IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              icon: Icon(icon))),
-    );
-  }
-
-  Widget _defaultText(String text, double fontSize, Color color,
-      double letterSpacing, FontWeight fontWeight) {
-    return Text(
-      text,
-      textAlign: TextAlign.center,
-      style: TextStyle(
-          letterSpacing: letterSpacing,
-          fontSize: fontSize,
-          color: color,
-          fontWeight: fontWeight),
-    );
-  }
-
-  Widget _scrollData(double heightContent, String fileData) {
-    return SizedBox(
-      height: getScreenSize(context).height * heightContent,
-      child: CustomScrollView(
-        slivers: <Widget>[
-          SliverPadding(
-            padding: const EdgeInsets.all(8),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate(
-                <Widget>[
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _defaultText(
-                          fileData, 16, Colors.black, 4, FontWeight.w500)
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _sendButton(double heightContent, String text) {
-    return SizedBox(
-      height: getScreenSize(context).height * heightContent,
-      child: CustomerElevateButton(
-          onPressed: sendFileApi,
-          texto: text,
-          colorTexto: Colors.white,
-          colorButton: Colors.green.shade300,
-          height: .05,
-          width: .5),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Center(
-        child: Card(
-          color: const Color.fromARGB(242, 247, 247, 247),
-          child: Container(
-            padding: const EdgeInsets.all(10),
-            width: getScreenSize(context).width * 0.9,
-            height: getScreenSize(context).height * 0.6,
-            child: Column(
-              children: [
-                _closeBar(0.05, Icons.close),
-                _scrollData(0.4, fileData),
-                SizedBox(height: getScreenSize(context).height * 0.02),
-                _defaultText("*Conecte su dispositivo a la red movil", 14,
-                    Colors.red, 2, FontWeight.bold),
-                SizedBox(height: getScreenSize(context).height * 0.02),
-                _sendButton(0.05, "Enviar Datos"),
-              ],
-            ),
           ),
         ),
       ),

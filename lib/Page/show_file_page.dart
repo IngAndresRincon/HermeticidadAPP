@@ -158,7 +158,7 @@ class _FilePageState extends State<FilePage> {
           },
           texto: text,
           colorTexto: Colors.white,
-          colorButton: Colors.green.shade300,
+          colorButton: const Color(0xFF27AA69),
           height: .05,
           width: .5),
     );

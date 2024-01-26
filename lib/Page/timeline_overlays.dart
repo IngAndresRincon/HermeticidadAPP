@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:hermeticidadapp/Tools/functions.dart';
-import 'package:hermeticidadapp/Widgets/calendarTextFormField.dart';
 import 'package:hermeticidadapp/Widgets/elevate_button.dart';
 import 'package:hermeticidadapp/Widgets/text_field.dart';
 import 'package:path_provider/path_provider.dart';
@@ -149,20 +148,26 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
       child: CustomerElevateButton(
           texto: text,
           colorTexto: Colors.white,
-          colorButton: Colors.green.shade400,
+          colorButton: const Color(0xFF27AA69),
           onPressed: () {
             showDialogLoad(context);
-            sendFirstForm().then((value) {
-              sendCloseItemTimeLine(
-                      requestList[indexProgramacion].idProcesoProgramacion, 1)
-                  .then((value) {
-                getListSchedule().then((value) {
-                  Navigator.pop(context);
+            try {
+              sendFirstForm().then((value) {
+                sendCloseItemTimeLine(
+                        requestList[indexProgramacion].idProcesoProgramacion, 1)
+                    .then((value) {
+                  getListSchedule().then((value) {
+                    Navigator.pop(context);
+                  });
                 });
               });
-            });
-            showMessageTOAST(context, "Proceso Completado", Colors.green);
-            Navigator.pop(context);
+              showMessageTOAST(context, "Proceso Completado", Colors.green);
+              Navigator.pop(context);
+            } catch (e) {
+              showMessageTOAST(
+                  context, "Complete todos los campos", Colors.red);
+              Navigator.pop(context);
+            }
           },
           height: .05,
           width: .5),
@@ -203,24 +208,11 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
                           TextInputType.text,
                           controllerResponsableForm),
                       _rowRadioButtons(0.17),
-                      // SizedBox(
-                      //   height: getScreenSize(context).height * 0.12,
-                      //   child: CustomerCalendarTextFormField(
-                      //       width: 0.8,
-                      //       icon: Icons.label,
-                      //       label: "Fecha de realizacion",
-                      //       keyboardType: TextInputType.datetime,
-                      //       obscureText: false,
-                      //       controller: _dateController,
-                      //       isInputFormat: false,
-                      //       isEmail: false,
-                      //       selecDate: () => _selectDate(context)),
-                      // ),
                     ],
                   ),
                 ),
                 // SizedBox(height: getScreenSize(context).height * 0.015),
-                _sendButton(0.05, "Enviar")
+                _sendButton(0.05, "Enviar Formulario")
               ],
             ),
           ),
@@ -344,7 +336,7 @@ class _TimeLineOverlayPhotoState extends State<TimeLineOverlayPhoto> {
                     child: Align(
                         alignment: Alignment.bottomCenter,
                         child: IconButton(
-                            color: Colors.green,
+                            color: const Color(0xFF27AA69),
                             onPressed: () {
                               fileName = fName;
                               Navigator.pushNamed(context, 'camera')
@@ -372,7 +364,7 @@ class _TimeLineOverlayPhotoState extends State<TimeLineOverlayPhoto> {
           texto: text,
           colorTexto: Colors.white,
           colorButton:
-              fileList.length == 5 ? Colors.green.shade400 : Colors.grey,
+              fileList.length == 5 ? const Color(0xFF27AA69) : Colors.grey,
           onPressed: fileList.length == 5
               ? () {
                   _images.clear();
@@ -529,13 +521,15 @@ class _TimeLineOverlayCalibState extends State<TimeLineOverlayCalib> {
       child: CustomerElevateButton(
           texto: text,
           colorTexto: Colors.white,
-          colorButton: Colors.green.shade400,
+          colorButton: const Color(0xFF27AA69),
           onPressed: () {
             try {
               pressureCalib = int.parse(controllerPressure.text);
               enableCalib = true;
               calibEvent = true;
-              Navigator.pushReplacementNamed(context, 'test');
+              Navigator.pushNamed(context, 'test').then((value) {
+                setState(() {});
+              });
             } catch (e) {
               showMessageTOAST(
                   context, "El campo de presión está vacio", Colors.red);
@@ -553,7 +547,7 @@ class _TimeLineOverlayCalibState extends State<TimeLineOverlayCalib> {
       child: CustomerElevateButton(
           texto: text,
           colorTexto: Colors.white,
-          colorButton: completeTest ? Colors.green.shade400 : Colors.grey,
+          colorButton: completeTest ? const Color(0xFF27AA69) : Colors.grey,
           onPressed: completeTest
               ? () {
                   int response = 0;
@@ -684,10 +678,12 @@ class _TimeLineOverlayTestState extends State<TimeLineOverlayTest> {
       child: CustomerElevateButton(
           texto: text,
           colorTexto: Colors.white,
-          colorButton: Colors.green.shade400,
+          colorButton: const Color(0xFF27AA69),
           onPressed: () {
             calibEvent = false;
-            Navigator.pushNamed(context, 'test');
+            Navigator.pushNamed(context, 'test').then((value) {
+              setState(() {});
+            });
           },
           height: .05,
           width: .5),
@@ -701,7 +697,7 @@ class _TimeLineOverlayTestState extends State<TimeLineOverlayTest> {
       child: CustomerElevateButton(
           texto: text,
           colorTexto: Colors.white,
-          colorButton: completeTest ? Colors.green.shade400 : Colors.grey,
+          colorButton: completeTest ? const Color(0xFF27AA69) : Colors.grey,
           onPressed: completeTest
               ? () {
                   int response = 0;
@@ -857,7 +853,7 @@ class _TimeLineOverlayResultsState extends State<TimeLineOverlayResults> {
           },
           texto: text,
           colorTexto: Colors.white,
-          colorButton: Colors.green.shade300,
+          colorButton: const Color(0xFF27AA69),
           height: .05,
           width: .5),
     );
@@ -969,29 +965,6 @@ class _TimeLineOverlayLastFormState extends State<TimeLineOverlayLastForm> {
     );
   }
 
-  Widget _textFieldForm(
-      double height,
-      String text,
-      IconData icon,
-      TextInputType textInputType,
-      TextEditingController textEditingController) {
-    return SizedBox(
-      height: getScreenSize(context).height * height,
-      child: CustomerTextFieldLogin(
-          label: text,
-          textinputtype: textInputType,
-          obscure: false,
-          icondata: icon,
-          texteditingcontroller: textEditingController,
-          bsuffixIcon: false,
-          onTapSuffixIcon: () {},
-          suffixIcon: Icons.person,
-          width: .8,
-          labelColor: Colors.black,
-          textColor: Colors.black),
-    );
-  }
-
   Widget _sendButton(double height, String text) {
     return SizedBox(
       height: getScreenSize(context).height * height,
@@ -999,7 +972,7 @@ class _TimeLineOverlayLastFormState extends State<TimeLineOverlayLastForm> {
       child: CustomerElevateButton(
           texto: text,
           colorTexto: Colors.white,
-          colorButton: Colors.green.shade400,
+          colorButton: const Color(0xFF27AA69),
           onPressed: () {
             showDialogLoad(context);
             sendLastForm().then((value) {
@@ -1011,7 +984,8 @@ class _TimeLineOverlayLastFormState extends State<TimeLineOverlayLastForm> {
                 });
               });
             });
-            showMessageTOAST(context, "Proceso Completado", Colors.green);
+            showMessageTOAST(
+                context, "Proceso Completado", const Color(0xFF27AA69));
             Navigator.pop(context);
           },
           height: .05,

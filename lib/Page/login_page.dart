@@ -78,8 +78,11 @@ class _LoginPageState extends State<LoginPage> {
           alignment: Alignment.centerRight,
           child: CircleAvatar(
               radius: 30,
-              backgroundColor: Colors.greenAccent,
-              child: Icon(icon)),
+              backgroundColor: const Color(0xFF27AA69),
+              child: Icon(
+                icon,
+                color: Colors.white,
+              )),
         ),
       ),
     );
@@ -194,7 +197,7 @@ class _LoginPageState extends State<LoginPage> {
         height: height,
         texto: text,
         colorTexto: Colors.white,
-        colorButton: Colors.green.shade400);
+        colorButton: const Color(0xFF27AA69));
   }
 
   Widget _loginForm(double height) {

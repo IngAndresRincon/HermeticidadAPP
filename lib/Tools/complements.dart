@@ -118,50 +118,58 @@ class ItemLineTime extends StatelessWidget {
   final bool isPast;
   final bool isNext;
   final String text;
+  final Color pastColor;
+  final Color nextColor;
+  final Color noPastColor;
   const ItemLineTime(
       {super.key,
       required this.isFirts,
       required this.isLast,
       required this.isPast,
       required this.isNext,
-      required this.text});
+      required this.text,
+      required this.pastColor,
+      required this.nextColor,
+      required this.noPastColor});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 200,
+      height: 150,
       child: TimelineTile(
         isFirst: isFirts,
         isLast: isLast,
         beforeLineStyle: LineStyle(
             color: isPast
-                ? Colors.green
+                ? pastColor
                 : isNext
-                    ? Colors.blue
-                    : Colors.blue.shade100),
+                    ? pastColor
+                    : noPastColor),
+        afterLineStyle: LineStyle(color: isPast ? pastColor : noPastColor),
         indicatorStyle: IndicatorStyle(
             width: getScreenSize(context).width * 0.1,
+            padding: const EdgeInsets.all(6),
             color: isPast
-                ? Colors.green
+                ? pastColor
                 : isNext
-                    ? Colors.blue
-                    : Colors.blue.shade100,
+                    ? nextColor
+                    : noPastColor,
             iconStyle: IconStyle(
                 iconData: Icons.done,
                 color: isPast
                     ? Colors.white
                     : isNext
-                        ? Colors.blue
-                        : Colors.blue.shade100)),
+                        ? nextColor
+                        : noPastColor)),
         endChild: Container(
           margin: EdgeInsets.all(getScreenSize(context).width * 0.05),
-          padding: EdgeInsets.all(getScreenSize(context).width * 0.1),
+          padding: EdgeInsets.all(getScreenSize(context).width * 0.05),
           decoration: BoxDecoration(
               color: isPast
-                  ? Colors.green
+                  ? pastColor
                   : isNext
-                      ? Colors.blue
-                      : Colors.blue.shade100,
+                      ? nextColor
+                      : noPastColor,
               borderRadius: BorderRadius.circular(10)),
           child: Text(
             text,
@@ -182,42 +190,47 @@ class ItemStepLine extends StatelessWidget {
   final bool isFirts;
   final bool isLast;
   final IconData icon;
+  final String title;
   final String text;
   const ItemStepLine(
       {super.key,
       required this.isFirts,
       required this.isLast,
       required this.icon,
+      required this.title,
       required this.text});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 200,
+      height: 150,
       child: TimelineTile(
         alignment: TimelineAlign.manual,
         lineXY: 0.1,
         isFirst: isFirts,
         isLast: isLast,
-        beforeLineStyle: const LineStyle(color: Colors.green),
+        beforeLineStyle: const LineStyle(color: Color(0xFF27AA69)),
         indicatorStyle: IndicatorStyle(
-            width: getScreenSize(context).width * 0.1,
-            color: Colors.green,
-            iconStyle: IconStyle(iconData: icon, color: Colors.white)),
+            width: getScreenSize(context).width * 0.07,
+            color: const Color(0xFF27AA69),
+            padding: const EdgeInsets.all(6)),
         endChild: Container(
-          margin: EdgeInsets.all(getScreenSize(context).width * 0.05),
-          padding: EdgeInsets.all(getScreenSize(context).width * 0.1),
+          margin: EdgeInsets.all(getScreenSize(context).width * 0.01),
+          padding: EdgeInsets.all(getScreenSize(context).width * 0.02),
           decoration: BoxDecoration(
-              color: Colors.green.shade400,
+              color: Colors.transparent,
               borderRadius: BorderRadius.circular(10)),
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-                letterSpacing: 2,
-                fontSize: 20,
-                color: Colors.white,
-                fontWeight: FontWeight.bold),
+          child: ListTile(
+            leading: Icon(
+              size: 50,
+              icon,
+              color: Colors.black,
+            ),
+            title: Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(text),
           ),
         ),
       ),
