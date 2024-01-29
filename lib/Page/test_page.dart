@@ -210,7 +210,7 @@ class _TestPageState extends State<TestPage> {
             isInCalibState = false;
           }
           if (isInCalibStateAux == true && isInCalibState == false) {
-            saveFileData();
+            //saveFileData();
             showMessageTOAST(
                 context, "Calibracion Terminada", Colors.red.shade700);
           }
@@ -445,7 +445,7 @@ class _TestPageState extends State<TestPage> {
   Widget _actionButton(bool enable, bool state, void Function(bool) function,
       Color colorButton, String text) {
     return CustomerElevateButton(
-        texto: text,
+        texto: !state ? 'Terminar' : text,
         colorTexto: Colors.white,
         colorButton: !state
             ? Colors.red
@@ -593,10 +593,9 @@ class _TestPageState extends State<TestPage> {
         _defaultText(0.02, timeText, 16, Colors.black, FontWeight.bold),
         _dataGraph(0.5, chartData),
         _rowInfo(0.07, 'Calibracion: $pressureCalib(PSI)±$timeAperture% '),
-        SizedBox(height: getScreenSize(context).height * 0.01),
+        SizedBox(height: getScreenSize(context).height * 0.035),
         _rowButtons(
             0.05, "Iniciar Calibracion", "Iniciar Prueba", initCalib, initTest),
-        SizedBox(height: getScreenSize(context).height * 0.01),
         //_resultButton("Enviar confirmación", Colors.blueAccent)
       ],
     );
