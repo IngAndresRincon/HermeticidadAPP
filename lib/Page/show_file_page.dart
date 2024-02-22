@@ -22,6 +22,7 @@ class _FilePageState extends State<FilePage> {
   double visibleMinimum = 0;
   double visibleMaximum = 30;
   final fileUrl = 'http://192.168.11.100:81/SD';
+  bool internetConection = false;
 
   @override
   void initState() {
@@ -142,23 +143,28 @@ class _FilePageState extends State<FilePage> {
     );
   }
 
-  Widget _sendDataButton(double height, String text) {
+  Widget _sendDataButton(bool enable, double height, String text) {
     return SizedBox(
       height: getScreenSize(context).height * height,
       child: CustomerElevateButton(
-          onPressed: () {
-            sendFileApi().then((value) {
-              sendCloseItemTimeLine(
-                      requestList[indexProgramacion].idProcesoProgramacion, 5)
-                  .then((value) {
-                showMessageTOAST(context, "Proceso Completado", Colors.green);
-                Navigator.pop(context);
-              });
-            });
-          },
+          onPressed: enable
+              ? () {
+                  sendFileApi().then((value) {
+                    sendCloseItemTimeLine(
+                            requestList[indexProgramacion]
+                                .idProcesoProgramacion,
+                            5)
+                        .then((value) {
+                      showMessageTOAST(
+                          context, "Proceso Completado", Colors.green);
+                      Navigator.pop(context);
+                    });
+                  });
+                }
+              : () {},
           texto: text,
           colorTexto: Colors.white,
-          colorButton: const Color(0xFF27AA69),
+          colorButton: enable ? const Color(0xFF27AA69) : Colors.grey,
           height: .05,
           width: .5),
     );
@@ -206,6 +212,23 @@ class _FilePageState extends State<FilePage> {
     );
   }
 
+  Widget _internetVerificartion(double height) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: ListTile(
+        leading: IconButton(
+          onPressed: () async {
+            internetConection = await checkInternetConnection();
+            setState(() {});
+          },
+          icon: const Icon(Icons.refresh),
+        ),
+        title: _defaultText(0.025, "Pulsar para Verificar Datos Moviles", 13,
+            Colors.black, 2, FontWeight.bold),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -218,10 +241,8 @@ class _FilePageState extends State<FilePage> {
               children: [
                 SizedBox(height: getScreenSize(context).height * .05),
                 _extendedGraph(0.7),
-                _defaultText(0.02, "*Conecte su dispositivo a la red movil", 14,
-                    Colors.red, 2, FontWeight.bold),
-                SizedBox(height: getScreenSize(context).height * .05),
-                _sendDataButton(0.05, "Enviar Datos")
+                _internetVerificartion(0.06),
+                _sendDataButton(internetConection, 0.05, "Enviar Datos")
               ],
             ),
           ],

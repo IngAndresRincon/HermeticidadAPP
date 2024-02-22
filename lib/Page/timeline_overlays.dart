@@ -21,6 +21,7 @@ class TimeLineOverlayFirstForm extends StatefulWidget {
 class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
   late List<dynamic> dynamicList = [];
   int selectedValue = 0;
+  bool internetConection = false;
   @override
   void initState() {
     super.initState();
@@ -56,7 +57,11 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
     };
     String sendFormUrl =
         'http://${controllerIp.text}:${controllerPort.text}/api/POSTformularioAutorizacion';
-    sendForm(sendFormUrl, jsonEncode(mapFirstForm));
+    try {
+      sendForm(sendFormUrl, jsonEncode(mapFirstForm));
+    } catch (e) {
+      showMessageTOAST(context, "Verifique la conexion a internet", Colors.red);
+    }
   }
 
   Widget _closeBar(double height, IconData icon) {
@@ -141,34 +146,56 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
     );
   }
 
-  Widget _sendButton(double height, String text) {
+  Widget _internetVerificartion(double height) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: ListTile(
+        leading: IconButton(
+          onPressed: () async {
+            internetConection = await checkInternetConnection();
+            setState(() {});
+          },
+          icon: const Icon(Icons.refresh),
+        ),
+        title: _defaultText(0.025, "Verificar Datos Moviles", 13, Colors.black,
+            FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _sendButton(bool enable, double height, String text) {
     return SizedBox(
       height: getScreenSize(context).height * height,
       width: getScreenSize(context).width * 0.9,
       child: CustomerElevateButton(
           texto: text,
           colorTexto: Colors.white,
-          colorButton: const Color(0xFF27AA69),
-          onPressed: () {
-            showDialogLoad(context);
-            try {
-              sendFirstForm().then((value) {
-                sendCloseItemTimeLine(
-                        requestList[indexProgramacion].idProcesoProgramacion, 1)
-                    .then((value) {
-                  getListSchedule().then((value) {
+          colorButton: enable ? const Color(0xFF27AA69) : Colors.grey,
+          onPressed: enable
+              ? () {
+                  showDialogLoad(context);
+                  try {
+                    sendFirstForm().then((value) {
+                      sendCloseItemTimeLine(
+                              requestList[indexProgramacion]
+                                  .idProcesoProgramacion,
+                              1)
+                          .then((value) {
+                        getListSchedule().then((value) {
+                          Navigator.pop(context);
+                        });
+                      });
+                    });
+                    showMessageTOAST(
+                        context, "Proceso Completado", Colors.green);
                     Navigator.pop(context);
-                  });
-                });
-              });
-              showMessageTOAST(context, "Proceso Completado", Colors.green);
-              Navigator.pop(context);
-            } catch (e) {
-              showMessageTOAST(
-                  context, "Complete todos los campos", Colors.red);
-              Navigator.pop(context);
-            }
-          },
+                  } catch (e) {
+                    showMessageTOAST(
+                        context, "Complete todos los campos", Colors.red);
+                    Navigator.pop(context);
+                  }
+                }
+              : () {},
           height: .05,
           width: .5),
     );
@@ -184,7 +211,7 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
           child: Container(
             padding: const EdgeInsets.all(10),
             width: getScreenSize(context).width * 0.9,
-            height: getScreenSize(context).height * 0.54,
+            height: getScreenSize(context).height * 0.6,
             child: Column(
               children: [
                 _closeBar(0.05, Icons.close),
@@ -211,8 +238,8 @@ class _TimeLineOverlayFirstFormState extends State<TimeLineOverlayFirstForm> {
                     ],
                   ),
                 ),
-                // SizedBox(height: getScreenSize(context).height * 0.015),
-                _sendButton(0.05, "Enviar Formulario")
+                _internetVerificartion(0.06),
+                _sendButton(internetConection, 0.05, "Enviar Formulario")
               ],
             ),
           ),
@@ -234,6 +261,7 @@ class _TimeLineOverlayPhotoState extends State<TimeLineOverlayPhoto> {
   final List<File> _images = [];
   final List<String> keysImg = [];
   late List<dynamic> dynamicList = [];
+  bool internetConection = false;
 
   Future<void> getListSchedule() async {
     Map<String, dynamic> mapGetSchedule = {
@@ -257,6 +285,7 @@ class _TimeLineOverlayPhotoState extends State<TimeLineOverlayPhoto> {
   void initState() {
     _loadImages();
     nameImages[4] = requestList[indexProgramacion].tipoPrueba;
+    internetConection = false;
     super.initState();
   }
 
@@ -356,16 +385,17 @@ class _TimeLineOverlayPhotoState extends State<TimeLineOverlayPhoto> {
     );
   }
 
-  Widget _sendButton(double height, String text) {
+  Widget _sendButton(bool enable, double height, String text) {
     return SizedBox(
       height: getScreenSize(context).height * height,
       width: getScreenSize(context).width * 0.9,
       child: CustomerElevateButton(
           texto: text,
           colorTexto: Colors.white,
-          colorButton:
-              fileList.length == 5 ? const Color(0xFF27AA69) : Colors.grey,
-          onPressed: fileList.length == 5
+          colorButton: fileList.length == 5 && enable
+              ? const Color(0xFF27AA69)
+              : Colors.grey,
+          onPressed: fileList.length == 5 && enable
               ? () {
                   _images.clear();
                   showDialogLoad(context);
@@ -389,6 +419,23 @@ class _TimeLineOverlayPhotoState extends State<TimeLineOverlayPhoto> {
               : () {},
           height: .05,
           width: .5),
+    );
+  }
+
+  Widget _internetVerificartion(double height) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: ListTile(
+        leading: IconButton(
+          onPressed: () async {
+            internetConection = await checkInternetConnection();
+            setState(() {});
+          },
+          icon: const Icon(Icons.refresh),
+        ),
+        title: _defaultText(0.025, "Verificar Datos Moviles", 13, Colors.black,
+            FontWeight.bold),
+      ),
     );
   }
 
@@ -422,8 +469,8 @@ class _TimeLineOverlayPhotoState extends State<TimeLineOverlayPhoto> {
                     ],
                   ),
                 ),
-                SizedBox(height: getScreenSize(context).height * 0.05),
-                _sendButton(0.05, "Enviar")
+                _internetVerificartion(0.06),
+                _sendButton(internetConection, 0.05, "Enviar")
               ],
             ),
           ),
@@ -442,6 +489,7 @@ class TimeLineOverlayCalib extends StatefulWidget {
 
 class _TimeLineOverlayCalibState extends State<TimeLineOverlayCalib> {
   late List<dynamic> dynamicList = [];
+  bool internetConection = false;
 
   Future<void> getListSchedule() async {
     Map<String, dynamic> mapGetSchedule = {
@@ -540,15 +588,35 @@ class _TimeLineOverlayCalibState extends State<TimeLineOverlayCalib> {
     );
   }
 
-  Widget _sendApiButton(double height, String text) {
+  Widget _internetVerificartion(bool enable, double height) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: ListTile(
+        leading: IconButton(
+          onPressed: enable
+              ? () async {
+                  internetConection = await checkInternetConnection();
+                  setState(() {});
+                }
+              : () {},
+          icon: const Icon(Icons.refresh),
+        ),
+        title: _defaultText(0.025, "Verificar Datos Moviles", 13, Colors.black,
+            FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _sendApiButton(bool enable, double height, String text) {
     return SizedBox(
       height: getScreenSize(context).height * height,
       width: getScreenSize(context).width * 0.9,
       child: CustomerElevateButton(
           texto: text,
           colorTexto: Colors.white,
-          colorButton: completeTest ? const Color(0xFF27AA69) : Colors.grey,
-          onPressed: completeTest
+          colorButton:
+              completeTest && enable ? const Color(0xFF27AA69) : Colors.grey,
+          onPressed: completeTest && enable
               ? () {
                   int response = 0;
                   if (calibEvent) {
@@ -587,7 +655,7 @@ class _TimeLineOverlayCalibState extends State<TimeLineOverlayCalib> {
           child: Container(
             padding: const EdgeInsets.all(10),
             width: getScreenSize(context).width * 0.9,
-            height: getScreenSize(context).height * 0.42,
+            height: getScreenSize(context).height * 0.45,
             child: Column(
               children: [
                 _closeBar(0.05, Icons.close),
@@ -600,10 +668,8 @@ class _TimeLineOverlayCalibState extends State<TimeLineOverlayCalib> {
                     TextInputType.number,
                     controllerPressure),
                 _sendButton(0.05, "Ir a Calibracion"),
-                SizedBox(height: getScreenSize(context).height * 0.02),
-                _defaultText(0.02, "*Conectar los datos moviles", 14,
-                    Colors.red, FontWeight.bold),
-                _sendApiButton(0.05, "Enviar Confirmación")
+                _internetVerificartion(completeTest, 0.06),
+                _sendApiButton(internetConection, 0.05, "Enviar Confirmación")
               ],
             ),
           ),
@@ -622,6 +688,7 @@ class TimeLineOverlayTest extends StatefulWidget {
 
 class _TimeLineOverlayTestState extends State<TimeLineOverlayTest> {
   late List<dynamic> dynamicList = [];
+  bool internetConection = false;
 
   Future<void> getListSchedule() async {
     Map<String, dynamic> mapGetSchedule = {
@@ -690,15 +757,35 @@ class _TimeLineOverlayTestState extends State<TimeLineOverlayTest> {
     );
   }
 
-  Widget _sendApiButton(double height, String text) {
+  Widget _internetVerificartion(bool enable, double height) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: ListTile(
+        leading: IconButton(
+          onPressed: enable
+              ? () async {
+                  internetConection = await checkInternetConnection();
+                  setState(() {});
+                }
+              : () {},
+          icon: const Icon(Icons.refresh),
+        ),
+        title: _defaultText(0.025, "Verificar Datos Moviles", 13, Colors.black,
+            FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _sendApiButton(bool enable, double height, String text) {
     return SizedBox(
       height: getScreenSize(context).height * height,
       width: getScreenSize(context).width * 0.9,
       child: CustomerElevateButton(
           texto: text,
           colorTexto: Colors.white,
-          colorButton: completeTest ? const Color(0xFF27AA69) : Colors.grey,
-          onPressed: completeTest
+          colorButton:
+              completeTest && enable ? const Color(0xFF27AA69) : Colors.grey,
+          onPressed: completeTest && enable
               ? () {
                   int response = 0;
                   if (calibEvent) {
@@ -737,17 +824,15 @@ class _TimeLineOverlayTestState extends State<TimeLineOverlayTest> {
           child: Container(
             padding: const EdgeInsets.all(10),
             width: getScreenSize(context).width * 0.9,
-            height: getScreenSize(context).height * 0.35,
+            height: getScreenSize(context).height * 0.32,
             child: Column(
               children: [
                 _closeBar(0.05, Icons.close),
-                _defaultText(0.1, "Prueaba de Hermeticidad", 20, Colors.black,
+                _defaultText(0.08, "Prueaba de Hermeticidad", 20, Colors.black,
                     FontWeight.bold),
                 _sendButton(0.05, "Ir a la prueba"),
-                SizedBox(height: getScreenSize(context).height * 0.03),
-                _defaultText(0.02, "*Conectar los datos moviles", 14,
-                    Colors.red, FontWeight.bold),
-                _sendApiButton(0.05, "Enviar Confirmación")
+                _internetVerificartion(completeTest, 0.06),
+                _sendApiButton(internetConection, 0.05, "Enviar Confirmación")
               ],
             ),
           ),
@@ -869,17 +954,14 @@ class _TimeLineOverlayResultsState extends State<TimeLineOverlayResults> {
           child: Container(
             padding: const EdgeInsets.all(10),
             width: getScreenSize(context).width * 0.9,
-            height: getScreenSize(context).height * 0.65,
+            height: getScreenSize(context).height * 0.63,
             child: Column(
               children: [
                 _closeBar(0.05, Icons.close),
                 _defaultText(
                     "Resultados", 20, Colors.black, 2, FontWeight.bold),
                 _scrollData(0.4, fileData),
-                SizedBox(height: getScreenSize(context).height * 0.02),
-                _defaultText("*Conecte su dispositivo a la red movil", 14,
-                    Colors.red, 2, FontWeight.bold),
-                SizedBox(height: getScreenSize(context).height * 0.02),
+                SizedBox(height: getScreenSize(context).height * 0.04),
                 _sendButton(0.05, "Ver Grafica"),
               ],
             ),
@@ -901,6 +983,7 @@ class TimeLineOverlayLastForm extends StatefulWidget {
 class _TimeLineOverlayLastFormState extends State<TimeLineOverlayLastForm> {
   late List<dynamic> dynamicList = [];
   int selectedValue = 0;
+  bool internetConection = false;
   @override
   void initState() {
     super.initState();
@@ -965,29 +1048,50 @@ class _TimeLineOverlayLastFormState extends State<TimeLineOverlayLastForm> {
     );
   }
 
-  Widget _sendButton(double height, String text) {
+  Widget _internetVerificartion(double height) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      child: ListTile(
+        leading: IconButton(
+          onPressed: () async {
+            internetConection = await checkInternetConnection();
+            setState(() {});
+          },
+          icon: const Icon(Icons.refresh),
+        ),
+        title: _defaultText(0.025, "Verificar Datos Moviles", 13, Colors.black,
+            FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _sendButton(bool enable, double height, String text) {
     return SizedBox(
       height: getScreenSize(context).height * height,
       width: getScreenSize(context).width * 0.9,
       child: CustomerElevateButton(
           texto: text,
           colorTexto: Colors.white,
-          colorButton: const Color(0xFF27AA69),
-          onPressed: () {
-            showDialogLoad(context);
-            sendLastForm().then((value) {
-              sendCloseItemTimeLine(
-                      requestList[indexProgramacion].idProcesoProgramacion, 6)
-                  .then((value) {
-                getListSchedule().then((value) {
+          colorButton: enable ? const Color(0xFF27AA69) : Colors.grey,
+          onPressed: enable
+              ? () {
+                  showDialogLoad(context);
+                  sendLastForm().then((value) {
+                    sendCloseItemTimeLine(
+                            requestList[indexProgramacion]
+                                .idProcesoProgramacion,
+                            6)
+                        .then((value) {
+                      getListSchedule().then((value) {
+                        Navigator.pop(context);
+                      });
+                    });
+                  });
+                  showMessageTOAST(
+                      context, "Proceso Completado", const Color(0xFF27AA69));
                   Navigator.pop(context);
-                });
-              });
-            });
-            showMessageTOAST(
-                context, "Proceso Completado", const Color(0xFF27AA69));
-            Navigator.pop(context);
-          },
+                }
+              : () {},
           height: .05,
           width: .5),
     );
@@ -1003,7 +1107,7 @@ class _TimeLineOverlayLastFormState extends State<TimeLineOverlayLastForm> {
           child: Container(
             padding: const EdgeInsets.all(10),
             width: getScreenSize(context).width * 0.9,
-            height: getScreenSize(context).height * 0.3,
+            height: getScreenSize(context).height * 0.35,
             child: Column(
               children: [
                 _closeBar(0.05, Icons.close),
@@ -1017,8 +1121,8 @@ class _TimeLineOverlayLastFormState extends State<TimeLineOverlayLastForm> {
                     ],
                   ),
                 ),
-                SizedBox(height: getScreenSize(context).height * 0.015),
-                _sendButton(0.05, "Enviar")
+                _internetVerificartion(0.06),
+                _sendButton(internetConection, 0.05, "Enviar")
               ],
             ),
           ),

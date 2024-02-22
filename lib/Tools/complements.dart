@@ -18,6 +18,9 @@ TextEditingController controllerPassword = TextEditingController();
 
 TextEditingController controllerIp = TextEditingController();
 TextEditingController controllerPort = TextEditingController();
+TextEditingController controllerPasswordConfig = TextEditingController();
+String passwordConfig = "123456";
+bool enablePasswordConfig = false;
 
 TextEditingController controllerNameRegister = TextEditingController();
 TextEditingController controllerLastNameRegister = TextEditingController();

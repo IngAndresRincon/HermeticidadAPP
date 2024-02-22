@@ -148,18 +148,19 @@ Future<bool> sendCloseItemTimeLine(int idProceso, int tipoProceso) async {
 Future<bool> sendForm(String sendUrl, String sendJson) async {
   bool status = false;
   final client = http.Client();
-  var response = await client
-      .post(Uri.parse(sendUrl),
-          headers: {"Content-Type": "application/json"}, body: sendJson)
-      .timeout(const Duration(seconds: 10));
-  if (response.statusCode == 200) {
-    developer.log('Respuesta:${response.body}');
-    status = true;
-  } else {
-    status = false;
-    developer.log('Error al enviar el formulario');
-  }
-  try {} catch (e) {
+  try {
+    var response = await client
+        .post(Uri.parse(sendUrl),
+            headers: {"Content-Type": "application/json"}, body: sendJson)
+        .timeout(const Duration(seconds: 10));
+    if (response.statusCode == 200) {
+      developer.log('Respuesta:${response.body}');
+      status = true;
+    } else {
+      status = false;
+      developer.log('Error al enviar el formulario');
+    }
+  } catch (e) {
     developer.log('Error: $e');
     client.close();
     status = false;
@@ -213,4 +214,17 @@ Future<List<bool>> sendImagesToApi(
     client.close();
   }
   return status;
+}
+
+Future<bool> checkInternetConnection() async {
+  try {
+    final result = await InternetAddress.lookup('google.com');
+    if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+      developer.log('Conexión a Internet disponible');
+      return true;
+    }
+  } on SocketException catch (_) {
+    developer.log('Sin conexión a Internet');
+  }
+  return false;
 }

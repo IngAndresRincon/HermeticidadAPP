@@ -15,6 +15,7 @@ class _ScreenOverlaySetingsState extends State<ScreenOverlaySetings> {
   void initState() {
     super.initState();
     readCacheData();
+    enablePasswordConfig = false;
   }
 
   Widget _closeBar(double height, IconData icon) {
@@ -88,6 +89,29 @@ class _ScreenOverlaySetingsState extends State<ScreenOverlaySetings> {
     );
   }
 
+  Widget _passWordButton(double height, String text) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      width: getScreenSize(context).width * 0.9,
+      child: CustomerElevateButton(
+          texto: text,
+          colorTexto: Colors.white,
+          colorButton: Colors.green.shade400,
+          onPressed: () {
+            if (controllerPasswordConfig.text == passwordConfig) {
+              setState(() {
+                enablePasswordConfig = true;
+                controllerPasswordConfig.text = '';
+              });
+            } else {
+              showMessageTOAST(context, "Contraseña Incorrecta", Colors.red);
+            }
+          },
+          height: .05,
+          width: .5),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,14 +128,31 @@ class _ScreenOverlaySetingsState extends State<ScreenOverlaySetings> {
                       _closeBar(0.05, Icons.close),
                       _defaultText(
                           0.05, "CONFIGURACION", 18, 2, FontWeight.bold),
-                      _textFieldConfig(0.1, "Ip", Icons.chevron_right,
-                          TextInputType.number, controllerIp),
-                      _textFieldConfig(0.1, "Puerto", Icons.chevron_right,
-                          TextInputType.number, controllerPort),
-                      _configButton(0.05, "Guardar"),
+                      enablePasswordConfig ? _configPage() : _passwordPage()
                     ],
                   ))),
         ));
+  }
+
+  Widget _passwordPage() {
+    return Column(children: [
+      SizedBox(
+        height: getScreenSize(context).height * 0.05,
+      ),
+      _textFieldConfig(0.1, "Contraseña", Icons.password, TextInputType.text,
+          controllerPasswordConfig),
+      _passWordButton(0.05, "Ingresar a Configuracion")
+    ]);
+  }
+
+  Widget _configPage() {
+    return Column(children: [
+      _textFieldConfig(
+          0.1, "Ip", Icons.chevron_right, TextInputType.number, controllerIp),
+      _textFieldConfig(0.1, "Puerto", Icons.chevron_right, TextInputType.text,
+          controllerPort),
+      _configButton(0.05, "Guardar"),
+    ]);
   }
 }
 
