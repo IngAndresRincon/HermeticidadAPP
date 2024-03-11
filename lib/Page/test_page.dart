@@ -35,6 +35,7 @@ class _TestPageState extends State<TestPage> {
   bool isInCalibState = false;
   bool isInCalibStateAux = false;
   bool isInSocket = false;
+  bool isInLowPress = false;
   bool flagButton = false;
   bool checkboxValue = false;
   bool isDisposeCalled = false;
@@ -320,6 +321,23 @@ class _TestPageState extends State<TestPage> {
     });
   }
 
+  void aliveValve(bool action) {
+    isInLowPress = action;
+    SendSocket sendData;
+    String dataJson;
+    if (action) {
+      sendData = SendSocket("lowPressureOn", 0, 0, 0, 0);
+      dataJson = jsonEncode(sendData);
+      channel.sink.add(dataJson);
+      showMessageTOAST(context, "Alivio activado", Colors.green);
+    } else {
+      sendData = SendSocket("lowPressureOff", 0, 0, 0, 0);
+      dataJson = jsonEncode(sendData);
+      channel.sink.add(dataJson);
+      showMessageTOAST(context, "Alivio terminado", Colors.green);
+    }
+  }
+
   PreferredSizeWidget _appbar() {
     return AppBar(
       leading: IconButton(
@@ -592,9 +610,12 @@ class _TestPageState extends State<TestPage> {
         _defaultText(0.02, timeText, 16, Colors.black, FontWeight.bold),
         _dataGraph(0.5, chartData),
         _rowInfo(0.07, 'Calibracion: $pressureCalib(PSI)±$timeAperture% '),
-        SizedBox(height: getScreenSize(context).height * 0.035),
+        SizedBox(height: getScreenSize(context).height * 0.015),
         _rowButtons(
             0.05, "Iniciar Calibracion", "Iniciar Prueba", initCalib, initTest),
+        SizedBox(height: getScreenSize(context).height * 0.01),
+        _actionButton(!isInCalibState, !isInLowPress, aliveValve, Colors.blue,
+            "Liberar Presión")
         //_resultButton("Enviar confirmación", Colors.blueAccent)
       ],
     );
