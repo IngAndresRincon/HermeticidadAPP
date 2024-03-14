@@ -55,20 +55,39 @@ class UserSocket {
 
 class SendSocket {
   final String action;
-  final int idEstacion;
-  final int idProgramacion;
-  final int pressionCalib;
-  final int timeAperture;
+  final int? idEstacion;
+  final int? idProgramacion;
+  final int? pressionCalib;
+  final int? timeAperture;
+  final int? initHour;
+  final int? initMinute;
+  final int? initSecond;
+  final int? initMilis;
+  final bool? newMessure;
 
-  SendSocket(this.action, this.idEstacion, this.idProgramacion,
-      this.pressionCalib, this.timeAperture);
+  SendSocket(
+      this.action,
+      this.idEstacion,
+      this.idProgramacion,
+      this.pressionCalib,
+      this.timeAperture,
+      this.initHour,
+      this.initMinute,
+      this.initSecond,
+      this.initMilis,
+      this.newMessure);
 
   SendSocket.fromJson(Map<String, dynamic> json)
       : action = json['action'],
         idEstacion = json['idEstacion'],
         idProgramacion = json['idProg'],
         pressionCalib = json['pressCalib'],
-        timeAperture = json['timeAperture'];
+        timeAperture = json['timeAperture'],
+        initHour = json['initHour'],
+        initMinute = json['initMinute'],
+        initSecond = json['initSecond'],
+        initMilis = json['initMilis'],
+        newMessure = json['newMessure'];
 
   Map<String, dynamic> toJson() => {
         'action': action,
@@ -76,6 +95,11 @@ class SendSocket {
         'idProg': idProgramacion,
         'pressCalib': pressionCalib,
         'timeAperture': timeAperture,
+        'initHour': initHour,
+        'initMinute': initMinute,
+        'initSecond': initSecond,
+        'initMilis': initMilis,
+        'newMessure': newMessure,
       };
 }
 

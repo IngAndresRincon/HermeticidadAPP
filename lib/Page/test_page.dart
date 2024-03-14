@@ -126,6 +126,7 @@ class _TestPageState extends State<TestPage> {
         .replaceAll(" ", "")
         .split(":");
     if (timeArray.length == 3) {
+      saveLastTimeReceived(timeArray, false);
       timeConvert = DateTime(
           DateTime.now().year,
           DateTime.now().month,
@@ -134,6 +135,7 @@ class _TestPageState extends State<TestPage> {
           int.parse(timeArray[1]),
           int.parse(timeArray[2]));
     } else if (timeArray.length == 4) {
+      saveLastTimeReceived(timeArray, true);
       timeConvert = DateTime(
           DateTime.now().year,
           DateTime.now().month,
@@ -146,6 +148,15 @@ class _TestPageState extends State<TestPage> {
       timeConvert = DateTime(2023);
     }
     return timeConvert;
+  }
+
+  void saveLastTimeReceived(List<String> arrayTime, bool millis) {
+    initHour = int.parse(arrayTime[0]);
+    initMinute = int.parse(arrayTime[1]);
+    initSecond = int.parse(arrayTime[2]);
+    if (millis) {
+      initMilis = int.parse(arrayTime[3]);
+    }
   }
 
   Future<void> onDataReceived(dynamic data) async {
@@ -200,6 +211,8 @@ class _TestPageState extends State<TestPage> {
         if (pong) {
           //conectMns = macESP32;
           //showMessageTOAST(context, "Conexion Exitosa con medidor", Colors.green);
+          isInTestState = false;
+          isInCalibState = false;
           checkboxValue = true;
           if (state == "En prueba") {
             isInTestState = true;
@@ -245,7 +258,7 @@ class _TestPageState extends State<TestPage> {
       flagButton = true;
       try {
         if (isInSocket) {
-          sendInfo();
+          confirmNewMessure();
           showMessageTOAST(
               context, "Conexion Exitosa con medidor", Colors.green);
         } else {
@@ -261,7 +274,16 @@ class _TestPageState extends State<TestPage> {
 
   void sendInfo() {
     SendSocket sendData = SendSocket(
-        'info', idEstacion, idProgramacion, pressureCalib, timeAperture);
+        'info',
+        idEstacion,
+        idProgramacion,
+        pressureCalib,
+        timeAperture,
+        initHour,
+        initMinute,
+        initSecond,
+        initMilis,
+        newMessure);
     String dataJson = jsonEncode(sendData);
     channel.sink.add(dataJson);
   }
@@ -273,7 +295,7 @@ class _TestPageState extends State<TestPage> {
       SendSocket dataSend;
       String dataJson;
       if (action) {
-        dataSend = SendSocket('calibini', 0, 0, 0, 0);
+        dataSend = SendSocket('calibini', 0, 0, 0, 0, 0, 0, 0, 0, true);
         dataJson = jsonEncode(dataSend);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         chartData.clear();
@@ -284,7 +306,7 @@ class _TestPageState extends State<TestPage> {
             'Registro de calibracion ${DateTime.now().toLocal()}\n');
         showMessageTOAST(context, "Calibracion Iniciada", Colors.green);
       } else {
-        dataSend = SendSocket('calibfin', 0, 0, 0, 0);
+        dataSend = SendSocket('calibfin', 0, 0, 0, 0, 0, 0, 0, 0, true);
         dataJson = jsonEncode(dataSend);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         saveFileData();
@@ -300,7 +322,7 @@ class _TestPageState extends State<TestPage> {
       SendSocket sendData;
       String dataJson;
       if (action) {
-        sendData = SendSocket("toggleini", 0, 0, 0, 0);
+        sendData = SendSocket("toggleini", 0, 0, 0, 0, 0, 0, 0, 0, true);
         dataJson = jsonEncode(sendData);
         channel.sink.add(dataJson);
         readyForFile = false;
@@ -311,14 +333,36 @@ class _TestPageState extends State<TestPage> {
         widget.storage.appendTextToFile(
             'Registro de mediciones ${DateTime.now().toLocal()}\n');
       } else {
-        sendData = SendSocket("togglefin", 0, 0, 0, 0);
+        sendData = SendSocket("togglefin", 0, 0, 0, 0, 0, 0, 0, 0, true);
         dataJson = jsonEncode(sendData);
         channel.sink.add(dataJson); // Mensaje enviado al servidor
         saveFileData();
         showMessageTOAST(context, "Prueba Terminada", Colors.red.shade700);
+        newMessure = false;
+        sendInfo();
         //sincronizeFile();
       }
     });
+  }
+
+  void confirmNewMessure() {
+    if (!calibEvent &&
+        idProgramacion == idProgramacionAnterior &&
+        idEstacion == idEstacionAnterior) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return const NewMessureOverlay();
+        },
+      ).then((value) {
+        sendInfo();
+      });
+    } else {
+      newMessure = true;
+    }
+    idProgramacionAnterior = idProgramacion;
+    idEstacionAnterior = idEstacion;
+    sendInfo();
   }
 
   void aliveValve(bool action) {
@@ -326,12 +370,12 @@ class _TestPageState extends State<TestPage> {
     SendSocket sendData;
     String dataJson;
     if (action) {
-      sendData = SendSocket("lowPressureOn", 0, 0, 0, 0);
+      sendData = SendSocket("lowPressureOn", 0, 0, 0, 0, 0, 0, 0, 0, true);
       dataJson = jsonEncode(sendData);
       channel.sink.add(dataJson);
       showMessageTOAST(context, "Alivio activado", Colors.green);
     } else {
-      sendData = SendSocket("lowPressureOff", 0, 0, 0, 0);
+      sendData = SendSocket("lowPressureOff", 0, 0, 0, 0, 0, 0, 0, 0, true);
       dataJson = jsonEncode(sendData);
       channel.sink.add(dataJson);
       showMessageTOAST(context, "Alivio terminado", Colors.green);
@@ -723,6 +767,84 @@ class _ConfigTestOverlayState extends State<ConfigTestOverlay> {
               _textFieldConfig(0.1, "Tolerancia (%)", Icons.chevron_right,
                   TextInputType.number, controllerTimeAperture),
               _configButton(0.05, "CONFIGURAR")
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class NewMessureOverlay extends StatefulWidget {
+  const NewMessureOverlay({super.key});
+
+  @override
+  State<NewMessureOverlay> createState() => _NewMessureOverlayState();
+}
+
+class _NewMessureOverlayState extends State<NewMessureOverlay> {
+  Widget _popBar(double heightContent, IconData icon) {
+    return SizedBox(
+      height: getScreenSize(context).height * heightContent,
+      child: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: Icon(icon))),
+    );
+  }
+
+  Widget _defaultText(String text, double fontSize, Color color,
+      double letterSpacing, FontWeight fontWeight) {
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+          letterSpacing: letterSpacing,
+          fontSize: fontSize,
+          color: color,
+          fontWeight: fontWeight),
+    );
+  }
+
+  Widget _selectButton(double height, String text, bool newM) {
+    return SizedBox(
+      height: getScreenSize(context).height * height,
+      width: getScreenSize(context).width * 0.9,
+      child: CustomerElevateButton(
+          texto: text,
+          colorTexto: Colors.white,
+          colorButton: Colors.green.shade400,
+          onPressed: () {
+            newMessure = newM;
+            Navigator.pop(context);
+          },
+          height: .05,
+          width: .5),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
+        child: Card(
+          color: const Color.fromARGB(242, 247, 247, 247),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            width: getScreenSize(context).width * 0.9,
+            height: getScreenSize(context).height * 0.25,
+            child: Column(children: [
+              _popBar(0.05, Icons.close),
+              _defaultText("Tienes una medición en proceso", 16, Colors.black,
+                  2, FontWeight.bold),
+              SizedBox(height: getScreenSize(context).height * 0.01),
+              _selectButton(0.05, "Continuar la medicion", false),
+              SizedBox(height: getScreenSize(context).height * 0.01),
+              _selectButton(0.05, "Nueva medición", true)
             ]),
           ),
         ),
