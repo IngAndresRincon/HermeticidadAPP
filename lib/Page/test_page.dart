@@ -6,6 +6,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../Widgets/elevate_button.dart';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
+import 'package:flutter/services.dart';
 
 import 'package:web_socket_channel/io.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -52,6 +53,10 @@ class _TestPageState extends State<TestPage> {
   String paso2 = "Desconecte su celular de los datos moviles.";
   String paso3 = "Conectese a la red WIFI 'Medidor_PSI'.";
   String paso4 = "Oprima el boton 'Sincronizar'.";
+
+  final MethodChannel _channel =
+      const MethodChannel('com.example.hermeticidadapp');
+
   @override
   void dispose() {
     if (mounted) {
@@ -382,6 +387,14 @@ class _TestPageState extends State<TestPage> {
     }
   }
 
+  Future<void> openDeviceSettings(String type) async {
+    try {
+      await _channel.invokeMethod('open${type}Settings');
+    } on PlatformException catch (e) {
+      print('Error al abrir la configuración de Wi-Fi: ${e.message}');
+    }
+  }
+
   PreferredSizeWidget _appbar() {
     return AppBar(
       leading: IconButton(
@@ -617,29 +630,41 @@ class _TestPageState extends State<TestPage> {
         _actionButton(!(isInSocket || !checkboxValue), true, reconectSocket,
             const Color(0xFF27AA69), "Sincronizar"),
         ItemStepLine(
-            isFirts: true,
-            isLast: false,
-            icon: Icons.cable,
-            title: 'Verificar',
-            text: paso1),
+          isFirts: true,
+          isLast: false,
+          icon: Icons.cable,
+          title: 'Verificar',
+          text: paso1,
+          enableTrailing: false,
+          function: () {},
+        ),
         ItemStepLine(
-            isFirts: false,
-            isLast: false,
-            icon: Icons.signal_cellular_off,
-            title: 'Desconectar Datos',
-            text: paso2),
+          isFirts: false,
+          isLast: false,
+          icon: Icons.signal_cellular_off,
+          title: 'Desconectar Datos',
+          text: paso2,
+          enableTrailing: true,
+          function: () => openDeviceSettings('Movile'),
+        ),
         ItemStepLine(
-            isFirts: false,
-            isLast: false,
-            icon: Icons.wifi,
-            title: 'Conectar Wi-Fi',
-            text: paso3),
+          isFirts: false,
+          isLast: false,
+          icon: Icons.wifi,
+          title: 'Conectar Wi-Fi',
+          text: paso3,
+          enableTrailing: true,
+          function: () => openDeviceSettings('Wifi'),
+        ),
         ItemStepLine(
-            isFirts: false,
-            isLast: true,
-            icon: Icons.radio_button_checked,
-            title: 'Sincronizar',
-            text: paso4)
+          isFirts: false,
+          isLast: true,
+          icon: Icons.radio_button_checked,
+          title: 'Sincronizar',
+          text: paso4,
+          enableTrailing: false,
+          function: () {},
+        )
       ],
     );
   }

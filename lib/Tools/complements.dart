@@ -202,13 +202,17 @@ class ItemStepLine extends StatelessWidget {
   final IconData icon;
   final String title;
   final String text;
+  final bool enableTrailing;
+  final void Function() function;
   const ItemStepLine(
       {super.key,
       required this.isFirts,
       required this.isLast,
       required this.icon,
       required this.title,
-      required this.text});
+      required this.text,
+      required this.enableTrailing,
+      required this.function});
 
   @override
   Widget build(BuildContext context) {
@@ -231,17 +235,28 @@ class ItemStepLine extends StatelessWidget {
               color: Colors.transparent,
               borderRadius: BorderRadius.circular(10)),
           child: ListTile(
-            leading: Icon(
-              size: 50,
-              icon,
-              color: Colors.black,
-            ),
-            title: Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Text(text),
-          ),
+              leading: Icon(
+                size: 45,
+                icon,
+                color: Colors.black,
+              ),
+              title: Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(text),
+              trailing: enableTrailing
+                  ? IconButton(
+                      icon: const Icon(
+                        size: 25,
+                        Icons.chevron_right,
+                        color: Colors.white,
+                      ),
+                      onPressed: function,
+                      style: IconButton.styleFrom(
+                          backgroundColor: const Color(0xFF27AA69)),
+                    )
+                  : const SizedBox()),
         ),
       ),
     );
