@@ -52,15 +52,15 @@ Future<bool> postFile(String fileUrl, String fileString) async {
     if (response.statusCode == 200) {
       // La solicitud se realizó con éxito
       status = true;
-      developer.log('Respuesta: ${response.body}');
+      developer.log('[postFile] Respuesta: ${response.body}');
     } else {
       // Hubo un error en la solicitud
       status = false;
       developer.log(
-          'Error en la solicitud. Código de estado: ${response.statusCode}');
+          '[postFile] Error en la solicitud. Código de estado: ${response.statusCode}');
     }
   } catch (e) {
-    developer.log('Error: $e');
+    developer.log('[postFile] Error: $e');
     client.close();
     status = false;
   } finally {

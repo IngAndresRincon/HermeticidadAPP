@@ -59,17 +59,17 @@ class _FilePageState extends State<FilePage> {
         .replaceAll("][", ",")
         .replaceAll("]\n", ";")
         .replaceAll("[", "");
-    developer.log(fileContFormat);
+    developer.log("[sendFileApi] $fileContFormat");
     String fileUrl =
         'http://${controllerIp.text}:${controllerPort.text}/api/POSTsubirArchivo';
     postFile(fileUrl, fileContFormat).then((value) {
-      Navigator.pop(context);
       if (value) {
         showMessageTOAST(context, "Archivo enviado", Colors.green);
       } else {
         showMessageTOAST(context,
             "Error, Conectese a la red movil e intente de nuevo", Colors.green);
       }
+      Navigator.pop(context);
     });
   }
 
