@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hermeticidadapp/Page/camera_page.dart';
@@ -240,7 +239,7 @@ class HalfScreenForm2 extends StatefulWidget {
 class _HalfScreenForm2State extends State<HalfScreenForm2> {
   bool addPhoto = false;
 
-  List<File> listaFotos = [];
+  List<Map<String, dynamic>> listaFotos = [];
   String fileName = '';
 
   @override
@@ -282,14 +281,35 @@ class _HalfScreenForm2State extends State<HalfScreenForm2> {
                     ),
                     Container(
                       width: getScreenSize(context).width * 0.9,
-                      height: getScreenSize(context).height * 0.2,
+                      height: getScreenSize(context).height * 0.3,
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: ListView.builder(
                         padding: const EdgeInsets.all(0),
                         scrollDirection: Axis.horizontal,
                         itemCount: listaFotos.length,
                         itemBuilder: (context, index) {
-                          return Card();
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Image(
+                                    width: getScreenSize(context).width * 0.28,
+                                    image: FileImage(
+                                        listaFotos[index]['archivo'])),
+                                Text(
+                                  listaFotos[index]['nombre'],
+                                  style: TextStyle(
+                                      fontFamily: 'MontSerrat',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize:
+                                          getScreenSize(context).width * 0.03),
+                                )
+                              ],
+                            ),
+                          );
                         },
                       ),
                     ),
@@ -357,7 +377,10 @@ class _HalfScreenForm2State extends State<HalfScreenForm2> {
                               )).then((value) {
                             //_loadImages();
                             if (value != null) {
-                              print(value[fileName]);
+                              listaFotos.add({
+                                'nombre': fileName,
+                                'archivo': value[fileName]
+                              });
                             }
                           });
                         },
@@ -388,6 +411,39 @@ class _HalfScreenForm2State extends State<HalfScreenForm2> {
                     ),
                   ],
                 ),
+        ),
+      ),
+    );
+  }
+}
+
+class HalfScreenForm3 extends StatefulWidget {
+  const HalfScreenForm3({super.key});
+
+  @override
+  State<HalfScreenForm3> createState() => _HalfScreenForm3State();
+}
+
+class _HalfScreenForm3State extends State<HalfScreenForm3> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
+        child: Container(
+          width: getScreenSize(context).width * 0.8,
+          height: getScreenSize(context).height * 0.6,
+          padding: EdgeInsets.all(getScreenSize(context).width * 0.02),
+          decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(5),
+              boxShadow: const [
+                BoxShadow(
+                    blurRadius: 6,
+                    color: Colors.white70,
+                    blurStyle: BlurStyle.outer,
+                    spreadRadius: 2)
+              ]),
         ),
       ),
     );

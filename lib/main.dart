@@ -32,7 +32,6 @@ class MyApp extends StatelessWidget {
         'home1': (context) => const HomeTimeLinePage(),
         'test': (context) => TestPage(),
         'file': (context) => FilePage(),
-        'camera': (context) => const CameraPage(),
       },
       initialRoute: 'splash',
       theme: ThemeData(

@@ -21,6 +21,7 @@ class _CameraPageState extends State<CameraPage> {
   bool _flash = false;
   final List<File> _capturedImages = [];
   late ScrollController _scrollController;
+  Map<String, File> mapFiles = {};
 
   Future<void> inicializarCamara() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -54,8 +55,7 @@ class _CameraPageState extends State<CameraPage> {
         _flash = false;
         _capturedImages.add(File(path));
         fileList[fileName] = File(path);
-        Map<String, File> mapFiles = {widget.fileNameCamera: File(path)};
-        Navigator.pop(context, mapFiles);
+        mapFiles = {widget.fileNameCamera: File(path)};
         // Scroll automático al final del ListView
         if (_capturedImages.length > 4) {
           _scrollController.animateTo(
@@ -138,7 +138,11 @@ class _CameraPageState extends State<CameraPage> {
     return Positioned(
       bottom: positionBotton,
       child: FloatingActionButton(
-        onPressed: _takePicture,
+        onPressed: () async {
+          await _takePicture().then((value) {
+            Navigator.pop(context, mapFiles);
+          });
+        },
         child: Icon(icon),
       ),
     );

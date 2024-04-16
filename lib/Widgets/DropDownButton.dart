@@ -48,12 +48,12 @@ class CustomerDropDownButtonTextPhoto extends StatelessWidget {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             labelText: "Nombre Imagen"),
         items: [
-          "Foto estación",
-          "Foto manómetro",
-          "Foto Kit de prueba",
-          "Foto de linea",
-          "Foto tubería",
-          "Foto tanque"
+          "Estación",
+          "Manómetro",
+          "Kit de prueba",
+          "Linea",
+          "Tubería",
+          "Tanque"
         ].map((e) {
           return DropdownMenuItem(
             value: e,
