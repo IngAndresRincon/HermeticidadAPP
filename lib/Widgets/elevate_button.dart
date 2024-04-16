@@ -26,14 +26,20 @@ class CustomerElevateButton extends StatelessWidget {
       child: ElevatedButton(
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
-              elevation: 10, backgroundColor: colorButton),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                    5.0), // Modificar el radio del borde aquí
+              ),
+              elevation: 10,
+              backgroundColor: colorButton),
           child: Text(
             texto,
             style: TextStyle(
                 color: colorTexto,
-                fontSize: 20,
-                letterSpacing: 2,
-                fontWeight: FontWeight.bold),
+                fontFamily: 'MontSerrat',
+                fontSize: getScreenSize(context).width * 0.04,
+                letterSpacing: 1,
+                fontWeight: FontWeight.w700),
           )),
     );
   }

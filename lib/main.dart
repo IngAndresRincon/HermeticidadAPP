@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hermeticidadapp/Page/home_page_1.dart';
 import 'package:hermeticidadapp/Page/home_timeline_page.dart';
+import 'package:hermeticidadapp/Page/login_page_1.dart';
 import 'package:hermeticidadapp/Page/show_file_page.dart';
 import 'package:hermeticidadapp/Page/test_page.dart';
 
@@ -24,7 +26,9 @@ class MyApp extends StatelessWidget {
       routes: {
         'splash': (context) => const SplashPage(),
         'login': (context) => const LoginPage(),
+        'login1': (context) => const Login_Page(),
         'home': (context) => const HomePage(),
+        'homepage': (context) => const HomePage1(),
         'home1': (context) => const HomeTimeLinePage(),
         'test': (context) => TestPage(),
         'file': (context) => FilePage(),
@@ -32,7 +36,7 @@ class MyApp extends StatelessWidget {
       },
       initialRoute: 'splash',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo.shade300),
         useMaterial3: true,
       ),
     );

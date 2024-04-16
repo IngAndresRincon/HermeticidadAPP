@@ -228,3 +228,89 @@ Future<bool> checkInternetConnection() async {
   }
   return false;
 }
+
+Future<List<dynamic>> getListSchedule() async {
+  List<dynamic> listaRespuesta = [];
+
+  try {
+    Map<String, dynamic> mapGetSchedule = {
+      'IdUsuario': idUsuarioGlobal,
+      'GuidSesion': tokenUsuarioGlobal
+    };
+    String peticionesUrl =
+        'http://$ipGlobal:$portGlobal/api/POSTobtenerProgramacionPrueba';
+    await getScheduleAPI(peticionesUrl, jsonEncode(mapGetSchedule))
+        .then((List<dynamic> value) {
+      if (value.isNotEmpty) {
+        listaRespuesta = value;
+      }
+    });
+  } catch (e) {
+    developer.log(e.toString());
+  }
+
+  return listaRespuesta;
+}
+
+Future<Map> sendFormAuthorized(String jsonRequest) async {
+  Map<String, dynamic> mapRespuesta = {};
+
+  try {
+    final client = http.Client();
+    var response = await client
+        .post(
+            Uri.parse(
+                "http://$ipGlobal:$portGlobal/api/POSTformularioAutorizacion"),
+            headers: {"Content-Type": "application/json"},
+            body: jsonRequest)
+        .timeout(const Duration(seconds: 10));
+
+    mapRespuesta = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      mapRespuesta["Codigo"] = 200;
+      // La solicitud se realizó con éxito
+    } else {
+      // Hubo un error en la solicitud
+      mapRespuesta["Codigo"] = response.statusCode;
+      developer.log(
+          'Error en la solicitud. Código de estado: ${response.statusCode}');
+    }
+  } catch (e) {
+    developer.log('Error: $e');
+    mapRespuesta.addAll({"Error": true, "Codigo": 0, "Mensaje": e.toString()});
+  }
+
+  return mapRespuesta;
+}
+
+Future<Map> validateUser(String jsonRequest) async {
+  Map<String, dynamic> mapRespuesta = {};
+
+  try {
+    final client = http.Client();
+    var response = await client
+        .post(Uri.parse("http://$ipGlobal:$portGlobal/api/POSTvalidarIngreso"),
+            headers: {"Content-Type": "application/json"}, body: jsonRequest)
+        .timeout(const Duration(seconds: 10));
+
+    mapRespuesta = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      // La solicitud se realizó con éxito
+    } else {
+      // Hubo un error en la solicitud
+      mapRespuesta.addAll({
+        "Error": true,
+        "Code": response.statusCode,
+        "Message": "Error al procesar solicitud"
+      });
+      developer.log(
+          'Error en la solicitud. Código de estado: ${response.statusCode}');
+    }
+  } catch (e) {
+    developer.log('Error: $e');
+    mapRespuesta.addAll({"Error": true, "Code": 0, "Message": e.toString()});
+  }
+
+  return mapRespuesta;
+}

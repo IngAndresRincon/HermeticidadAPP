@@ -14,7 +14,7 @@ class _SplashPageState extends State<SplashPage> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     Timer(const Duration(seconds: 4), () {
-      Navigator.pushReplacementNamed(context, 'login');
+      Navigator.pushReplacementNamed(context, 'login1');
     });
     return Scaffold(
       backgroundColor: const Color.fromARGB(199, 4, 32, 80),

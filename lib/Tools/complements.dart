@@ -36,9 +36,13 @@ TextEditingController controllerResponsableForm = TextEditingController();
 
 Encriptador encriptador = Encriptador();
 
+List<dynamic> listaProgramacion = [];
+
 String nombreUsuarioGlobal = "";
 String rolUsuarioGlobal = "";
 int idUsuarioGlobal = 0;
+String ipGlobal = "";
+String portGlobal = "";
 String tokenUsuarioGlobal = "";
 String fechaIngresoUsuario = "";
 int idEstacion = 0;
@@ -73,7 +77,7 @@ Future<bool?> showMessageTOAST(
   return Fluttertoast.showToast(
       msg: mensaje,
       toastLength: Toast.LENGTH_LONG,
-      gravity: ToastGravity.CENTER,
+      gravity: ToastGravity.TOP,
       backgroundColor: color,
       textColor: Colors.white,
       fontSize: 16);

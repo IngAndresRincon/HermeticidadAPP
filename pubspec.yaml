@@ -47,6 +47,9 @@ dependencies:
   path: ^1.8.3
   camera: ^0.10.5+9
   timeline_tile: ^2.0.0
+  flutter_datetime_picker: ^1.5.1
+
+  
 
 dev_dependencies:
   flutter_test:
@@ -87,6 +90,15 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: fonts/Montserrat-SemiBold.ttf
+          weight: 700
+        - asset: fonts/Montserrat-Regular.ttf
+          weight: 400
+        - asset: fonts/Montserrat-Light.ttf
+          weight: 300
   # fonts:
   #   - family: Schyler
   #     fonts:

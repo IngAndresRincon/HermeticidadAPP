@@ -27,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void funtionButtonLogin(BuildContext context, Map<String, dynamic> map) {
     showDialogLoad(context);
+
     String postUrl =
         'http://${controllerIp.text}:${controllerPort.text}/api/POSTvalidarIngreso';
     postLogin(postUrl, jsonEncode(map)).then((value) {
