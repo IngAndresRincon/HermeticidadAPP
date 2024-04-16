@@ -33,3 +33,43 @@ class CustomerDropDownButton extends StatelessWidget {
     );
   }
 }
+
+class CustomerDropDownButtonTextPhoto extends StatelessWidget {
+  final Function(String? value) onChange;
+  const CustomerDropDownButtonTextPhoto({super.key, required this.onChange});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: getScreenSize(context).width * 0.7,
+      child: DropdownButtonFormField(
+        decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.label),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+            labelText: "Nombre Imagen"),
+        items: [
+          "Foto estación",
+          "Foto manómetro",
+          "Foto Kit de prueba",
+          "Foto de linea",
+          "Foto tubería",
+          "Foto tanque"
+        ].map((e) {
+          return DropdownMenuItem(
+            value: e,
+            child: SizedBox(
+              width: double.infinity,
+              child: Text(
+                e,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          );
+        }).toList(),
+        onChanged: onChange,
+        isDense: true,
+        isExpanded: true,
+      ),
+    );
+  }
+}

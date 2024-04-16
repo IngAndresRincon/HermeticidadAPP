@@ -236,6 +236,27 @@ class HalfScreenForm2 extends StatefulWidget {
 }
 
 class _HalfScreenForm2State extends State<HalfScreenForm2> {
+  bool addPhoto = false;
+
+  List<Widget> listaFotos = [
+    Card(
+      elevation: 10,
+      child: Container(
+        width: 150,
+        height: 150,
+        color: Colors.white,
+      ),
+    ),
+    Card(
+      elevation: 10,
+      child: Container(
+        width: 150,
+        height: 150,
+        color: Colors.white,
+      ),
+    )
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -243,7 +264,9 @@ class _HalfScreenForm2State extends State<HalfScreenForm2> {
       body: Center(
         child: Container(
           width: getScreenSize(context).width * 0.8,
-          height: getScreenSize(context).height * 0.5,
+          height: !addPhoto
+              ? getScreenSize(context).height * 0.6
+              : getScreenSize(context).height * 0.3,
           padding: EdgeInsets.all(getScreenSize(context).width * 0.02),
           decoration: BoxDecoration(
               color: Colors.white,
@@ -255,67 +278,116 @@ class _HalfScreenForm2State extends State<HalfScreenForm2> {
                     blurStyle: BlurStyle.outer,
                     spreadRadius: 2)
               ]),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Center(
-                child: Text(
-                  "REGISTRO FOTOGRÁFICO",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontFamily: 'MontSerrat',
-                      fontWeight: FontWeight.w600,
-                      fontSize: getScreenSize(context).width * 0.05),
-                ),
-              ),
-              Container(
-                width: getScreenSize(context).width * 0.9,
-                height: getScreenSize(context).height * 0.2,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(0),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 6,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      elevation: 10,
-                      child: Container(
-                        width: getScreenSize(context).width * 0.25,
-                        height: getScreenSize(context).width * 0.25,
-                        color: Colors.white,
+          child: !addPhoto
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Center(
+                      child: Text(
+                        "REGISTRO FOTOGRÁFICO",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontFamily: 'MontSerrat',
+                            fontWeight: FontWeight.w600,
+                            fontSize: getScreenSize(context).width * 0.05),
                       ),
-                    );
-                  },
+                    ),
+                    Container(
+                      width: getScreenSize(context).width * 0.9,
+                      height: getScreenSize(context).height * 0.2,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(0),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: listaFotos.length,
+                        itemBuilder: (context, index) {
+                          return listaFotos[index];
+                        },
+                      ),
+                    ),
+                    TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            addPhoto = !addPhoto;
+                          });
+                        },
+                        icon: Icon(Icons.add_a_photo,
+                            color: Colors.indigo,
+                            size: getScreenSize(context).width * 0.06),
+                        label: Text(
+                          "Agregar foto",
+                          style: TextStyle(
+                              fontFamily: 'MontSerrat',
+                              fontWeight: FontWeight.w600,
+                              fontSize: getScreenSize(context).width * 0.03),
+                        )),
+                    Container(
+                      width: getScreenSize(context).width * 0.8,
+                      height: getScreenSize(context).height * 0.08,
+                      padding:
+                          EdgeInsets.all(getScreenSize(context).width * 0.01),
+                      child: CustomerElevateButton(
+                          texto: "Guardar",
+                          colorTexto: Colors.white,
+                          colorButton: Colors.blue,
+                          onPressed: () {},
+                          height: getScreenSize(context).height * 0.1,
+                          width: getScreenSize(context).width * 0.6),
+                    ),
+                    Container(
+                      width: getScreenSize(context).width * 0.8,
+                      height: getScreenSize(context).height * 0.08,
+                      padding:
+                          EdgeInsets.all(getScreenSize(context).width * 0.01),
+                      child: CustomerElevateButton(
+                          texto: "Cerrar",
+                          colorTexto: Colors.white,
+                          colorButton: Colors.red,
+                          onPressed: () => Navigator.pop(context),
+                          height: getScreenSize(context).height * 0.1,
+                          width: getScreenSize(context).width * 0.6),
+                    ),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    CustomerDropDownButtonTextPhoto(
+                      onChange: (value) {},
+                    ),
+                    TextButton.icon(
+                        onPressed: () {},
+                        icon: const Icon(Icons.camera),
+                        label: Text(
+                          "Abrir camara",
+                          style: TextStyle(
+                              fontFamily: 'MontSerrat',
+                              fontWeight: FontWeight.w500,
+                              fontSize: getScreenSize(context).width * 0.04),
+                        )),
+                    Container(
+                      width: getScreenSize(context).width * 0.8,
+                      height: getScreenSize(context).height * 0.08,
+                      padding:
+                          EdgeInsets.all(getScreenSize(context).width * 0.01),
+                      child: CustomerElevateButton(
+                          texto: "Cerrar",
+                          colorTexto: Colors.white,
+                          colorButton: Colors.red,
+                          onPressed: () {
+                            setState(() {
+                              addPhoto = !addPhoto;
+                            });
+                          },
+                          height: getScreenSize(context).height * 0.1,
+                          width: getScreenSize(context).width * 0.6),
+                    ),
+                  ],
                 ),
-              ),
-              Container(
-                width: getScreenSize(context).width * 0.8,
-                height: getScreenSize(context).height * 0.08,
-                padding: EdgeInsets.all(getScreenSize(context).width * 0.01),
-                child: CustomerElevateButton(
-                    texto: "Guardar",
-                    colorTexto: Colors.white,
-                    colorButton: Colors.blue,
-                    onPressed: () {},
-                    height: getScreenSize(context).height * 0.1,
-                    width: getScreenSize(context).width * 0.6),
-              ),
-              Container(
-                width: getScreenSize(context).width * 0.8,
-                height: getScreenSize(context).height * 0.08,
-                padding: EdgeInsets.all(getScreenSize(context).width * 0.01),
-                child: CustomerElevateButton(
-                    texto: "Cerrar",
-                    colorTexto: Colors.white,
-                    colorButton: Colors.red,
-                    onPressed: () => Navigator.pop(context),
-                    height: getScreenSize(context).height * 0.1,
-                    width: getScreenSize(context).width * 0.6),
-              ),
-            ],
-          ),
         ),
       ),
     );
