@@ -7,7 +7,8 @@ import 'dart:io';
 import 'dart:developer' as developer;
 
 class CameraPage extends StatefulWidget {
-  const CameraPage({super.key});
+  final String fileNameCamera;
+  const CameraPage({super.key, required this.fileNameCamera});
 
   @override
   State<CameraPage> createState() => _CameraPageState();
@@ -45,16 +46,16 @@ class _CameraPageState extends State<CameraPage> {
         developer.log('Foto tomada y guardada en: $path');
 
         // Mostrar el efecto de flash al tomar la foto
-        setState(() {
-          _flash = true;
-        });
+
+        _flash = true;
+
         await Future.delayed(const Duration(milliseconds: 100));
-        setState(() {
-          _flash = false;
-          _capturedImages.add(File(path));
-          fileList[fileName] = File(path);
-          Navigator.pop(context);
-        });
+
+        _flash = false;
+        _capturedImages.add(File(path));
+        fileList[fileName] = File(path);
+        Map<String, File> mapFiles = {widget.fileNameCamera: File(path)};
+        Navigator.pop(context, mapFiles);
         // Scroll automático al final del ListView
         if (_capturedImages.length > 4) {
           _scrollController.animateTo(

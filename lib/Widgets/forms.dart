@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:hermeticidadapp/Page/camera_page.dart';
 import 'package:hermeticidadapp/Tools/complements.dart';
 import 'package:hermeticidadapp/Tools/functions.dart';
 import 'package:hermeticidadapp/Widgets/DropDownButton.dart';
@@ -238,24 +240,8 @@ class HalfScreenForm2 extends StatefulWidget {
 class _HalfScreenForm2State extends State<HalfScreenForm2> {
   bool addPhoto = false;
 
-  List<Widget> listaFotos = [
-    Card(
-      elevation: 10,
-      child: Container(
-        width: 150,
-        height: 150,
-        color: Colors.white,
-      ),
-    ),
-    Card(
-      elevation: 10,
-      child: Container(
-        width: 150,
-        height: 150,
-        color: Colors.white,
-      ),
-    )
-  ];
+  List<File> listaFotos = [];
+  String fileName = '';
 
   @override
   Widget build(BuildContext context) {
@@ -303,7 +289,7 @@ class _HalfScreenForm2State extends State<HalfScreenForm2> {
                         scrollDirection: Axis.horizontal,
                         itemCount: listaFotos.length,
                         itemBuilder: (context, index) {
-                          return listaFotos[index];
+                          return Card();
                         },
                       ),
                     ),
@@ -321,7 +307,7 @@ class _HalfScreenForm2State extends State<HalfScreenForm2> {
                           style: TextStyle(
                               fontFamily: 'MontSerrat',
                               fontWeight: FontWeight.w600,
-                              fontSize: getScreenSize(context).width * 0.03),
+                              fontSize: getScreenSize(context).width * 0.05),
                         )),
                     Container(
                       width: getScreenSize(context).width * 0.8,
@@ -357,10 +343,24 @@ class _HalfScreenForm2State extends State<HalfScreenForm2> {
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     CustomerDropDownButtonTextPhoto(
-                      onChange: (value) {},
+                      onChange: (value) {
+                        fileName = value ?? "";
+                      },
                     ),
                     TextButton.icon(
-                        onPressed: () {},
+                        onPressed: () async {
+                          await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    CameraPage(fileNameCamera: fileName),
+                              )).then((value) {
+                            //_loadImages();
+                            if (value != null) {
+                              print(value[fileName]);
+                            }
+                          });
+                        },
                         icon: const Icon(Icons.camera),
                         label: Text(
                           "Abrir camara",
