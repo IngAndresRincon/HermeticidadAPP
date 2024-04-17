@@ -8,7 +8,6 @@ import 'package:hermeticidadapp/Page/test_page.dart';
 import 'Page/home_page.dart';
 import 'Page/login_page.dart';
 import 'Page/splash_page.dart';
-import 'Page/camera_page.dart';
 
 void main() {
   runApp(const MyApp());
