@@ -56,7 +56,7 @@ class _TimeLinePage1State extends State<TimeLinePage1> {
                       ? () {
                           showDialog(
                             context: context,
-                            builder: (context) => HalfScreenForm2(),
+                            builder: (context) => const HalfScreenForm2(),
                           );
                         }
                       : () {
@@ -72,11 +72,7 @@ class _TimeLinePage1State extends State<TimeLinePage1> {
                       ? () {
                           showDialog(
                             context: context,
-                            builder: (context) => HalfScreenForm1(
-                                idProgramacion:
-                                    widget.mapSchedule["IdProgramacion"],
-                                idTipoPrueba:
-                                    widget.mapSchedule["IdTipoPrueba"]),
+                            builder: (context) => HalfScreenForm3(),
                           );
                         }
                       : () {

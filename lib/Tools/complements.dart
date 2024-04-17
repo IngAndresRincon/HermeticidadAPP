@@ -229,7 +229,7 @@ class ItemStepLine extends StatelessWidget {
         isLast: isLast,
         beforeLineStyle: const LineStyle(color: Color(0xFF27AA69)),
         indicatorStyle: IndicatorStyle(
-            width: getScreenSize(context).width * 0.07,
+            width: getScreenSize(context).width * 0.06,
             color: const Color(0xFF27AA69),
             padding: const EdgeInsets.all(6)),
         endChild: Container(
