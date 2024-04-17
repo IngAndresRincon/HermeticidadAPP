@@ -314,3 +314,34 @@ Future<Map> validateUser(String jsonRequest) async {
 
   return mapRespuesta;
 }
+
+Future<bool> sendImages(Map mapImage) async {
+  bool respuesta = false;
+  try {
+    final client = http.Client();
+    String fileUrl =
+        'http://${controllerIp.text}:${controllerPort.text}/api/POSTsubirImagen';
+
+    //developer.log('Json de imagen: $mapImageinfo');
+    var response = await client
+        .post(Uri.parse(fileUrl),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode(mapImage))
+        .timeout(const Duration(seconds: 10));
+    if (response.statusCode == 200) {
+      // La solicitud se realizó con éxito
+
+      respuesta = true;
+      return respuesta;
+    } else {
+      // Hubo un error en la solicitud
+
+      developer.log(
+          'Error en la solicitud. Código de estado: ${response.statusCode}');
+    }
+  } catch (e) {
+    developer.log('Error: ${e.toString()}');
+  }
+
+  return respuesta;
+}

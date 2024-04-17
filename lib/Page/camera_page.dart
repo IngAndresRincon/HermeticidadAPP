@@ -18,57 +18,10 @@ class _CameraPageState extends State<CameraPage> {
   List<CameraDescription> cameras = [];
   late CameraController cameraController;
   bool flagCamera = false;
-  bool _flash = false;
-  final List<File> _capturedImages = [];
+  bool isloading = false;
+  late File _image;
   late ScrollController _scrollController;
   Map<String, File> mapFiles = {};
-
-  Future<void> inicializarCamara() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    cameras = await availableCameras();
-    cameraController = CameraController(cameras[0], ResolutionPreset.medium);
-    await cameraController.initialize();
-    if (mounted) {
-      setState(
-          () {}); // Actualiza el estado para reflejar el cambio en la vista
-    }
-  }
-
-  Future<void> _takePicture() async {
-    try {
-      if (flagCamera) {
-        final path = join(
-          (await getTemporaryDirectory()).path,
-          '${DateTime.now()}.png',
-        );
-        XFile picture = await cameraController.takePicture();
-        File(picture.path).copy(path);
-        // La foto ha sido tomada y almacenada en 'path'
-        developer.log('Foto tomada y guardada en: $path');
-
-        // Mostrar el efecto de flash al tomar la foto
-
-        _flash = true;
-
-        await Future.delayed(const Duration(milliseconds: 100));
-
-        _flash = false;
-        _capturedImages.add(File(path));
-        fileList[fileName] = File(path);
-        mapFiles = {widget.fileNameCamera: File(path)};
-        // Scroll automático al final del ListView
-        if (_capturedImages.length > 4) {
-          _scrollController.animateTo(
-            _scrollController.position.devicePixelRatio,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
-        }
-      }
-    } catch (e) {
-      developer.log('Error al tomar la foto: $e');
-    }
-  }
 
   @override
   void initState() {
@@ -84,98 +37,41 @@ class _CameraPageState extends State<CameraPage> {
     super.dispose();
   }
 
-  PreferredSizeWidget _appbar() {
-    return AppBar(
-      leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(Icons.arrow_back_ios)),
-      elevation: 10,
-      title:
-          _defaultText(0.03, 'Evidencias', 18, Colors.black45, FontWeight.bold),
-      actions: const [
-        Padding(
-          padding: EdgeInsets.all(8.0),
-          child: CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.black54,
-            child: Icon(
-              Icons.person,
-              color: Colors.white,
-            ),
-          ),
-        )
-      ],
-    );
+  Future<void> inicializarCamara() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    cameras = await availableCameras();
+    cameraController = CameraController(cameras[0], ResolutionPreset.medium);
+    await cameraController.initialize();
+    if (mounted) {
+      setState(
+          () {}); // Actualiza el estado para reflejar el cambio en la vista
+    }
   }
 
-  Widget _defaultText(double height, String text, double fontSize, Color color,
-      FontWeight fontWeight) {
-    return SizedBox(
-      height: getScreenSize(context).height * height,
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-            letterSpacing: 4,
-            fontSize: fontSize,
-            color: color,
-            fontWeight: fontWeight),
-      ),
-    );
-  }
+  Future<bool> _takePicture() async {
+    bool respuesta = false;
+    try {
+      if (flagCamera) {
+        final path = join(
+          (await getTemporaryDirectory()).path,
+          '${DateTime.now()}.png',
+        );
+        XFile picture = await cameraController.takePicture();
+        File(picture.path).copy(path);
+        // La foto ha sido tomada y almacenada en 'path'
+        developer.log('Foto tomada y guardada en: $path');
 
-  Widget _photoScreen() {
-    return Container(
-      color: Colors.black,
-      width: double.infinity,
-      height: double.infinity,
-    );
-  }
+        // Mostrar el efecto de flash al tomar la foto
 
-  Widget _photoButton(double positionBotton, IconData icon) {
-    return Positioned(
-      bottom: positionBotton,
-      child: FloatingActionButton(
-        onPressed: () async {
-          await _takePicture().then((value) {
-            Navigator.pop(context, mapFiles);
-          });
-        },
-        child: Icon(icon),
-      ),
-    );
-  }
-
-  Widget _imageNameText(double positionText) {
-    return Positioned(
-        top: positionText,
-        child: _defaultText(0.1, fileName, 25, Colors.white, FontWeight.bold));
-  }
-
-  Widget _imagesList(double widthList, double height, double widthImage) {
-    return Positioned(
-      bottom: 100.0,
-      child: SizedBox(
-        width: getScreenSize(context).width * widthList,
-        height: getScreenSize(context).height * height,
-        child: ListView.builder(
-          controller: _scrollController,
-          scrollDirection: Axis.horizontal,
-          itemCount: _capturedImages.length,
-          itemBuilder: (context, index) {
-            return Container(
-              margin: const EdgeInsets.only(right: 8.0),
-              child: Image.file(
-                _capturedImages[index],
-                width: getScreenSize(context).width * widthImage,
-              ),
-            );
-          },
-        ),
-      ),
-    );
+        _image = File(path);
+        mapFiles = {widget.fileNameCamera: _image};
+        respuesta = true;
+        return respuesta;
+      }
+    } catch (e) {
+      developer.log('Error al tomar la foto: $e');
+    }
+    return respuesta;
   }
 
   @override
@@ -184,16 +80,62 @@ class _CameraPageState extends State<CameraPage> {
       return Container(); // O cualquier indicador de carga
     }
     return Scaffold(
-      appBar: _appbar(),
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          "Evidencia Fotográfica",
+          style: TextStyle(
+              fontFamily: 'MontSerrat',
+              fontWeight: FontWeight.w600,
+              fontSize: getScreenSize(context).width * 0.04),
+        ),
+      ),
       extendBodyBehindAppBar: true,
       body: Stack(
         alignment: Alignment.center,
         children: [
-          Positioned.fill(child: CameraPreview(cameraController)),
-          _flash ? _photoScreen() : Container(),
-          _imageNameText(150),
-          _photoButton(36, Icons.camera),
-          _capturedImages.isNotEmpty ? _imagesList(0.9, 0.2, 0.2) : Container(),
+          SizedBox(
+            width: getScreenSize(context).width,
+            height: getScreenSize(context).height,
+            child: CameraPreview(cameraController),
+          ),
+          isloading
+              ? Align(
+                  alignment: Alignment.center,
+                  child: Center(
+                      child: CircularProgressIndicator(
+                    color: Colors.blue.shade200,
+                  )),
+                )
+              : Container(),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Card(
+                elevation: 10,
+                color: Colors.white,
+                child: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      isloading = !isloading;
+                    });
+                    _takePicture().then((bool value) {
+                      if (value) {
+                        showMessageTOAST(
+                            context, "Imagen Guardada", Colors.black54);
+                        Navigator.pop(context, mapFiles);
+                      } else {
+                        showMessageTOAST(context,
+                            "No se pudo guardar la imagen", Colors.black54);
+                      }
+                    });
+                  },
+                  icon: Icon(
+                    Icons.camera,
+                    size: getScreenSize(context).width * 0.1,
+                    color: Colors.indigo.shade600,
+                  ),
+                )),
+          )
         ],
       ),
     );

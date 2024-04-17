@@ -53,11 +53,16 @@ class _TimeLinePage1State extends State<TimeLinePage1> {
                   isFirts: true),
               CustomerTimeLine(
                   onTap: widget.mapSchedule["RegistroInicio"]
-                      ? () {
-                          showDialog(
+                      ? () async {
+                          await showDialog(
                             context: context,
-                            builder: (context) => const HalfScreenForm2(),
-                          );
+                            builder: (context) => HalfScreenForm2(
+                              idProgramacion:
+                                  widget.mapSchedule["IdProgramacion"],
+                            ),
+                          ).then((value) {
+                            setState(() {});
+                          });
                         }
                       : () {
                           showMessageTOAST(context, "Formulario no disponible",

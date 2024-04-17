@@ -29,6 +29,7 @@ class HalfScreenForm1 extends StatefulWidget {
 class _HalfScreenForm1State extends State<HalfScreenForm1> {
   DateTime selectedDate = DateTime.now();
   bool isAuthorized = false;
+
   static const double textFormWidth = 0.7;
 
   @override
@@ -234,7 +235,8 @@ class _HalfScreenForm1State extends State<HalfScreenForm1> {
 }
 
 class HalfScreenForm2 extends StatefulWidget {
-  const HalfScreenForm2({super.key});
+  final int idProgramacion;
+  const HalfScreenForm2({super.key, required this.idProgramacion});
 
   @override
   State<HalfScreenForm2> createState() => _HalfScreenForm2State();
@@ -242,9 +244,26 @@ class HalfScreenForm2 extends StatefulWidget {
 
 class _HalfScreenForm2State extends State<HalfScreenForm2> {
   bool addPhoto = false;
-
+  bool isLoading = false;
+  int acumuladorResultado = 0;
   List<Map<String, dynamic>> listaFotos = [];
   String fileName = '';
+
+  Future<void> guardarImagen() async {
+    acumuladorResultado = 0;
+    for (var e in listaFotos) {
+      String imageDataString = await convertImageToBase64(e["archivo"]);
+      imageDataString = 'data:image/png;base64,$imageDataString';
+
+      await sendImages({
+        'IdSolicitud': widget.idProgramacion,
+        'Nombre': e["nombre"],
+        'Imagen': imageDataString
+      }).then((value) {
+        if (value) acumuladorResultado++;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -252,170 +271,211 @@ class _HalfScreenForm2State extends State<HalfScreenForm2> {
       backgroundColor: Colors.transparent,
       body: Center(
         child: Container(
-          width: getScreenSize(context).width * 0.8,
-          height: !addPhoto
-              ? getScreenSize(context).height * 0.6
-              : getScreenSize(context).height * 0.3,
-          padding: EdgeInsets.all(getScreenSize(context).width * 0.02),
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(5),
-              boxShadow: const [
-                BoxShadow(
-                    blurRadius: 6,
-                    color: Colors.white70,
-                    blurStyle: BlurStyle.outer,
-                    spreadRadius: 2)
-              ]),
-          child: !addPhoto
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Center(
-                      child: Text(
-                        "REGISTRO FOTOGRÁFICO",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontFamily: 'MontSerrat',
-                            fontWeight: FontWeight.w600,
-                            fontSize: getScreenSize(context).width * 0.05),
-                      ),
-                    ),
-                    Container(
-                      width: getScreenSize(context).width * 0.9,
-                      height: getScreenSize(context).height * 0.3,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(0),
-                        scrollDirection: Axis.horizontal,
-                        itemCount: listaFotos.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Image(
-                                    width: getScreenSize(context).width * 0.28,
-                                    image: FileImage(
-                                        listaFotos[index]['archivo'])),
-                                Text(
-                                  listaFotos[index]['nombre'],
-                                  style: TextStyle(
-                                      fontFamily: 'MontSerrat',
-                                      fontWeight: FontWeight.w600,
-                                      fontSize:
-                                          getScreenSize(context).width * 0.03),
-                                )
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    TextButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            addPhoto = !addPhoto;
-                          });
-                        },
-                        icon: Icon(Icons.add_a_photo,
-                            color: Colors.indigo,
-                            size: getScreenSize(context).width * 0.06),
-                        label: Text(
-                          "Agregar foto",
+            width: getScreenSize(context).width * 0.8,
+            height: !addPhoto
+                ? getScreenSize(context).height * 0.6
+                : getScreenSize(context).height * 0.3,
+            padding: EdgeInsets.all(getScreenSize(context).width * 0.02),
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(5),
+                boxShadow: const [
+                  BoxShadow(
+                      blurRadius: 6,
+                      color: Colors.white70,
+                      blurStyle: BlurStyle.outer,
+                      spreadRadius: 2)
+                ]),
+            child: !addPhoto && !isLoading
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Center(
+                        child: Text(
+                          "REGISTRO FOTOGRÁFICO",
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                               fontFamily: 'MontSerrat',
                               fontWeight: FontWeight.w600,
                               fontSize: getScreenSize(context).width * 0.05),
-                        )),
-                    Container(
-                      width: getScreenSize(context).width * 0.8,
-                      height: getScreenSize(context).height * 0.08,
-                      padding:
-                          EdgeInsets.all(getScreenSize(context).width * 0.01),
-                      child: CustomerElevateButton(
-                          texto: "Guardar",
-                          colorTexto: Colors.white,
-                          colorButton: Colors.blue,
-                          onPressed: () {},
-                          height: getScreenSize(context).height * 0.1,
-                          width: getScreenSize(context).width * 0.6),
-                    ),
-                    Container(
-                      width: getScreenSize(context).width * 0.8,
-                      height: getScreenSize(context).height * 0.08,
-                      padding:
-                          EdgeInsets.all(getScreenSize(context).width * 0.01),
-                      child: CustomerElevateButton(
-                          texto: "Cerrar",
-                          colorTexto: Colors.white,
-                          colorButton: Colors.red,
-                          onPressed: () => Navigator.pop(context),
-                          height: getScreenSize(context).height * 0.1,
-                          width: getScreenSize(context).width * 0.6),
-                    ),
-                  ],
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    CustomerDropDownButtonTextPhoto(
-                      onChange: (value) {
-                        fileName = value ?? "";
-                      },
-                    ),
-                    TextButton.icon(
-                        onPressed: () async {
-                          await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    CameraPage(fileNameCamera: fileName),
-                              )).then((value) {
-                            //_loadImages();
-                            if (value != null) {
-                              listaFotos.add({
-                                'nombre': fileName,
-                                'archivo': value[fileName]
-                              });
-                            }
-                          });
-                        },
-                        icon: const Icon(Icons.camera),
-                        label: Text(
-                          "Abrir camara",
-                          style: TextStyle(
-                              fontFamily: 'MontSerrat',
-                              fontWeight: FontWeight.w500,
-                              fontSize: getScreenSize(context).width * 0.04),
-                        )),
-                    Container(
-                      width: getScreenSize(context).width * 0.8,
-                      height: getScreenSize(context).height * 0.08,
-                      padding:
-                          EdgeInsets.all(getScreenSize(context).width * 0.01),
-                      child: CustomerElevateButton(
-                          texto: "Cerrar",
-                          colorTexto: Colors.white,
-                          colorButton: Colors.red,
+                        ),
+                      ),
+                      Container(
+                        width: getScreenSize(context).width * 0.9,
+                        height: getScreenSize(context).height * 0.3,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(0),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: listaFotos.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.max,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image(
+                                      width:
+                                          getScreenSize(context).width * 0.28,
+                                      height:
+                                          getScreenSize(context).height * 0.2,
+                                      image: FileImage(
+                                          listaFotos[index]['archivo'])),
+                                  Text(
+                                    listaFotos[index]['nombre'],
+                                    style: TextStyle(
+                                        fontFamily: 'MontSerrat',
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: getScreenSize(context).width *
+                                            0.03),
+                                  )
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      TextButton.icon(
                           onPressed: () {
                             setState(() {
                               addPhoto = !addPhoto;
                             });
                           },
-                          height: getScreenSize(context).height * 0.1,
-                          width: getScreenSize(context).width * 0.6),
-                    ),
-                  ],
-                ),
-        ),
+                          icon: Icon(Icons.add_a_photo,
+                              color: Colors.indigo,
+                              size: getScreenSize(context).width * 0.06),
+                          label: Text(
+                            "Agregar foto",
+                            style: TextStyle(
+                                fontFamily: 'MontSerrat',
+                                fontWeight: FontWeight.w600,
+                                fontSize: getScreenSize(context).width * 0.04),
+                          )),
+                      Container(
+                        width: getScreenSize(context).width * 0.8,
+                        height: getScreenSize(context).height * 0.08,
+                        padding:
+                            EdgeInsets.all(getScreenSize(context).width * 0.01),
+                        child: CustomerElevateButton(
+                            texto: "Guardar",
+                            colorTexto: Colors.white,
+                            colorButton: Colors.blue,
+                            onPressed: () async {
+                              if (listaFotos.length < 5) {
+                                showMessageTOAST(
+                                    context,
+                                    "Debe agregar mínimo 5 imagenes",
+                                    Colors.black54);
+                                return;
+                              }
+
+                              setState(() {
+                                isLoading = !isLoading;
+                              });
+
+                              await guardarImagen().then((value) {
+                                if (acumuladorResultado == listaFotos.length) {
+                                  showMessageTOAST(context,
+                                      "Imagenes insertadas", Colors.black54);
+
+                                  for (var element in listaProgramacion) {
+                                    if (element["IdProgramacion"] ==
+                                        widget.idProgramacion) {
+                                      element["RegistroFoto"] = true;
+                                    }
+                                  }
+
+                                  Navigator.pop(context, true);
+                                } else {
+                                  showMessageTOAST(
+                                      context,
+                                      "Error al subir imagenes",
+                                      Colors.black54);
+                                }
+                              });
+                            },
+                            height: getScreenSize(context).height * 0.1,
+                            width: getScreenSize(context).width * 0.6),
+                      ),
+                      Container(
+                        width: getScreenSize(context).width * 0.8,
+                        height: getScreenSize(context).height * 0.08,
+                        padding:
+                            EdgeInsets.all(getScreenSize(context).width * 0.01),
+                        child: CustomerElevateButton(
+                            texto: "Cerrar",
+                            colorTexto: Colors.white,
+                            colorButton: Colors.red,
+                            onPressed: () => Navigator.pop(context),
+                            height: getScreenSize(context).height * 0.1,
+                            width: getScreenSize(context).width * 0.6),
+                      ),
+                    ],
+                  )
+                : addPhoto && !isLoading
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          CustomerDropDownButtonTextPhoto(
+                            onChange: (value) {
+                              fileName = value ?? "";
+                            },
+                          ),
+                          TextButton.icon(
+                              onPressed: () async {
+                                await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          CameraPage(fileNameCamera: fileName),
+                                    )).then((value) {
+                                  //_loadImages();
+                                  if (value != null) {
+                                    listaFotos.add({
+                                      'nombre': fileName,
+                                      'archivo': value[fileName]
+                                    });
+                                  }
+                                });
+                              },
+                              icon: const Icon(Icons.camera),
+                              label: Text(
+                                "Abrir camara",
+                                style: TextStyle(
+                                    fontFamily: 'MontSerrat',
+                                    fontWeight: FontWeight.w500,
+                                    fontSize:
+                                        getScreenSize(context).width * 0.04),
+                              )),
+                          Container(
+                            width: getScreenSize(context).width * 0.8,
+                            height: getScreenSize(context).height * 0.08,
+                            padding: EdgeInsets.all(
+                                getScreenSize(context).width * 0.01),
+                            child: CustomerElevateButton(
+                                texto: "Cerrar",
+                                colorTexto: Colors.white,
+                                colorButton: Colors.red,
+                                onPressed: () {
+                                  setState(() {
+                                    addPhoto = !addPhoto;
+                                  });
+                                },
+                                height: getScreenSize(context).height * 0.1,
+                                width: getScreenSize(context).width * 0.6),
+                          ),
+                        ],
+                      )
+                    : const Center(
+                        child: CircularProgressIndicator(
+                        color: Colors.blue,
+                      ))),
       ),
     );
   }
