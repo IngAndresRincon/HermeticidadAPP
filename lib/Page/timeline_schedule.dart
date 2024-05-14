@@ -77,7 +77,9 @@ class _TimeLinePage1State extends State<TimeLinePage1> {
                       ? () {
                           showDialog(
                             context: context,
-                            builder: (context) => HalfScreenForm3(),
+                            builder: (context) => HalfScreenForm3(
+                                idProgramacion:
+                                    widget.mapSchedule["IdProgramacion"]),
                           );
                         }
                       : () {
@@ -89,15 +91,14 @@ class _TimeLinePage1State extends State<TimeLinePage1> {
                   isLast: false,
                   isFirts: false),
               CustomerTimeLine(
-                  onTap: widget.mapSchedule["RegistroCalibracion"]
+                  onTap: true //widget.mapSchedule["RegistroCalibracion"]
                       ? () {
                           showDialog(
                             context: context,
-                            builder: (context) => HalfScreenForm1(
+                            builder: (context) => HalfScreenForm4(
+                                idEstacion: widget.mapSchedule["IdEstacion"],
                                 idProgramacion:
-                                    widget.mapSchedule["IdProgramacion"],
-                                idTipoPrueba:
-                                    widget.mapSchedule["IdTipoPrueba"]),
+                                    widget.mapSchedule["IdProgramacion"]),
                           );
                         }
                       : () {
@@ -109,15 +110,13 @@ class _TimeLinePage1State extends State<TimeLinePage1> {
                   isLast: false,
                   isFirts: false),
               CustomerTimeLine(
-                  onTap: widget.mapSchedule["RegistroInicioPrueba"]
+                  onTap: true //widget.mapSchedule["RegistroInicioPrueba"]
                       ? () {
                           showDialog(
                             context: context,
-                            builder: (context) => HalfScreenForm1(
+                            builder: (context) => HalfScreenForm5(
                                 idProgramacion:
-                                    widget.mapSchedule["IdProgramacion"],
-                                idTipoPrueba:
-                                    widget.mapSchedule["IdTipoPrueba"]),
+                                    widget.mapSchedule["IdProgramacion"]),
                           );
                         }
                       : () {

@@ -6,14 +6,14 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 class CustomerCartesianChart extends StatelessWidget {
   final double mediumValue;
   final double tolerance;
-  late ChartSeriesController chartSeriesController;
+  final SeriesRendererCreatedCallback? onRendered;
   final List<ChartData> chartData;
 
-  CustomerCartesianChart(
+  const CustomerCartesianChart(
       {super.key,
       required this.mediumValue,
       required this.tolerance,
-      required this.chartSeriesController,
+      required this.onRendered,
       required this.chartData});
 
   @override
@@ -67,9 +67,7 @@ class CustomerCartesianChart extends StatelessWidget {
           ]),
       series: <ChartSeries>[
         SplineSeries<ChartData, DateTime>(
-          onRendererCreated: (ChartSeriesController controller) {
-            chartSeriesController = controller;
-          },
+          onRendererCreated: onRendered,
           legendItemText: "Presión[PSI]",
           dataSource: chartData,
           xValueMapper: (ChartData data, _) => data.timeP,
