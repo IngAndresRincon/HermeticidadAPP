@@ -14,6 +14,7 @@ class Login_Page extends StatefulWidget {
   State<Login_Page> createState() => _Login_PageState();
 }
 
+// ignore: camel_case_types
 class _Login_PageState extends State<Login_Page> {
   String dateTimeNow = "";
   bool obscurePassword = true;
@@ -55,7 +56,9 @@ class _Login_PageState extends State<Login_Page> {
         }
       });
     } catch (e) {
-      showMessageTOAST(context, e.toString(), Colors.black54);
+      if (mounted) {
+        showMessageTOAST(context, e.toString(), Colors.black54);
+      }
     }
   }
 

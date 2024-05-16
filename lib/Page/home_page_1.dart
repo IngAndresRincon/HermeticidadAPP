@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hermeticidadapp/Models/models.dart';
 import 'package:hermeticidadapp/Page/timeline_schedule.dart';
 import 'package:hermeticidadapp/Tools/cache.dart';
@@ -32,6 +33,10 @@ class _HomePage1State extends State<HomePage1> {
 
     await getListSchedule().then((List<dynamic> valuelist) {
       listaProgramacion = valuelist;
+      programaciones =
+          listaProgramacion.map((json) => Programacion.fromJson(json)).toList();
+
+      print(programaciones);
     });
 
     isLoading = !isLoading;
@@ -41,11 +46,15 @@ class _HomePage1State extends State<HomePage1> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: WillPopScope(
+      body: PopScope(
+        canPop: true,
+        onPopInvoked: (didPop) {
+          return;
+        },
         child: Stack(
           children: [
             Container(
-              color: const Color.fromARGB(255, 66, 61, 103),
+              color: const Color.fromARGB(255, 237, 237, 238),
               child: Column(
                 children: [
                   Expanded(
@@ -57,50 +66,53 @@ class _HomePage1State extends State<HomePage1> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           mainAxisSize: MainAxisSize.max,
                           children: [
-                            SizedBox(
+                            Container(
                               width: getScreenSize(context).width * 0.6,
                               height: getScreenSize(context).height * 0.3,
-                              child: Card(
-                                elevation: 10,
-                                color: Colors.indigo,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Text(
-                                      rolUsuarioGlobal,
-                                      style: TextStyle(
-                                          fontFamily: 'MontSerrat',
-                                          color: Colors.brown.shade100,
-                                          fontSize:
-                                              getScreenSize(context).width *
-                                                  0.05,
-                                          fontWeight: FontWeight.w700),
-                                    ),
-                                    Text(
-                                      nombreUsuarioGlobal,
-                                      style: TextStyle(
-                                          fontFamily: 'MontSerrat',
-                                          color: Colors.brown.shade100,
-                                          fontSize:
-                                              getScreenSize(context).width *
-                                                  0.04,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                    Text(
-                                      fechaIngresoUsuario,
-                                      style: TextStyle(
-                                          fontFamily: 'MontSerrat',
-                                          color: Colors.brown.shade100,
-                                          fontSize:
-                                              getScreenSize(context).width *
-                                                  0.04,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                  ],
-                                ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(5),
+                                boxShadow: const [
+                                  BoxShadow(
+                                      blurRadius: 7,
+                                      blurStyle: BlurStyle.outer,
+                                      color: Colors.black26,
+                                      spreadRadius: 10)
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  Text(
+                                    nombreUsuarioGlobal,
+                                    style: TextStyle(
+                                        fontFamily: 'MontSerrat',
+                                        color: Colors.black87,
+                                        fontSize:
+                                            getScreenSize(context).width * 0.05,
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                  Text(
+                                    rolUsuarioGlobal,
+                                    style: TextStyle(
+                                        fontFamily: 'MontSerrat',
+                                        color: Colors.black54,
+                                        fontSize:
+                                            getScreenSize(context).width * 0.04,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  Text(
+                                    fechaIngresoUsuario,
+                                    style: TextStyle(
+                                        fontFamily: 'MontSerrat',
+                                        color: Colors.black54,
+                                        fontSize:
+                                            getScreenSize(context).width * 0.04,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ],
                               ),
                             ),
                             CircleAvatar(
@@ -130,11 +142,11 @@ class _HomePage1State extends State<HomePage1> {
                             width: getScreenSize(context).width * 0.8,
                             child: Center(
                               child: Text(
-                                "Solicitudes",
+                                "Programaciones",
                                 style: TextStyle(
                                     fontFamily: 'MontSerrat',
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.brown.shade100,
+                                    color: Colors.black87,
                                     fontSize:
                                         getScreenSize(context).width * 0.05),
                               ),
@@ -147,20 +159,20 @@ class _HomePage1State extends State<HomePage1> {
                     child: !isLoading
                         ? ListView.builder(
                             padding: const EdgeInsets.all(0),
-                            itemCount: listaProgramacion.length,
+                            itemCount: programaciones.length,
                             itemBuilder: (context, index) {
                               return Container(
                                 margin: const EdgeInsets.symmetric(
                                     horizontal: 20, vertical: 5),
                                 child: Card(
-                                  elevation: 10,
-                                  color: Colors.indigo.shade200,
+                                  elevation: 5,
+                                  color: Colors.white,
                                   child: ListTile(
                                     leading: CircleAvatar(
                                       backgroundColor: Colors.white,
                                       child: Text(
-                                        listaProgramacion[index]
-                                                ["IdProgramacion"]
+                                        programaciones[index]
+                                            .idProgramacion
                                             .toString(),
                                         style: TextStyle(
                                             fontFamily: 'MontSerrat',
@@ -182,8 +194,8 @@ class _HomePage1State extends State<HomePage1> {
                                             fontWeight: FontWeight.w700),
                                         children: <TextSpan>[
                                           TextSpan(
-                                              text:
-                                                  "${listaProgramacion[index]["Estacion"]}",
+                                              text: programaciones[index]
+                                                  .estacion,
                                               style: TextStyle(
                                                   fontFamily: 'MontSerrat',
                                                   color: Colors.black,
@@ -207,8 +219,8 @@ class _HomePage1State extends State<HomePage1> {
                                             fontWeight: FontWeight.w700),
                                         children: <TextSpan>[
                                           TextSpan(
-                                              text:
-                                                  "${listaProgramacion[index]["FechaProgramacion"]}",
+                                              text: programaciones[index]
+                                                  .fechaProgramacion,
                                               style: TextStyle(
                                                   fontFamily: 'MontSerrat',
                                                   color: Colors.black,
@@ -285,9 +297,6 @@ class _HomePage1State extends State<HomePage1> {
             ),
           ],
         ),
-        onWillPop: () async {
-          return false;
-        },
       ),
     );
   }

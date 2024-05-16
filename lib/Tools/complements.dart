@@ -37,7 +37,7 @@ TextEditingController controllerResponsableForm = TextEditingController();
 Encriptador encriptador = Encriptador();
 
 List<dynamic> listaProgramacion = [];
-
+  List<Programacion> programaciones = [];
 String nombreUsuarioGlobal = "";
 String rolUsuarioGlobal = "";
 int idUsuarioGlobal = 0;

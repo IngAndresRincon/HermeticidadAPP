@@ -227,3 +227,110 @@ class Request {
         'FileData': fileData
       };
 }
+
+class Solicitud {
+  final int idSolicitud;
+  final int idProgramacion;
+  final String observaciones;
+  final String tipoPrueba;
+  final int idLineaIdTanque;
+  final int idProceso;
+  final bool registroCalibracion;
+  final bool registroCierre;
+  final bool registroFinal;
+  final bool registroFoto;
+  final bool registroInicio;
+  final bool registroInicioPrueba;
+  final bool registroResultados;
+
+  Solicitud({
+    required this.idSolicitud,
+    required this.idProgramacion,
+    required this.observaciones,
+    required this.tipoPrueba,
+    required this.idLineaIdTanque,
+    required this.idProceso,
+    required this.registroCalibracion,
+    required this.registroCierre,
+    required this.registroFinal,
+    required this.registroFoto,
+    required this.registroInicio,
+    required this.registroInicioPrueba,
+    required this.registroResultados,
+  });
+
+  factory Solicitud.fromJson(Map<String, dynamic> json) {
+    return Solicitud(
+      idSolicitud: json['IdSolicitud'],
+      idProgramacion: json['IdProgramacion'],
+      observaciones: json['Observaciones'],
+      tipoPrueba: json['TipoPrueba'],
+      idLineaIdTanque: json['IdLinea_IdTanque'],
+      idProceso: json['IdProceso'],
+      registroCalibracion: json['RegistroCalibracion'],
+      registroCierre: json['RegistroCierre'],
+      registroFinal: json['RegistroFinal'],
+      registroFoto: json['RegistroFoto'],
+      registroInicio: json['RegistroInicio'],
+      registroInicioPrueba: json['RegistroInicioPrueba'],
+      registroResultados: json['RegistroResultados'],
+    );
+  }
+}
+
+class Programacion {
+  final int idProgramacion;
+  final int idEstacion;
+  final String estacion;
+  final String nit;
+  final String razonSocial;
+  final String correoEstacion;
+  final String direccion;
+  final int idUsuario;
+  final String correoUsuario;
+  final String userName;
+  final String rol;
+  final String ordenDeTrabajo;
+  final String fechaProgramacion;
+  final List<Solicitud> solicitud;
+
+  Programacion({
+    required this.idProgramacion,
+    required this.idEstacion,
+    required this.estacion,
+    required this.nit,
+    required this.razonSocial,
+    required this.correoEstacion,
+    required this.direccion,
+    required this.idUsuario,
+    required this.correoUsuario,
+    required this.userName,
+    required this.rol,
+    required this.ordenDeTrabajo,
+    required this.fechaProgramacion,
+    required this.solicitud,
+  });
+
+  factory Programacion.fromJson(Map<String, dynamic> json) {
+    var solicitudList = json['Solicitud'] as List;
+    List<Solicitud> solicitudes =
+        solicitudList.map((s) => Solicitud.fromJson(s)).toList();
+
+    return Programacion(
+      idProgramacion: json['IdProgramacion'],
+      idEstacion: json['IdEstacion'],
+      estacion: json['Estacion'],
+      nit: json['Nit'],
+      razonSocial: json['RazonSocial'],
+      correoEstacion: json['CorreoEstacion'],
+      direccion: json['Direccion'],
+      idUsuario: json['IdUsuario'],
+      correoUsuario: json['CorreoUsuario'],
+      userName: json['UserName'],
+      rol: json['Rol'],
+      ordenDeTrabajo: json['OrdenDeTrabajo'],
+      fechaProgramacion: json['FechaProgramacion'],
+      solicitud: solicitudes,
+    );
+  }
+}
